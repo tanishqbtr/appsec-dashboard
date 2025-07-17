@@ -5,6 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -135,41 +141,53 @@ function ServiceTierBadge({ percentile }: { percentile: number }) {
   let tier: string;
   let colors: string;
   let glowColor: string;
+  let tooltipText: string;
   
   if (percentile >= 76) {
     tier = "Platinum";
     colors = "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg";
     glowColor = "shadow-purple-400/50";
+    tooltipText = "🎉 Congrats! Platinum Tier (76-100%): Exceptional security with minimal findings. Your service is in the top performers!";
   } else if (percentile >= 51) {
     tier = "Gold";
     colors = "bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-lg";
     glowColor = "shadow-yellow-400/50";
+    tooltipText = "Gold Tier (51-75%): Strong security posture with relatively few findings. Well above average performance.";
   } else if (percentile >= 26) {
     tier = "Silver";
     colors = "bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg";
     glowColor = "shadow-gray-400/50";
+    tooltipText = "Silver Tier (26-50%): Moderate security level with average findings. Room for improvement exists.";
   } else {
     tier = "Bronze";
     colors = "bg-gradient-to-r from-orange-400 to-orange-500 text-white shadow-lg";
     glowColor = "shadow-orange-400/50";
+    tooltipText = "Bronze Tier (0-25%): Higher number of findings detected. Consider prioritizing security improvements.";
   }
 
   const isPlatinum = percentile >= 76;
 
   return (
     <div className="relative">
-      <Badge className={`${colors} ${glowColor} text-sm px-4 py-2 font-bold tracking-wide
-        animate-badge-reveal animate-float
-        hover:scale-110 hover:shadow-2xl hover:brightness-110 hover:animate-glow-pulse
-        transform transition-all duration-500 ease-in-out
-        cursor-pointer relative overflow-hidden rounded-full
-        before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent
-        before:animate-shimmer before:duration-2000 before:ease-in-out
-        after:absolute after:inset-0 after:bg-gradient-to-r after:from-transparent after:via-white/10 after:to-transparent
-        after:animate-pulse after:duration-3000
-        group`}>
-        <span className="relative z-10 drop-shadow-sm">{tier}</span>
-      </Badge>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Badge className={`${colors} ${glowColor} text-sm px-4 py-2 font-bold tracking-wide
+            animate-badge-reveal animate-float
+            hover:scale-110 hover:shadow-2xl hover:brightness-110 hover:animate-glow-pulse
+            transform transition-all duration-500 ease-in-out
+            cursor-pointer relative overflow-hidden rounded-full
+            before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent
+            before:animate-shimmer before:duration-2000 before:ease-in-out
+            after:absolute after:inset-0 after:bg-gradient-to-r after:from-transparent after:via-white/10 after:to-transparent
+            after:animate-pulse after:duration-3000
+            group`}>
+            <span className="relative z-10 drop-shadow-sm">{tier}</span>
+          </Badge>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs text-center">
+          <p>{tooltipText}</p>
+        </TooltipContent>
+      </Tooltip>
       
       {/* Animated ring effect */}
       <div className={`absolute inset-0 rounded-full border-2 ${glowColor.replace('shadow-', 'border-')} 
@@ -498,7 +516,9 @@ export default function ServiceDetail() {
                         <p className="text-2xl font-bold text-blue-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
                           {Math.round(percentile)}%
                         </p>
-                        <ServiceTierBadge percentile={percentile} />
+                        <TooltipProvider>
+                          <ServiceTierBadge percentile={percentile} />
+                        </TooltipProvider>
                       </div>
                       <div className="text-sm text-gray-600 mt-1">Based on total findings</div>
                     </div>
