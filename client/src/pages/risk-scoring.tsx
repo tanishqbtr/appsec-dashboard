@@ -250,7 +250,7 @@ export default function RiskScoring() {
           {/* Risk Scoring Table */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 mb-6">
                 <TrendingUp className="h-5 w-5" />
                 Service Risk Scores
               </CardTitle>
@@ -295,8 +295,6 @@ export default function RiskScoring() {
                     <TableHead>Risk Score</TableHead>
                     <TableHead>Risk Level</TableHead>
                     <TableHead>Total Findings</TableHead>
-                    <TableHead>Scan Engine</TableHead>
-                    <TableHead>Last Scan</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -354,12 +352,7 @@ export default function RiskScoring() {
                             (C:{findings.C} H:{findings.H} M:{findings.M} L:{findings.L})
                           </span>
                         </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{app.scanEngine}</Badge>
-                        </TableCell>
-                        <TableCell className="text-sm text-gray-600">
-                          {new Date(app.lastScan).toLocaleDateString()}
-                        </TableCell>
+
                         <TableCell>
                           {isEditing ? (
                             <Dialog>
