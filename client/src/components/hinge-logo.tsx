@@ -1,4 +1,4 @@
-import hingeHealthLogo from "@assets/HingeHealth_SEO_1752736228188.jpg";
+import hingeHealthLogo from "@assets/images_1752736599270.jpeg";
 
 interface HingeLogoProps {
   className?: string;
