@@ -45,7 +45,7 @@ export default function Login() {
             <HingeLogo size="lg" />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-white">
-            Hinge Health Security Dashboard
+            Security Dashboard
           </h2>
           <p className="mt-2 text-sm text-gray-200">Sign in to your account</p>
         </div>
