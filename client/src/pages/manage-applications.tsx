@@ -86,14 +86,14 @@ export default function ManageApplications() {
       setIsAddDialogOpen(false);
       resetForm();
       toast({
-        title: "Application Added",
-        description: "New application has been successfully added.",
+        title: "Service Added",
+        description: "New service has been successfully added.",
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to add application.",
+        description: "Failed to add service.",
         variant: "destructive",
       });
     },
@@ -110,14 +110,14 @@ export default function ManageApplications() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
       toast({
-        title: "Application Deleted",
-        description: "Application has been successfully deleted.",
+        title: "Service Deleted",
+        description: "Service has been successfully deleted.",
       });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to delete application.",
+        description: "Failed to delete service.",
         variant: "destructive",
       });
     },
@@ -168,7 +168,7 @@ export default function ManageApplications() {
     if (!newApp.name.trim()) {
       toast({
         title: "Validation Error",
-        description: "Application name is required.",
+        description: "Service name is required.",
         variant: "destructive",
       });
       return;
@@ -225,9 +225,9 @@ export default function ManageApplications() {
             
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Manage Applications</h1>
+                <h1 className="text-3xl font-bold text-gray-900">Manage Services</h1>
                 <p className="mt-2 text-gray-600">
-                  Add new applications or remove existing ones from your security dashboard
+                  Add new services or remove existing ones from your security dashboard
                 </p>
               </div>
               
@@ -235,23 +235,23 @@ export default function ManageApplications() {
                 <DialogTrigger asChild>
                   <Button className="bg-green-600 hover:bg-green-700 text-white">
                     <Plus className="h-4 w-4 mr-2" />
-                    Add Application
+                    Add Service
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
-                    <DialogTitle>Add New Application</DialogTitle>
+                    <DialogTitle>Add New Service</DialogTitle>
                     <DialogDescription>
-                      Fill in the details for the new application to add to your security dashboard.
+                      Fill in the details for the new service to add to your security dashboard.
                     </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-4 py-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="name">Application Name *</Label>
+                        <Label htmlFor="name">Service Name *</Label>
                         <Input
                           id="name"
-                          placeholder="My Application"
+                          placeholder="My Service"
                           value={newApp.name}
                           onChange={(e) => setNewApp({...newApp, name: e.target.value})}
                         />
@@ -275,7 +275,7 @@ export default function ManageApplications() {
                       <Label htmlFor="description">Description</Label>
                       <Textarea
                         id="description"
-                        placeholder="Brief description of the application"
+                        placeholder="Brief description of the service"
                         value={newApp.description}
                         onChange={(e) => setNewApp({...newApp, description: e.target.value})}
                       />
@@ -400,7 +400,7 @@ export default function ManageApplications() {
                       className="bg-green-600 hover:bg-green-700"
                     >
                       <Save className="h-4 w-4 mr-2" />
-                      {addApplicationMutation.isPending ? "Adding..." : "Add Application"}
+                      {addApplicationMutation.isPending ? "Adding..." : "Add Service"}
                     </Button>
                   </div>
                 </DialogContent>
@@ -413,7 +413,7 @@ export default function ManageApplications() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
-                placeholder="Search applications..."
+                placeholder="Search services..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
@@ -465,7 +465,7 @@ export default function ManageApplications() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Application</AlertDialogTitle>
+                              <AlertDialogTitle>Delete Service</AlertDialogTitle>
                               <AlertDialogDescription>
                                 Are you sure you want to delete "{app.name}"? This action cannot be undone.
                               </AlertDialogDescription>
@@ -492,13 +492,13 @@ export default function ManageApplications() {
           {filteredApplications.length === 0 && (
             <div className="text-center py-12">
               <Shield className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No applications found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No services found</h3>
               <p className="text-gray-600 mb-4">
-                {searchTerm ? "No applications match your search criteria." : "Get started by adding your first application."}
+                {searchTerm ? "No services match your search criteria." : "Get started by adding your first service."}
               </p>
               <Button onClick={() => setIsAddDialogOpen(true)} className="bg-green-600 hover:bg-green-700">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Application
+                Add Service
               </Button>
             </div>
           )}
