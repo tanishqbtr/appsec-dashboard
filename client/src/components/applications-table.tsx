@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertTriangle, ChevronLeft, ChevronRight, Search, ArrowUpDown, Download, ExternalLink } from "lucide-react";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -87,6 +87,7 @@ function LoadingSkeleton() {
 export default function ApplicationsTable({ applications, isLoading, searchTerm, onSearchChange, selectedEngine, selectedLabels, selectedTags }: ApplicationsTableProps) {
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [, setLocation] = useLocation();
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -345,45 +346,47 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                 const totalFindings: FindingsData = JSON.parse(app.totalFindings);
                 
                 return (
-                  <Link key={app.id} href={`/services/${app.id}`}>
-                    <TableRow className="hover:bg-green-50 cursor-pointer transition-all duration-200 hover:shadow-sm hover:scale-[1.01]">
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <div className="text-sm font-medium text-gray-900 hover:text-green-600 transition-colors">
-                            {app.name}
-                          </div>
-                          <ExternalLink className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <TableRow 
+                    key={app.id} 
+                    className="hover:bg-green-50 cursor-pointer transition-all duration-200 hover:shadow-sm"
+                    onClick={() => setLocation(`/services/${app.id}`)}
+                  >
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm font-medium text-gray-900 hover:text-green-600 transition-colors">
+                          {app.name}
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm font-bold text-orange-600">{app.riskScore}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-sm font-medium text-gray-900">{totalFindings.total}</div>
-                      </TableCell>
-                      <TableCell>
-                        <RiskBadge level="C" count={totalFindings.C} />
-                      </TableCell>
-                      <TableCell>
-                        <RiskBadge level="H" count={totalFindings.H} />
-                      </TableCell>
-                      <TableCell>
-                        <RiskBadge level="M" count={totalFindings.M} />
-                      </TableCell>
-                      <TableCell>
-                        <RiskBadge level="L" count={totalFindings.L} />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex space-x-1">
-                          {app.tags?.map((tag, index) => (
-                            <Badge key={index} variant="outline" className="text-xs bg-green-50 border-green-200 text-green-700">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  </Link>
+                        <ExternalLink className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm font-bold text-orange-600">{app.riskScore}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm font-medium text-gray-900">{totalFindings.total}</div>
+                    </TableCell>
+                    <TableCell>
+                      <RiskBadge level="C" count={totalFindings.C} />
+                    </TableCell>
+                    <TableCell>
+                      <RiskBadge level="H" count={totalFindings.H} />
+                    </TableCell>
+                    <TableCell>
+                      <RiskBadge level="M" count={totalFindings.M} />
+                    </TableCell>
+                    <TableCell>
+                      <RiskBadge level="L" count={totalFindings.L} />
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-1">
+                        {app.tags?.map((tag, index) => (
+                          <Badge key={index} variant="outline" className="text-xs bg-green-50 border-green-200 text-green-700">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 );
               })
             )}
