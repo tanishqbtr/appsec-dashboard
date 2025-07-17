@@ -336,8 +336,9 @@ export default function ServiceDetail() {
 
   return (
     <PageWrapper loadingMessage="Loading Service Details...">
-      <div className="min-h-screen bg-gray-50">
-        <Navigation onLogout={handleLogout} currentPage="services" />
+      <TooltipProvider>
+        <div className="min-h-screen bg-gray-50">
+          <Navigation onLogout={handleLogout} currentPage="services" />
       
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
@@ -516,9 +517,7 @@ export default function ServiceDetail() {
                         <p className="text-2xl font-bold text-blue-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
                           {Math.round(percentile)}%
                         </p>
-                        <TooltipProvider>
-                          <ServiceTierBadge percentile={percentile} />
-                        </TooltipProvider>
+                        <ServiceTierBadge percentile={percentile} />
                       </div>
                       <div className="text-sm text-gray-600 mt-1">Based on total findings</div>
                     </div>
@@ -797,7 +796,8 @@ export default function ServiceDetail() {
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+        </div>
+      </TooltipProvider>
     </PageWrapper>
   );
 }
