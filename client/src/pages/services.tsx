@@ -105,7 +105,7 @@ export default function Services() {
         <div className="mb-6 bg-white border border-gray-200 rounded-lg p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Side - Scan Engine and Labels */}
-            <div className={`${filterMode === "tags" ? "opacity-50 pointer-events-none" : ""}`}>
+            <div>
               {/* Scan Engine Selection */}
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Scan Engine</h3>
@@ -113,11 +113,11 @@ export default function Services() {
                   {["Mend", "Escape", "Crowdstrike"].map((engine) => (
                     <Button
                       key={engine}
-                      variant={selectedEngine === engine ? "default" : "outline"}
+                      variant={selectedEngine === engine && filterMode === "labels" ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleEngineSelect(engine)}
                       className={`transition-all duration-200 hover:scale-105 ${
-                        selectedEngine === engine 
+                        selectedEngine === engine && filterMode === "labels"
                           ? "bg-green-600 text-white hover:bg-green-700" 
                           : "hover:bg-green-50 hover:border-green-300"
                       }`}
@@ -138,11 +138,11 @@ export default function Services() {
                     {getAvailableLabels().map((label) => (
                       <Button
                         key={label}
-                        variant={selectedLabels.includes(label) ? "default" : "outline"}
+                        variant={selectedLabels.includes(label) && filterMode === "labels" ? "default" : "outline"}
                         size="sm"
                         onClick={() => handleLabelSelect(label)}
                         className={`transition-all duration-200 hover:scale-105 ${
-                          selectedLabels.includes(label) 
+                          selectedLabels.includes(label) && filterMode === "labels"
                             ? "bg-green-400 text-white hover:bg-green-500" 
                             : "hover:bg-green-50 hover:border-green-300"
                         }`}
@@ -156,17 +156,17 @@ export default function Services() {
             </div>
 
             {/* Right Side - Tags Selection */}
-            <div className={`${filterMode === "labels" ? "opacity-50 pointer-events-none" : ""}`}>
+            <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2">Compliance Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {["HITRUST", "ISO 27001", "SOC 2", "HIPAA", "PCI DSS"].map((tag) => (
                   <Button
                     key={tag}
-                    variant={selectedTags.includes(tag) ? "default" : "outline"}
+                    variant={selectedTags.includes(tag) && filterMode === "tags" ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleTagSelect(tag)}
                     className={`transition-all duration-200 hover:scale-105 ${
-                      selectedTags.includes(tag) 
+                      selectedTags.includes(tag) && filterMode === "tags"
                         ? "bg-green-600 text-white hover:bg-green-700" 
                         : "hover:bg-green-50 hover:border-green-300"
                     }`}
