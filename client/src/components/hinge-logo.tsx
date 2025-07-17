@@ -9,7 +9,7 @@ export default function HingeLogo({ className = "", size = "md" }: HingeLogoProp
   const sizeClasses = {
     sm: "h-6 w-16",
     md: "h-8 w-20", 
-    lg: "h-16 w-32"
+    lg: "h-80 w-160"
   };
 
   return (
