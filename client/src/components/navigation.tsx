@@ -56,7 +56,7 @@ export default function Navigation({ onLogout, currentPage }: NavigationProps) {
             <div className="hidden md:ml-6 md:flex md:space-x-8">
               <DropdownMenu open={openDropdown === "dashboards"} onOpenChange={(open) => setOpenDropdown(open ? "dashboards" : null)}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-white hover:text-gray-200 px-3 py-2 text-sm font-medium">
+                  <Button variant="ghost" className="text-white hover:text-gray-200 px-3 py-2 text-sm font-medium transition-all duration-200 hover:scale-105 hover:bg-green-800">
                     <ChartLine className="h-4 w-4 mr-2" />
                     Dashboards
                     <ChevronDown className="h-3 w-3 ml-1" />
@@ -71,7 +71,7 @@ export default function Navigation({ onLogout, currentPage }: NavigationProps) {
               <Link href="/services">
                 <Button 
                   variant="ghost" 
-                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${activePage === 'services' ? 'bg-blue-800' : ''}`}
+                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium transition-all duration-200 hover:scale-105 ${activePage === 'services' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
                 >
                   <Server className="h-4 w-4 mr-2" />
                   Services
@@ -81,7 +81,7 @@ export default function Navigation({ onLogout, currentPage }: NavigationProps) {
               <Link href="/reports">
                 <Button 
                   variant="ghost" 
-                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${activePage === 'reports' ? 'bg-blue-800' : ''}`}
+                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium transition-all duration-200 hover:scale-105 ${activePage === 'reports' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
                 >
                   <BarChart className="h-4 w-4 mr-2" />
                   Reports
@@ -91,7 +91,7 @@ export default function Navigation({ onLogout, currentPage }: NavigationProps) {
               <Link href="/alerts">
                 <Button 
                   variant="ghost" 
-                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${activePage === 'alerts' ? 'bg-blue-800' : ''}`}
+                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium transition-all duration-200 hover:scale-105 ${activePage === 'alerts' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
                 >
                   <AlertTriangle className="h-4 w-4 mr-2" />
                   Alerts
@@ -101,7 +101,7 @@ export default function Navigation({ onLogout, currentPage }: NavigationProps) {
               <Link href="/risk-scoring">
                 <Button 
                   variant="ghost" 
-                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${activePage === 'risk-scoring' ? 'bg-blue-800' : ''}`}
+                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium transition-all duration-200 hover:scale-105 ${activePage === 'risk-scoring' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
                 >
                   <TrendingUp className="h-4 w-4 mr-2" />
                   Risk Scoring
@@ -111,16 +111,16 @@ export default function Navigation({ onLogout, currentPage }: NavigationProps) {
           </div>
           
           <div className="flex items-center">
-            <Button variant="ghost" className="text-white hover:text-gray-200 p-2">
+            <Button variant="ghost" className="text-white hover:text-gray-200 p-2 transition-all duration-200 hover:scale-110 hover:bg-green-800">
               <HelpCircle className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" className="text-white hover:text-gray-200 p-2 ml-2">
+            <Button variant="ghost" className="text-white hover:text-gray-200 p-2 ml-2 transition-all duration-200 hover:scale-110 hover:bg-green-800">
               <Settings className="h-5 w-5" />
             </Button>
             
             <DropdownMenu open={openDropdown === "user"} onOpenChange={(open) => setOpenDropdown(open ? "user" : null)}>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="text-white hover:text-gray-200 ml-3 text-sm font-medium">
+                <Button variant="ghost" className="text-white hover:text-gray-200 ml-3 text-sm font-medium transition-all duration-200 hover:scale-105 hover:bg-green-800">
                   <User className="h-4 w-4 mr-2" />
                   tanishq.bhatnagar
                   <ChevronDown className="h-3 w-3 ml-1" />

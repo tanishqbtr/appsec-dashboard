@@ -102,7 +102,11 @@ export default function Services() {
                       variant={selectedEngine === engine ? "default" : "outline"}
                       size="sm"
                       onClick={() => handleEngineSelect(engine)}
-                      className={selectedEngine === engine ? "bg-primary text-white" : ""}
+                      className={`transition-all duration-200 hover:scale-105 ${
+                        selectedEngine === engine 
+                          ? "bg-green-600 text-white hover:bg-green-700" 
+                          : "hover:bg-green-50 hover:border-green-300"
+                      }`}
                     >
                       {engine}
                     </Button>
@@ -123,7 +127,11 @@ export default function Services() {
                         variant={selectedLabels.includes(label) ? "default" : "outline"}
                         size="sm"
                         onClick={() => handleLabelSelect(label)}
-                        className={selectedLabels.includes(label) ? "bg-blue-600 text-white" : ""}
+                        className={`transition-all duration-200 hover:scale-105 ${
+                          selectedLabels.includes(label) 
+                            ? "bg-green-400 text-white hover:bg-green-500" 
+                            : "hover:bg-green-50 hover:border-green-300"
+                        }`}
                       >
                         {label}
                       </Button>
@@ -143,7 +151,11 @@ export default function Services() {
                     variant={selectedTags.includes(tag) ? "default" : "outline"}
                     size="sm"
                     onClick={() => handleTagSelect(tag)}
-                    className={selectedTags.includes(tag) ? "bg-green-600 text-white" : ""}
+                    className={`transition-all duration-200 hover:scale-105 ${
+                      selectedTags.includes(tag) 
+                        ? "bg-green-600 text-white hover:bg-green-700" 
+                        : "hover:bg-green-50 hover:border-green-300"
+                    }`}
                   >
                     {tag}
                   </Button>

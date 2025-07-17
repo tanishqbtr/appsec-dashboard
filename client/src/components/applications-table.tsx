@@ -273,12 +273,12 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
 
   const SortableHeader = ({ field, children }: { field: string; children: React.ReactNode }) => (
     <TableHead 
-      className="font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+      className="font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-all duration-200"
       onClick={() => handleSort(field)}
     >
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 transition-all duration-200 hover:text-gray-700">
         {children}
-        <ArrowUpDown className="h-3 w-3" />
+        <ArrowUpDown className="h-3 w-3 transition-transform duration-200 hover:scale-110" />
       </div>
     </TableHead>
   );
@@ -300,7 +300,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="ml-4">
+            <Button variant="outline" size="sm" className="ml-4 transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300">
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
