@@ -6,7 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   ArrowLeft,
   Github,
@@ -196,6 +202,7 @@ export default function ServiceDetail() {
   const { toast } = useToast();
   const [editingService, setEditingService] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [newTagInput, setNewTagInput] = useState("");
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
@@ -589,34 +596,90 @@ export default function ServiceDetail() {
                 
                 <div>
                   <Label>Compliance Tags</Label>
-                  <div className="grid grid-cols-2 gap-3 mt-2 p-3 border rounded-lg bg-gray-50">
-                    {["HITRUST", "ISO 27001", "SOC 2", "HIPAA", "PCI DSS"].map((tag) => (
-                      <div key={tag} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`tag-${tag}`}
-                          checked={editingService?.tags?.includes(tag) || false}
-                          onCheckedChange={(checked) => {
-                            const currentTags = editingService?.tags || [];
-                            let newTags;
-                            if (checked) {
-                              newTags = [...currentTags, tag];
-                            } else {
-                              newTags = currentTags.filter(t => t !== tag);
-                            }
-                            setEditingService({...editingService, tags: newTags});
-                          }}
-                        />
-                        <Label 
-                          htmlFor={`tag-${tag}`}
-                          className="text-sm font-normal cursor-pointer"
-                        >
+                  <div className="space-y-3 mt-2">
+                    {/* Display selected tags */}
+                    <div className="flex flex-wrap gap-2">
+                      {(editingService?.tags || []).map((tag: string, index: number) => (
+                        <Badge key={index} variant="outline" className="bg-green-50 border-green-200 text-green-700 flex items-center gap-1">
                           {tag}
-                        </Label>
-                      </div>
-                    ))}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newTags = editingService.tags.filter((_: string, i: number) => i !== index);
+                              setEditingService({...editingService, tags: newTags});
+                            }}
+                            className="ml-1 hover:text-red-500 text-green-500"
+                          >
+                            ×
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    
+                    {/* Dropdown for adding tags */}
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === "custom") {
+                          // Don't add anything, let user type in custom field
+                          return;
+                        }
+                        const currentTags = editingService?.tags || [];
+                        if (!currentTags.includes(value)) {
+                          setEditingService({...editingService, tags: [...currentTags, value]});
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select or add compliance tags" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {["HITRUST", "ISO 27001", "SOC 2", "HIPAA", "PCI DSS"].map((tag) => (
+                          <SelectItem key={tag} value={tag}>
+                            {tag}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="custom">+ Add custom tag</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {/* Custom tag input */}
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter custom compliance tag"
+                        value={newTagInput}
+                        onChange={(e) => setNewTagInput(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && newTagInput.trim()) {
+                            e.preventDefault();
+                            const currentTags = editingService?.tags || [];
+                            if (!currentTags.includes(newTagInput.trim())) {
+                              setEditingService({...editingService, tags: [...currentTags, newTagInput.trim()]});
+                            }
+                            setNewTagInput("");
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (newTagInput.trim()) {
+                            const currentTags = editingService?.tags || [];
+                            if (!currentTags.includes(newTagInput.trim())) {
+                              setEditingService({...editingService, tags: [...currentTags, newTagInput.trim()]});
+                            }
+                            setNewTagInput("");
+                          }
+                        }}
+                        disabled={!newTagInput.trim()}
+                      >
+                        Add
+                      </Button>
+                    </div>
                   </div>
                   <p className="text-xs text-gray-500 mt-2">
-                    Select all compliance standards that apply to this service
+                    Select from dropdown or add custom compliance tags
                   </p>
                 </div>
 
