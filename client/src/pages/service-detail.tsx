@@ -275,10 +275,6 @@ export default function ServiceDetail() {
                   <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">
                     {application.scanEngine}
                   </Badge>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Calendar className="h-4 w-4" />
-                    Last scan: {application.lastScan}
-                  </div>
                 </div>
               </div>
               
