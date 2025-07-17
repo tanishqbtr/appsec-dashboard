@@ -471,7 +471,10 @@ export default function ServiceDetail() {
 
                   <div>
                     <p className="text-sm text-gray-600 animate-in fade-in-0 slide-in-from-left-2 duration-500">Percentile Rank</p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-3">
+                      <p className="text-2xl font-bold text-blue-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
+                        {Math.round(percentile)}%
+                      </p>
                       <PercentileBadge percentile={percentile} />
                     </div>
                     <div className="text-sm text-gray-600 mt-1">Based on total findings</div>
