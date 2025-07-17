@@ -18,8 +18,7 @@ import type { Application } from "@shared/schema";
 
 export default function Services() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedEngine, setSelectedEngine] = useState<string>("");
-  const [selectedEnvironment, setSelectedEnvironment] = useState<string>("");
+  const [selectedEngine, setSelectedEngine] = useState("Mend");
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
@@ -31,8 +30,22 @@ export default function Services() {
     window.location.href = "/login";
   };
 
-  const getEngineLabels = (engine: string) => {
-    switch (engine) {
+  const handleEngineSelect = (engine: string) => {
+    setSelectedEngine(engine);
+    setSelectedLabels([]); // Clear labels when switching engines
+  };
+
+  const handleLabelSelect = (label: string) => {
+    setSelectedLabels(prev => 
+      prev.includes(label) 
+        ? prev.filter(l => l !== label)
+        : [...prev, label]
+    );
+  };
+
+  // Define available labels based on selected engine
+  const getAvailableLabels = () => {
+    switch (selectedEngine) {
       case "Mend":
         return ["SCA", "SAST", "Containers"];
       case "Escape":
@@ -46,13 +59,9 @@ export default function Services() {
 
   const filteredApplications = applications.filter((app) => {
     const matchesSearch = app.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesEngine = !selectedEngine || selectedEngine === "all" || app.scanEngine === selectedEngine;
-    const matchesEnvironment = !selectedEnvironment || selectedEnvironment === "all" || 
-      app.name.toLowerCase().includes(selectedEnvironment.toLowerCase());
-    const matchesLabels = selectedLabels.length === 0 || selectedLabels.includes("all") ||
+    const matchesLabels = selectedLabels.length === 0 || 
       selectedLabels.some(label => app.labels?.includes(label));
-    
-    return matchesSearch && matchesEngine && matchesEnvironment && matchesLabels;
+    return matchesSearch && matchesLabels;
   });
 
   return (
@@ -68,109 +77,83 @@ export default function Services() {
         </div>
 
         {/* Filters */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Filters
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search */}
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search applications..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-
-              {/* Scan Engine */}
-              <Select value={selectedEngine} onValueChange={setSelectedEngine}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Engine" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Engines</SelectItem>
-                  <SelectItem value="Mend">Mend</SelectItem>
-                  <SelectItem value="Escape">Escape</SelectItem>
-                  <SelectItem value="Crowdstrike">Crowdstrike</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Environment */}
-              <Select value={selectedEnvironment} onValueChange={setSelectedEnvironment}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Environment" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Environments</SelectItem>
-                  <SelectItem value="Production">Production</SelectItem>
-                  <SelectItem value="Development">Development</SelectItem>
-                  <SelectItem value="Testing">Testing</SelectItem>
-                </SelectContent>
-              </Select>
-
-              {/* Labels */}
-              {selectedEngine && (
-                <Select 
-                  value={selectedLabels[0] || ""} 
-                  onValueChange={(value) => setSelectedLabels(value ? [value] : [])}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select Label" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Labels</SelectItem>
-                    {getEngineLabels(selectedEngine).map((label) => (
-                      <SelectItem key={label} value={label}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+        <div className="mb-6 bg-white border border-gray-200 rounded-lg p-6">
+          {/* Search */}
+          <div className="mb-4">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search applications..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
+          </div>
 
-            {/* Active Filters */}
-            {(searchTerm || (selectedEngine && selectedEngine !== "all") || (selectedEnvironment && selectedEnvironment !== "all") || selectedLabels.filter(l => l !== "all").length > 0) && (
-              <div className="flex flex-wrap gap-2 mt-4">
-                {searchTerm && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    Search: {searchTerm}
-                    <button onClick={() => setSearchTerm("")} className="ml-1 hover:text-red-500">×</button>
-                  </Badge>
-                )}
-                {selectedEngine && selectedEngine !== "all" && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    Engine: {selectedEngine}
-                    <button onClick={() => setSelectedEngine("")} className="ml-1 hover:text-red-500">×</button>
-                  </Badge>
-                )}
-                {selectedEnvironment && selectedEnvironment !== "all" && (
-                  <Badge variant="secondary" className="flex items-center gap-1">
-                    Environment: {selectedEnvironment}
-                    <button onClick={() => setSelectedEnvironment("")} className="ml-1 hover:text-red-500">×</button>
-                  </Badge>
-                )}
-                {selectedLabels.filter(label => label !== "all").map((label) => (
-                  <Badge key={label} variant="secondary" className="flex items-center gap-1">
-                    Label: {label}
-                    <button 
-                      onClick={() => setSelectedLabels(selectedLabels.filter(l => l !== label))} 
-                      className="ml-1 hover:text-red-500"
-                    >
-                      ×
-                    </button>
-                  </Badge>
+          {/* Scan Engine Selection */}
+          <div className="mb-4">
+            <h3 className="text-sm font-medium text-gray-700 mb-2">Scan Engine</h3>
+            <div className="flex gap-2">
+              {["Mend", "Escape", "Crowdstrike"].map((engine) => (
+                <Button
+                  key={engine}
+                  variant={selectedEngine === engine ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleEngineSelect(engine)}
+                  className={selectedEngine === engine ? "bg-primary text-white" : ""}
+                >
+                  {engine}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {/* Labels Selection - Only show when engine is selected */}
+          {selectedEngine && (
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-gray-700 mb-2">
+                {selectedEngine} Labels
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {getAvailableLabels().map((label) => (
+                  <Button
+                    key={label}
+                    variant={selectedLabels.includes(label) ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleLabelSelect(label)}
+                    className={selectedLabels.includes(label) ? "bg-blue-600 text-white" : ""}
+                  >
+                    {label}
+                  </Button>
                 ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+          )}
+
+          {/* Active Filters */}
+          {(searchTerm || selectedLabels.length > 0) && (
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
+              {searchTerm && (
+                <Badge variant="secondary" className="flex items-center gap-1">
+                  Search: {searchTerm}
+                  <button onClick={() => setSearchTerm("")} className="ml-1 hover:text-red-500">×</button>
+                </Badge>
+              )}
+              {selectedLabels.map((label) => (
+                <Badge key={label} variant="secondary" className="flex items-center gap-1">
+                  {selectedEngine}: {label}
+                  <button 
+                    onClick={() => handleLabelSelect(label)} 
+                    className="ml-1 hover:text-red-500"
+                  >
+                    ×
+                  </button>
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
 
         {/* Applications Table */}
         <Card>
