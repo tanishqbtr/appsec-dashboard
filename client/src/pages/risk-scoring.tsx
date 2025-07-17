@@ -338,22 +338,8 @@ export default function RiskScoring() {
             </p>
           </div>
 
-          {/* Summary Cards */}
+          {/* Risk Level Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Services</p>
-                    <p className="text-3xl font-bold text-gray-900">{applications.length}</p>
-                  </div>
-                  <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Shield className="h-6 w-6 text-blue-600" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -374,9 +360,12 @@ export default function RiskScoring() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Avg Risk Score</p>
+                    <p className="text-sm font-medium text-gray-600">High Risk</p>
                     <p className="text-3xl font-bold text-orange-600">
-                      {(applications.reduce((sum, app) => sum + parseFloat(app.riskScore), 0) / applications.length).toFixed(1)}
+                      {applications.filter(app => {
+                        const score = parseFloat(app.riskScore);
+                        return score >= 6 && score < 8;
+                      }).length}
                     </p>
                   </div>
                   <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -390,17 +379,32 @@ export default function RiskScoring() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Recently Updated</p>
-                    <p className="text-3xl font-bold text-green-600">
+                    <p className="text-sm font-medium text-gray-600">Medium Risk</p>
+                    <p className="text-3xl font-bold text-yellow-600">
                       {applications.filter(app => {
-                        const lastScan = new Date(app.lastScan);
-                        const daysDiff = (new Date().getTime() - lastScan.getTime()) / (1000 * 3600 * 24);
-                        return daysDiff <= 7;
+                        const score = parseFloat(app.riskScore);
+                        return score >= 4 && score < 6;
                       }).length}
                     </p>
                   </div>
+                  <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <Activity className="h-6 w-6 text-yellow-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Low Risk</p>
+                    <p className="text-3xl font-bold text-green-600">
+                      {applications.filter(app => parseFloat(app.riskScore) < 4).length}
+                    </p>
+                  </div>
                   <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Clock className="h-6 w-6 text-green-600" />
+                    <Shield className="h-6 w-6 text-green-600" />
                   </div>
                 </div>
               </CardContent>
