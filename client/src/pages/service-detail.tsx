@@ -318,19 +318,10 @@ export default function ServiceDetail() {
               </div>
               
               <div className="text-right space-y-4">
-                <div className="flex items-center gap-6">
-                  <div>
-                    <div className="text-sm text-gray-600">Risk Score</div>
-                    <div className="text-3xl font-bold text-orange-600">{application.riskScore}</div>
-                    <div className="text-sm text-gray-600">Medium Risk</div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-600">Percentile Rank</div>
-                    <div className="flex items-center gap-2 mt-1">
-                      <PercentileBadge percentile={percentile} />
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">Based on total findings</div>
-                  </div>
+                <div>
+                  <div className="text-sm text-gray-600">Risk Score</div>
+                  <div className="text-3xl font-bold text-orange-600">{application.riskScore}</div>
+                  <div className="text-sm text-gray-600">Medium Risk</div>
                 </div>
                 
                 <Button 
@@ -476,6 +467,14 @@ export default function ServiceDetail() {
                       </p>
                       <ServiceTierBadge percentile={percentile} />
                     </div>
+                  </div>
+
+                  <div>
+                    <p className="text-sm text-gray-600 animate-in fade-in-0 slide-in-from-left-2 duration-500">Percentile Rank</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <PercentileBadge percentile={percentile} />
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">Based on total findings</div>
                   </div>
 
                   <div>
