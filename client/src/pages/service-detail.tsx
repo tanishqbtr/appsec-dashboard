@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   ArrowLeft,
   Github,
@@ -588,19 +588,35 @@ export default function ServiceDetail() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="complianceTags">Compliance Tags</Label>
-                  <Textarea
-                    id="complianceTags"
-                    placeholder="Enter tags separated by commas (e.g., HIPAA, ISO 27001, SOC 2)"
-                    value={editingService?.tags?.join(", ") || ""}
-                    onChange={(e) => {
-                      const tags = e.target.value.split(",").map(tag => tag.trim()).filter(tag => tag.length > 0);
-                      setEditingService({...editingService, tags});
-                    }}
-                    rows={3}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Available tags: HITRUST, ISO 27001, SOC 2, HIPAA, PCI DSS
+                  <Label>Compliance Tags</Label>
+                  <div className="grid grid-cols-2 gap-3 mt-2 p-3 border rounded-lg bg-gray-50">
+                    {["HITRUST", "ISO 27001", "SOC 2", "HIPAA", "PCI DSS"].map((tag) => (
+                      <div key={tag} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`tag-${tag}`}
+                          checked={editingService?.tags?.includes(tag) || false}
+                          onCheckedChange={(checked) => {
+                            const currentTags = editingService?.tags || [];
+                            let newTags;
+                            if (checked) {
+                              newTags = [...currentTags, tag];
+                            } else {
+                              newTags = currentTags.filter(t => t !== tag);
+                            }
+                            setEditingService({...editingService, tags: newTags});
+                          }}
+                        />
+                        <Label 
+                          htmlFor={`tag-${tag}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {tag}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Select all compliance standards that apply to this service
                   </p>
                 </div>
 
