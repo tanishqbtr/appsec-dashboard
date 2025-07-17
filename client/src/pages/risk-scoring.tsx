@@ -51,7 +51,7 @@ export default function RiskScoring() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingScore, setEditingScore] = useState("");
   const [editingReason, setEditingReason] = useState("");
-  const [sortBy, setSortBy] = useState<"name" | "score" | "findings">("score");
+  const [sortBy, setSortBy] = useState<"name" | "score" | "level">("score");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -268,7 +268,7 @@ export default function RiskScoring() {
     return ((dataScore + ciaScore + attackScore) / 3).toFixed(1);
   };
 
-  const handleSort = (field: "name" | "score" | "findings") => {
+  const handleSort = (field: "name" | "score" | "level") => {
     if (sortBy === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
@@ -293,9 +293,10 @@ export default function RiskScoring() {
           aValue = parseFloat(a.riskScore);
           bValue = parseFloat(b.riskScore);
           break;
-        case "findings":
-          aValue = JSON.parse(a.totalFindings).total;
-          bValue = JSON.parse(b.totalFindings).total;
+        case "level":
+          // Sort by risk score for risk level (since risk level is derived from score)
+          aValue = parseFloat(a.riskScore);
+          bValue = parseFloat(b.riskScore);
           break;
         default:
           return 0;
@@ -458,15 +459,14 @@ export default function RiskScoring() {
                         )}
                       </div>
                     </TableHead>
-                    <TableHead>Risk Level</TableHead>
                     <TableHead 
                       className="cursor-pointer hover:bg-gray-50 select-none"
-                      onClick={() => handleSort("findings")}
+                      onClick={() => handleSort("level")}
                     >
                       <div className="flex items-center gap-2">
-                        Total Findings
+                        Risk Level
                         <ArrowUpDown className="h-4 w-4" />
-                        {sortBy === "findings" && (
+                        {sortBy === "level" && (
                           <span className="text-xs">{sortOrder === "asc" ? "↑" : "↓"}</span>
                         )}
                       </div>
@@ -494,12 +494,7 @@ export default function RiskScoring() {
                             {riskInfo.level}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          <span className="font-medium">{findings.total}</span>
-                          <span className="text-sm text-gray-500 ml-2">
-                            (C:{findings.C} H:{findings.H} M:{findings.M} L:{findings.L})
-                          </span>
-                        </TableCell>
+
 
                         <TableCell>
                           <Button
