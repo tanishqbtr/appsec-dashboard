@@ -21,7 +21,13 @@ import { useState } from "react";
 import type { Application } from "@shared/schema";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+
+// Extend jsPDF type to include autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 interface ApplicationsTableProps {
   applications: Application[];
@@ -30,6 +36,7 @@ interface ApplicationsTableProps {
   onSearchChange: (term: string) => void;
   selectedEngine: string;
   selectedLabels: string[];
+  selectedTags: string[];
 }
 
 interface FindingsData {
@@ -76,7 +83,7 @@ function LoadingSkeleton() {
   );
 }
 
-export default function ApplicationsTable({ applications, isLoading, searchTerm, onSearchChange, selectedEngine, selectedLabels }: ApplicationsTableProps) {
+export default function ApplicationsTable({ applications, isLoading, searchTerm, onSearchChange, selectedEngine, selectedLabels, selectedTags }: ApplicationsTableProps) {
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
@@ -154,7 +161,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     const dateTime = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
     const engine = selectedEngine || 'All';
     const labels = selectedLabels.length > 0 ? selectedLabels.join('-') : 'All';
-    return `${engine}_${labels}_${dateTime}.${format}`;
+    const tags = selectedTags.length > 0 ? `_${selectedTags.join('-')}` : '';
+    return `${engine}_${labels}${tags}_${dateTime}.${format}`;
   };
 
   const exportToCSV = () => {
@@ -208,11 +216,18 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     XLSX.writeFile(wb, generateFileName('xlsx'));
   };
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
+    // Dynamically import jspdf-autotable
+    const { default: autoTable } = await import('jspdf-autotable');
+    
     const doc = new jsPDF();
     
     // Add title
-    const title = `Security Applications Report - ${selectedEngine || 'All Engines'}${selectedLabels.length > 0 ? ` (${selectedLabels.join(', ')})` : ''}`;
+    const engine = selectedEngine || 'All Engines';
+    const labels = selectedLabels.length > 0 ? ` (${selectedLabels.join(', ')})` : '';
+    const tags = selectedTags.length > 0 ? ` - Tags: ${selectedTags.join(', ')}` : '';
+    const title = `Security Applications Report - ${engine}${labels}${tags}`;
+    
     doc.setFontSize(16);
     doc.text(title, 14, 20);
     
@@ -235,7 +250,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
       ];
     });
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: headers,
       body: data,
       startY: 40,
