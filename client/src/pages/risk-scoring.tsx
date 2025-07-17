@@ -31,7 +31,9 @@ import {
   AlertTriangle,
   Shield,
   Activity,
-  Clock
+  Clock,
+  Search,
+  ArrowUpDown
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -43,6 +45,7 @@ export default function RiskScoring() {
   const [editingReason, setEditingReason] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "score" | "findings">("score");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -121,32 +124,45 @@ export default function RiskScoring() {
     return { level: "Low", color: "bg-green-100 text-green-800", icon: Shield };
   };
 
-  const sortedApplications = [...applications].sort((a, b) => {
-    let aValue: any, bValue: any;
-    
-    switch (sortBy) {
-      case "name":
-        aValue = a.name.toLowerCase();
-        bValue = b.name.toLowerCase();
-        break;
-      case "score":
-        aValue = parseFloat(a.riskScore);
-        bValue = parseFloat(b.riskScore);
-        break;
-      case "findings":
-        aValue = JSON.parse(a.totalFindings).total;
-        bValue = JSON.parse(b.totalFindings).total;
-        break;
-      default:
-        return 0;
-    }
-    
-    if (sortOrder === "asc") {
-      return aValue > bValue ? 1 : -1;
+  const handleSort = (field: "name" | "score" | "findings") => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
-      return aValue < bValue ? 1 : -1;
+      setSortBy(field);
+      setSortOrder("desc");
     }
-  });
+  };
+
+  const filteredAndSortedApplications = applications
+    .filter(app => 
+      app.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (sortBy) {
+        case "name":
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case "score":
+          aValue = parseFloat(a.riskScore);
+          bValue = parseFloat(b.riskScore);
+          break;
+        case "findings":
+          aValue = JSON.parse(a.totalFindings).total;
+          bValue = JSON.parse(b.totalFindings).total;
+          break;
+        default:
+          return 0;
+      }
+      
+      if (sortOrder === "asc") {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
 
   if (isLoading) {
     return (
@@ -250,56 +266,68 @@ export default function RiskScoring() {
           {/* Risk Scoring Table */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 mb-6">
-                <TrendingUp className="h-5 w-5" />
-                Service Risk Scores
-              </CardTitle>
-              <div className="flex gap-2 mt-4">
-                <Button
-                  variant={sortBy === "name" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => {
-                    setSortBy("name");
-                    setSortOrder(sortBy === "name" && sortOrder === "asc" ? "desc" : "asc");
-                  }}
-                >
-                  Sort by Name {sortBy === "name" && (sortOrder === "asc" ? "↑" : "↓")}
-                </Button>
-                <Button
-                  variant={sortBy === "score" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => {
-                    setSortBy("score");
-                    setSortOrder(sortBy === "score" && sortOrder === "desc" ? "asc" : "desc");
-                  }}
-                >
-                  Sort by Score {sortBy === "score" && (sortOrder === "asc" ? "↑" : "↓")}
-                </Button>
-                <Button
-                  variant={sortBy === "findings" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => {
-                    setSortBy("findings");
-                    setSortOrder(sortBy === "findings" && sortOrder === "desc" ? "asc" : "desc");
-                  }}
-                >
-                  Sort by Findings {sortBy === "findings" && (sortOrder === "asc" ? "↑" : "↓")}
-                </Button>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5" />
+                  Service Risk Scores
+                </CardTitle>
+                <div className="relative w-64">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Search services..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Service Name</TableHead>
-                    <TableHead>Risk Score</TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort("name")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Service Name
+                        <ArrowUpDown className="h-4 w-4" />
+                        {sortBy === "name" && (
+                          <span className="text-xs">{sortOrder === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort("score")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Risk Score
+                        <ArrowUpDown className="h-4 w-4" />
+                        {sortBy === "score" && (
+                          <span className="text-xs">{sortOrder === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
+                    </TableHead>
                     <TableHead>Risk Level</TableHead>
-                    <TableHead>Total Findings</TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      onClick={() => handleSort("findings")}
+                    >
+                      <div className="flex items-center gap-2">
+                        Total Findings
+                        <ArrowUpDown className="h-4 w-4" />
+                        {sortBy === "findings" && (
+                          <span className="text-xs">{sortOrder === "asc" ? "↑" : "↓"}</span>
+                        )}
+                      </div>
+                    </TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {sortedApplications.map((app) => {
+                  {filteredAndSortedApplications.map((app) => {
                     const riskScore = parseFloat(app.riskScore);
                     const riskInfo = getRiskLevel(riskScore);
                     const findings = JSON.parse(app.totalFindings);
