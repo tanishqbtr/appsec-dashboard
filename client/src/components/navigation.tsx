@@ -54,7 +54,7 @@ export default function Navigation({ onLogout, currentPage }: NavigationProps) {
               <img 
                 src={hingeHealthLogoPath} 
                 alt="Hinge Health Logo" 
-                className="h-8 w-auto"
+                className="h-16 w-auto"
               />
             </div>
             <div className="hidden md:ml-6 md:flex md:space-x-8">
