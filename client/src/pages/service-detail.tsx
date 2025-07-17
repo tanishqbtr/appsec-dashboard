@@ -459,45 +459,48 @@ export default function ServiceDetail() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  <div>
-                    <p className="text-sm text-gray-600 animate-in fade-in-0 slide-in-from-left-2 duration-500">Risk Score</p>
-                    <div className="flex items-center gap-3">
-                      <p className="text-2xl font-bold text-orange-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
-                        {application.riskScore}
-                      </p>
+                  {/* 2x2 Grid for Risk Score and Percentile */}
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm text-gray-600 animate-in fade-in-0 slide-in-from-left-2 duration-500">Risk Score</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-2xl font-bold text-orange-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
+                          {application.riskScore}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <p className="text-sm text-gray-600 animate-in fade-in-0 slide-in-from-left-2 duration-500">Percentile Rank</p>
-                    <div className="flex items-center gap-3">
-                      <p className="text-2xl font-bold text-blue-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
-                        {Math.round(percentile)}%
-                      </p>
-                      <ServiceTierBadge percentile={percentile} />
+                    <div>
+                      <p className="text-sm text-gray-600 animate-in fade-in-0 slide-in-from-left-2 duration-500">Percentile Rank</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-2xl font-bold text-blue-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
+                          {Math.round(percentile)}%
+                        </p>
+                        <ServiceTierBadge percentile={percentile} />
+                      </div>
+                      <div className="text-sm text-gray-600 mt-1">Based on total findings</div>
                     </div>
-                    <div className="text-sm text-gray-600 mt-1">Based on total findings</div>
-                  </div>
 
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">Compliance Tags</p>
-                    <div className="flex flex-wrap gap-2">
-                      {application.tags?.map((tag, index) => (
-                        <Badge key={index} variant="outline" className="bg-green-50 border-green-200 text-green-700">
-                          {tag}
-                        </Badge>
-                      )) || <span className="text-sm text-gray-400">No tags assigned</span>}
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">Compliance Tags</p>
+                      <div className="flex flex-wrap gap-2">
+                        {application.tags?.map((tag, index) => (
+                          <Badge key={index} variant="outline" className="bg-green-50 border-green-200 text-green-700">
+                            {tag}
+                          </Badge>
+                        )) || <span className="text-sm text-gray-400">No tags assigned</span>}
+                      </div>
                     </div>
-                  </div>
 
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">Labels</p>
-                    <div className="flex flex-wrap gap-2">
-                      {application.labels?.map((label, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {label}
-                        </Badge>
-                      )) || <span className="text-sm text-gray-400">No labels assigned</span>}
+                    <div>
+                      <p className="text-sm text-gray-600 mb-2">Labels</p>
+                      <div className="flex flex-wrap gap-2">
+                        {application.labels?.map((label, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {label}
+                          </Badge>
+                        )) || <span className="text-sm text-gray-400">No labels assigned</span>}
+                      </div>
                     </div>
                   </div>
 
