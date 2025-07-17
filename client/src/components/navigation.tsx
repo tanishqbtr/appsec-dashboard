@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -26,8 +27,22 @@ interface NavigationProps {
   currentPage?: string;
 }
 
-export default function Navigation({ onLogout, currentPage = "services" }: NavigationProps) {
+export default function Navigation({ onLogout, currentPage }: NavigationProps) {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [location] = useLocation();
+  
+  // Determine current page from URL if not explicitly provided
+  const getCurrentPage = () => {
+    if (currentPage) return currentPage;
+    if (location.includes('/services')) return 'services';
+    if (location.includes('/dashboards')) return 'dashboards';
+    if (location.includes('/reports')) return 'reports';
+    if (location.includes('/alerts')) return 'alerts';
+    if (location.includes('/risk-scoring')) return 'risk-scoring';
+    return 'services'; // default
+  };
+  
+  const activePage = getCurrentPage();
 
   return (
     <nav className="bg-primary shadow-sm">
@@ -53,41 +68,45 @@ export default function Navigation({ onLogout, currentPage = "services" }: Navig
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button 
-                variant="ghost" 
-                className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${currentPage === 'services' ? 'bg-blue-800' : ''}`}
-                onClick={() => window.location.href = '/services'}
-              >
-                <Server className="h-4 w-4 mr-2" />
-                Services
-              </Button>
+              <Link href="/services">
+                <Button 
+                  variant="ghost" 
+                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${activePage === 'services' ? 'bg-blue-800' : ''}`}
+                >
+                  <Server className="h-4 w-4 mr-2" />
+                  Services
+                </Button>
+              </Link>
               
-              <Button 
-                variant="ghost" 
-                className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${currentPage === 'reports' ? 'bg-blue-800' : ''}`}
-                onClick={() => window.location.href = '/reports'}
-              >
-                <BarChart className="h-4 w-4 mr-2" />
-                Reports
-              </Button>
+              <Link href="/reports">
+                <Button 
+                  variant="ghost" 
+                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${activePage === 'reports' ? 'bg-blue-800' : ''}`}
+                >
+                  <BarChart className="h-4 w-4 mr-2" />
+                  Reports
+                </Button>
+              </Link>
               
-              <Button 
-                variant="ghost" 
-                className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${currentPage === 'alerts' ? 'bg-blue-800' : ''}`}
-                onClick={() => window.location.href = '/alerts'}
-              >
-                <AlertTriangle className="h-4 w-4 mr-2" />
-                Alerts
-              </Button>
+              <Link href="/alerts">
+                <Button 
+                  variant="ghost" 
+                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${activePage === 'alerts' ? 'bg-blue-800' : ''}`}
+                >
+                  <AlertTriangle className="h-4 w-4 mr-2" />
+                  Alerts
+                </Button>
+              </Link>
 
-              <Button 
-                variant="ghost" 
-                className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${currentPage === 'risk-scoring' ? 'bg-blue-800' : ''}`}
-                onClick={() => window.location.href = '/risk-scoring'}
-              >
-                <TrendingUp className="h-4 w-4 mr-2" />
-                Risk Scoring
-              </Button>
+              <Link href="/risk-scoring">
+                <Button 
+                  variant="ghost" 
+                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${activePage === 'risk-scoring' ? 'bg-blue-800' : ''}`}
+                >
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  Risk Scoring
+                </Button>
+              </Link>
             </div>
           </div>
           
