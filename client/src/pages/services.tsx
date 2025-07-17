@@ -22,6 +22,7 @@ export default function Services() {
   const [selectedEngine, setSelectedEngine] = useState("Mend");
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [filterMode, setFilterMode] = useState<"labels" | "tags">("labels");
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["/api/applications"],
@@ -35,9 +36,13 @@ export default function Services() {
   const handleEngineSelect = (engine: string) => {
     setSelectedEngine(engine);
     setSelectedLabels([]); // Clear labels when switching engines
+    setFilterMode("labels"); // Switch to labels mode
+    setSelectedTags([]); // Clear tags when switching to labels mode
   };
 
   const handleLabelSelect = (label: string) => {
+    setFilterMode("labels"); // Switch to labels mode
+    setSelectedTags([]); // Clear tags when switching to labels mode
     setSelectedLabels(prev => 
       prev.includes(label) 
         ? prev.filter(l => l !== label)
@@ -46,6 +51,8 @@ export default function Services() {
   };
 
   const handleTagSelect = (tag: string) => {
+    setFilterMode("tags"); // Switch to tags mode
+    setSelectedLabels([]); // Clear labels when switching to tags mode
     setSelectedTags(prev => 
       prev.includes(tag) 
         ? prev.filter(t => t !== tag)
@@ -69,11 +76,17 @@ export default function Services() {
 
   const filteredApplications = applications.filter((app) => {
     const matchesSearch = app.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesLabels = selectedLabels.length === 0 || 
-      selectedLabels.some(label => app.labels?.includes(label));
-    const matchesTags = selectedTags.length === 0 || 
-      selectedTags.some(tag => app.tags?.includes(tag));
-    return matchesSearch && matchesLabels && matchesTags;
+    
+    // Apply either labels OR tags filtering, never both
+    if (filterMode === "labels") {
+      const matchesLabels = selectedLabels.length === 0 || 
+        selectedLabels.some(label => app.labels?.includes(label));
+      return matchesSearch && matchesLabels;
+    } else {
+      const matchesTags = selectedTags.length === 0 || 
+        selectedTags.some(tag => app.tags?.includes(tag));
+      return matchesSearch && matchesTags;
+    }
   });
 
   return (
@@ -92,7 +105,7 @@ export default function Services() {
         <div className="mb-6 bg-white border border-gray-200 rounded-lg p-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Side - Scan Engine and Labels */}
-            <div>
+            <div className={`${filterMode === "tags" ? "opacity-50 pointer-events-none" : ""}`}>
               {/* Scan Engine Selection */}
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Scan Engine</h3>
@@ -143,7 +156,7 @@ export default function Services() {
             </div>
 
             {/* Right Side - Tags Selection */}
-            <div>
+            <div className={`${filterMode === "labels" ? "opacity-50 pointer-events-none" : ""}`}>
               <h3 className="text-sm font-medium text-gray-700 mb-2">Compliance Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {["HITRUST", "ISO 27001", "SOC 2", "HIPAA", "PCI DSS"].map((tag) => (
