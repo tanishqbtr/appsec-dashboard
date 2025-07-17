@@ -1,4 +1,4 @@
-import hingeHealthLogo from "@assets/images_1752736599270.jpeg";
+import hingeHealthLogo from "@assets/ChatGPT Image Jul 17, 2025, 07_08_44 PM_1752759864189.png";
 
 interface HingeLogoProps {
   className?: string;
