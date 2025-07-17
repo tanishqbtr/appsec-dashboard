@@ -1,4 +1,6 @@
 import { users, applications, type User, type InsertUser, type Application, type InsertApplication } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -306,4 +308,150 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async getApplications(): Promise<Application[]> {
+    return await db.select().from(applications);
+  }
+
+  async getApplication(id: number): Promise<Application | undefined> {
+    const [application] = await db.select().from(applications).where(eq(applications.id, id));
+    return application || undefined;
+  }
+
+  async createApplication(insertApplication: InsertApplication): Promise<Application> {
+    const [application] = await db
+      .insert(applications)
+      .values(insertApplication)
+      .returning();
+    return application;
+  }
+
+  async updateApplication(id: number, updates: Partial<Application>): Promise<Application | undefined> {
+    const [updatedApplication] = await db
+      .update(applications)
+      .set(updates)
+      .where(eq(applications.id, id))
+      .returning();
+    return updatedApplication || undefined;
+  }
+}
+
+// Initialize storage - try database first, fallback to memory if database fails
+async function initializeStorage(): Promise<IStorage> {
+  try {
+    const dbStorage = new DatabaseStorage();
+    
+    // Test database connection
+    await dbStorage.getApplications();
+    
+    // Check if we need to seed data
+    const existingApps = await dbStorage.getApplications();
+    const existingUsers = await dbStorage.getUserByUsername("admin");
+    
+    if (!existingUsers) {
+      await dbStorage.createUser({ username: "admin", password: "password@hh" });
+    }
+    
+    if (existingApps.length === 0) {
+      // Seed initial applications data
+      await seedApplications(dbStorage);
+    }
+    
+    console.log("Database storage initialized successfully");
+    return dbStorage;
+  } catch (error) {
+    console.error("Database storage failed, falling back to memory storage:", error);
+    return new MemStorage();
+  }
+}
+
+async function seedApplications(storage: DatabaseStorage) {
+  const mockApplications = [
+    {
+      name: 'Hinge Health Web Portal',
+      projects: 122,
+      violatingFindings: JSON.stringify({ total: 0, C: 0, H: 0, M: 0, L: 0 }),
+      riskFactors: '33K',
+      riskScore: '0.0',
+      totalFindings: JSON.stringify({ total: 372, C: 56, H: 192, M: 95, L: 29 }),
+      labels: ['SCA', 'SAST'],
+      tags: ['HITRUST', 'SOC 2'],
+      lastScan: '07/16/2025, 06:10:01',
+      hasAlert: false,
+      scanEngine: 'Mend',
+      githubRepo: 'https://github.com/hingehealth/web-portal',
+      jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/WEB',
+      serviceOwner: 'Sarah Chen (Frontend Team Lead)',
+      slackChannel: 'https://hingehealth.slack.com/channels/web-portal-team',
+      description: 'Main customer-facing web application for Hinge Health platform'
+    },
+    {
+      name: 'Payment Processing API',
+      projects: 1,
+      violatingFindings: JSON.stringify({ total: 0, C: 0, H: 0, M: 0, L: 0 }),
+      riskFactors: '2K',
+      riskScore: '0.0',
+      totalFindings: JSON.stringify({ total: 23, C: 0, H: 0, M: 12, L: 11 }),
+      labels: ['SAST'],
+      tags: ['PCI DSS', 'SOC 2'],
+      lastScan: '07/16/2025, 04:30:15',
+      hasAlert: false,
+      scanEngine: 'Checkmarx',
+      githubRepo: 'https://github.com/hingehealth/payment-api',
+      jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/PAY',
+      serviceOwner: 'Michael Rodriguez (Backend Team Lead)',
+      slackChannel: 'https://hingehealth.slack.com/channels/payment-team',
+      description: 'Secure payment processing API for subscription and billing management'
+    },
+    {
+      name: 'User Authentication Service',
+      projects: 3,
+      violatingFindings: JSON.stringify({ total: 0, C: 0, H: 0, M: 0, L: 0 }),
+      riskFactors: '8K',
+      riskScore: '0.0',
+      totalFindings: JSON.stringify({ total: 156, C: 12, H: 34, M: 67, L: 43 }),
+      labels: ['SAST', 'DAST'],
+      tags: ['HITRUST', 'SOC 2'],
+      lastScan: '07/15/2025, 10:22:33',
+      hasAlert: true,
+      scanEngine: 'Veracode',
+      githubRepo: 'https://github.com/hingehealth/auth-service',
+      jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/AUTH',
+      serviceOwner: 'Jessica Park (Security Team Lead)',
+      slackChannel: 'https://hingehealth.slack.com/channels/auth-security',
+      description: 'Centralized authentication and authorization service for all Hinge Health applications'
+    }
+  ];
+
+  for (const app of mockApplications) {
+    await storage.createApplication(app);
+  }
+}
+
+// Initialize and export storage
+let storage: IStorage;
+
+export async function getStorage(): Promise<IStorage> {
+  if (!storage) {
+    storage = await initializeStorage();
+  }
+  return storage;
+}

@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { getStorage } from "./storage";
 import { insertUserSchema } from "@shared/schema";
 
 // Authentication middleware
@@ -23,6 +23,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username and password are required" });
       }
       
+      const storage = await getStorage();
       const user = await storage.getUserByUsername(username);
       console.log("User found:", user ? { id: user.id, username: user.username } : "not found");
       
@@ -56,6 +57,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get applications endpoint
   app.get("/api/applications", requireAuth, async (req, res) => {
     try {
+      const storage = await getStorage();
       const applications = await storage.getApplications();
       res.json(applications);
     } catch (error) {
@@ -69,6 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updates = req.body;
       
+      const storage = await getStorage();
       const updatedApplication = await storage.updateApplication(parseInt(id), updates);
       
       if (!updatedApplication) {
@@ -87,31 +90,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const newApplication = req.body;
       
-      const applications = await storage.getApplications();
-      applications.push(newApplication);
+      const storage = await getStorage();
+      const createdApplication = await storage.createApplication(newApplication);
       
-      res.status(201).json(newApplication);
+      res.status(201).json(createdApplication);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  // Delete application endpoint
+  // Delete application endpoint (Note: Not implemented for database storage, would need additional method)
   app.delete("/api/applications/:id", requireAuth, async (req, res) => {
     try {
-      const { id } = req.params;
-      
-      const applications = await storage.getApplications();
-      const applicationIndex = applications.findIndex((app: any) => app.id?.toString() === id);
-      
-      if (applicationIndex === -1) {
-        return res.status(404).json({ message: "Application not found" });
-      }
-      
-      // Remove the application
-      applications.splice(applicationIndex, 1);
-      
-      res.json({ message: "Application deleted successfully" });
+      res.status(501).json({ message: "Delete operation not implemented for persistent storage" });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
