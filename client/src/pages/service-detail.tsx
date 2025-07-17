@@ -129,15 +129,15 @@ function ServiceTierBadge({ percentile }: { percentile: number }) {
   let colors: string;
   let glowColor: string;
   
-  if (percentile >= 90) {
+  if (percentile >= 76) {
     tier = "Platinum";
     colors = "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg";
     glowColor = "shadow-purple-400/50";
-  } else if (percentile >= 75) {
+  } else if (percentile >= 51) {
     tier = "Gold";
     colors = "bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-lg";
     glowColor = "shadow-yellow-400/50";
-  } else if (percentile >= 50) {
+  } else if (percentile >= 26) {
     tier = "Silver";
     colors = "bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg";
     glowColor = "shadow-gray-400/50";
@@ -146,6 +146,8 @@ function ServiceTierBadge({ percentile }: { percentile: number }) {
     colors = "bg-gradient-to-r from-orange-400 to-orange-500 text-white shadow-lg";
     glowColor = "shadow-orange-400/50";
   }
+
+  const isPlatinum = percentile >= 76;
 
   return (
     <div className="relative">
@@ -169,6 +171,20 @@ function ServiceTierBadge({ percentile }: { percentile: number }) {
       {/* Sparkle effects */}
       <div className="absolute -top-1 -right-1 w-2 h-2 bg-white/80 rounded-full animate-ping delay-500"></div>
       <div className="absolute -bottom-1 -left-1 w-1 h-1 bg-white/60 rounded-full animate-ping delay-1000"></div>
+      
+      {/* Confetti for Platinum services */}
+      {isPlatinum && (
+        <>
+          <div className="absolute -top-2 -left-2 w-1 h-1 bg-yellow-400 rounded-full animate-confetti-1"></div>
+          <div className="absolute -top-3 left-1/2 w-1 h-1 bg-blue-400 rounded-full animate-confetti-2"></div>
+          <div className="absolute -top-2 -right-2 w-1 h-1 bg-red-400 rounded-full animate-confetti-3"></div>
+          <div className="absolute top-1/2 -left-3 w-1 h-1 bg-green-400 rounded-full animate-confetti-4"></div>
+          <div className="absolute top-1/2 -right-3 w-1 h-1 bg-pink-400 rounded-full animate-confetti-5"></div>
+          <div className="absolute -bottom-2 -left-2 w-1 h-1 bg-purple-400 rounded-full animate-confetti-6"></div>
+          <div className="absolute -bottom-3 left-1/3 w-1 h-1 bg-orange-400 rounded-full animate-confetti-7"></div>
+          <div className="absolute -bottom-2 -right-2 w-1 h-1 bg-cyan-400 rounded-full animate-confetti-8"></div>
+        </>
+      )}
     </div>
   );
 }
