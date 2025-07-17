@@ -403,7 +403,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
             {isLoading ? (
               <LoadingSkeleton />
             ) : (
-              sortedApplications.map((app) => {
+              sortedApplications.map((app, index) => {
                 const totalFindings: FindingsData = JSON.parse(app.totalFindings);
                 const percentile = calculatePercentile(applications, app);
                 
@@ -412,7 +412,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                     key={app.id} 
                     className="hover:bg-green-50 cursor-pointer transition-all duration-200 hover:shadow-sm"
                     onClick={() => setLocation(`/services/${app.id}`)}
-                    data-tutorial-target="service-row"
+                    data-tutorial-target={index === 0 ? "service-row" : undefined}
                   >
                     <TableCell>
                       <div className="flex items-center gap-2">
