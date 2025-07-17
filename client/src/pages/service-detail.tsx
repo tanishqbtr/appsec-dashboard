@@ -84,6 +84,33 @@ function EngineBadge({ engine, findings }: { engine: string; findings: FindingsD
   );
 }
 
+function ServiceTierBadge({ riskScore }: { riskScore: string }) {
+  const score = parseFloat(riskScore);
+  
+  let tier: string;
+  let colors: string;
+  
+  if (score >= 9.0) {
+    tier = "Platinum";
+    colors = "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg";
+  } else if (score >= 7.0) {
+    tier = "Gold";
+    colors = "bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-lg";
+  } else if (score >= 5.0) {
+    tier = "Silver";
+    colors = "bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg";
+  } else {
+    tier = "Bronze";
+    colors = "bg-gradient-to-r from-orange-400 to-orange-500 text-white shadow-lg";
+  }
+
+  return (
+    <Badge className={`${colors} text-sm px-3 py-1 font-semibold`}>
+      {tier}
+    </Badge>
+  );
+}
+
 export default function ServiceDetail() {
   const params = useParams();
   const serviceId = params.id;
@@ -375,7 +402,10 @@ export default function ServiceDetail() {
                 <div className="space-y-6">
                   <div>
                     <p className="text-sm text-gray-600">Risk Score</p>
-                    <p className="text-2xl font-bold text-orange-600">{application.riskScore}</p>
+                    <div className="flex items-center gap-3">
+                      <p className="text-2xl font-bold text-orange-600">{application.riskScore}</p>
+                      <ServiceTierBadge riskScore={application.riskScore} />
+                    </div>
                   </div>
 
                   <div>
