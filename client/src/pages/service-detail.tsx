@@ -89,25 +89,49 @@ function ServiceTierBadge({ riskScore }: { riskScore: string }) {
   
   let tier: string;
   let colors: string;
+  let glowColor: string;
   
   if (score >= 9.0) {
     tier = "Platinum";
     colors = "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg";
+    glowColor = "shadow-purple-400/50";
   } else if (score >= 7.0) {
     tier = "Gold";
     colors = "bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-lg";
+    glowColor = "shadow-yellow-400/50";
   } else if (score >= 5.0) {
     tier = "Silver";
     colors = "bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg";
+    glowColor = "shadow-gray-400/50";
   } else {
     tier = "Bronze";
     colors = "bg-gradient-to-r from-orange-400 to-orange-500 text-white shadow-lg";
+    glowColor = "shadow-orange-400/50";
   }
 
   return (
-    <Badge className={`${colors} text-sm px-3 py-1 font-semibold`}>
-      {tier}
-    </Badge>
+    <div className="relative">
+      <Badge className={`${colors} ${glowColor} text-sm px-4 py-2 font-bold tracking-wide
+        animate-badge-reveal animate-float
+        hover:scale-110 hover:shadow-2xl hover:brightness-110 hover:animate-glow-pulse
+        transform transition-all duration-500 ease-in-out
+        cursor-pointer relative overflow-hidden rounded-full
+        before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/30 before:to-transparent
+        before:animate-shimmer before:duration-2000 before:ease-in-out
+        after:absolute after:inset-0 after:bg-gradient-to-r after:from-transparent after:via-white/10 after:to-transparent
+        after:animate-pulse after:duration-3000
+        group`}>
+        <span className="relative z-10 drop-shadow-sm">{tier}</span>
+      </Badge>
+      
+      {/* Animated ring effect */}
+      <div className={`absolute inset-0 rounded-full border-2 ${glowColor.replace('shadow-', 'border-')} 
+        animate-ping opacity-20 scale-110`}></div>
+      
+      {/* Sparkle effects */}
+      <div className="absolute -top-1 -right-1 w-2 h-2 bg-white/80 rounded-full animate-ping delay-500"></div>
+      <div className="absolute -bottom-1 -left-1 w-1 h-1 bg-white/60 rounded-full animate-ping delay-1000"></div>
+    </div>
   );
 }
 
@@ -401,9 +425,11 @@ export default function ServiceDetail() {
               <CardContent>
                 <div className="space-y-6">
                   <div>
-                    <p className="text-sm text-gray-600">Risk Score</p>
+                    <p className="text-sm text-gray-600 animate-in fade-in-0 slide-in-from-left-2 duration-500">Risk Score</p>
                     <div className="flex items-center gap-3">
-                      <p className="text-2xl font-bold text-orange-600">{application.riskScore}</p>
+                      <p className="text-2xl font-bold text-orange-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
+                        {application.riskScore}
+                      </p>
                       <ServiceTierBadge riskScore={application.riskScore} />
                     </div>
                   </div>
