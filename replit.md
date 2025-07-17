@@ -8,7 +8,7 @@ Preferred communication style: Simple, everyday language.
 Navigation menu items: "Dashboard (main analytics), Services, Reports, Alerts, Risk Scoring" (updated July 17, 2025)
 Login page: Green background matching Hinge Health logo color (updated July 17, 2025)
 Services page: Main application management page with clickable rows leading to detailed service pages (updated July 17, 2025)
-Dashboard page: Comprehensive analytics with real-time charts, metrics, and security insights (updated July 17, 2025)
+Dashboard page: Landing page with comprehensive analytics, weekly findings by severity trends, and security insights (updated July 17, 2025)
 Reports page: Document generation and export functionality for compliance reporting (updated July 17, 2025)
 Color scheme: Consistent green theme throughout interface - dark green for primary actions, light green for secondary
 Animations: Smooth hover effects with 200ms transitions and subtle scaling

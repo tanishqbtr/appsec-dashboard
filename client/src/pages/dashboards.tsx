@@ -118,6 +118,23 @@ export default function Dashboards() {
 
   const analytics = processAnalyticsData(applications);
 
+  // Weekly trend data - simulate 7 days of findings by severity
+  const weeklyTrend = Array.from({ length: 7 }, (_, i) => {
+    const date = subDays(new Date(), 6 - i);
+    const critical = Math.floor(Math.random() * 8) + 2;
+    const high = Math.floor(Math.random() * 15) + 5;
+    const medium = Math.floor(Math.random() * 25) + 10;
+    const low = Math.floor(Math.random() * 30) + 15;
+    return {
+      date: format(date, 'MMM dd'),
+      Critical: critical,
+      High: high,
+      Medium: medium,
+      Low: low,
+      total: critical + high + medium + low
+    };
+  });
+
   const COLORS = {
     critical: '#dc2626',
     high: '#ea580c',
@@ -274,17 +291,17 @@ export default function Dashboards() {
 
           {/* Charts Row 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Weekly Activity */}
+            {/* Weekly Findings by Severity */}
             <Card className="transition-all duration-200 hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="h-5 w-5" />
-                  Weekly Activity Trend
+                  Weekly Findings by Severity
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={analytics.trendData}>
+                  <LineChart data={weeklyTrend}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" />
                     <YAxis />
@@ -292,27 +309,35 @@ export default function Dashboards() {
                     <Legend />
                     <Line 
                       type="monotone" 
-                      dataKey="scans" 
-                      stroke="#22c55e" 
+                      dataKey="Critical" 
+                      stroke="#dc2626" 
                       strokeWidth={3}
-                      name="Scans Completed"
-                      dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }}
+                      name="Critical"
+                      dot={{ fill: '#dc2626', strokeWidth: 2, r: 4 }}
                     />
                     <Line 
                       type="monotone" 
-                      dataKey="findings" 
-                      stroke="#f59e0b" 
+                      dataKey="High" 
+                      stroke="#ea580c" 
                       strokeWidth={3}
-                      name="New Findings"
-                      dot={{ fill: '#f59e0b', strokeWidth: 2, r: 4 }}
+                      name="High"
+                      dot={{ fill: '#ea580c', strokeWidth: 2, r: 4 }}
                     />
                     <Line 
                       type="monotone" 
-                      dataKey="resolved" 
-                      stroke="#3b82f6" 
+                      dataKey="Medium" 
+                      stroke="#d97706" 
                       strokeWidth={3}
-                      name="Resolved Issues"
-                      dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                      name="Medium"
+                      dot={{ fill: '#d97706', strokeWidth: 2, r: 4 }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="Low" 
+                      stroke="#65a30d" 
+                      strokeWidth={3}
+                      name="Low"
+                      dot={{ fill: '#65a30d', strokeWidth: 2, r: 4 }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
