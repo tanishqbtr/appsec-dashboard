@@ -94,6 +94,7 @@ export default function RiskScoring() {
         title: "Risk Score Updated",
         description: "The risk score has been successfully updated.",
       });
+      setEditDialogOpen(false);
       setEditingId(null);
       setEditingScore("");
       setEditingReason("");
@@ -162,10 +163,10 @@ export default function RiskScoring() {
   };
 
   const handleCancel = () => {
+    setEditDialogOpen(false);
     setEditingId(null);
     setEditingScore("");
     setEditingReason("");
-    setEditDialogOpen(false);
     setRiskFactors({
       dataClassification: "",
       phi: "",
