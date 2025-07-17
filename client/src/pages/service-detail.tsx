@@ -170,8 +170,8 @@ function ServiceTierBadge({ percentile }: { percentile: number }) {
   return (
     <div className="relative">
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Badge className={`${colors} ${glowColor} text-sm px-4 py-2 font-bold tracking-wide
+        <TooltipTrigger>
+          <div className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${colors} ${glowColor} text-sm px-4 py-2 font-bold tracking-wide
             animate-badge-reveal animate-float
             hover:scale-110 hover:shadow-2xl hover:brightness-110 hover:animate-glow-pulse
             transform transition-all duration-500 ease-in-out
@@ -182,7 +182,7 @@ function ServiceTierBadge({ percentile }: { percentile: number }) {
             after:animate-pulse after:duration-3000
             group`}>
             <span className="relative z-10 drop-shadow-sm">{tier}</span>
-          </Badge>
+          </div>
         </TooltipTrigger>
         <TooltipContent className="max-w-xs text-center">
           <p>{tooltipText}</p>
