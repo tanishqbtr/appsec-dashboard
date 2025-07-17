@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Search, Filter } from "lucide-react";
+import { Filter, Search } from "lucide-react";
 import type { Application } from "@shared/schema";
 
 export default function Services() {
@@ -78,21 +78,9 @@ export default function Services() {
 
         {/* Filters */}
         <div className="mb-6 bg-white border border-gray-200 rounded-lg p-6">
-          {/* Search */}
-          <div className="mb-4">
-            <div className="relative max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search applications..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
 
           {/* Scan Engine Selection */}
-          <div className="mb-4">
+          <div>
             <h3 className="text-sm font-medium text-gray-700 mb-2">Scan Engine</h3>
             <div className="flex gap-2">
               {["Mend", "Escape", "Crowdstrike"].map((engine) => (
@@ -111,7 +99,7 @@ export default function Services() {
 
           {/* Labels Selection - Only show when engine is selected */}
           {selectedEngine && (
-            <div className="mb-4">
+            <div className="mt-4">
               <h3 className="text-sm font-medium text-gray-700 mb-2">
                 {selectedEngine} Labels
               </h3>
@@ -161,7 +149,12 @@ export default function Services() {
             <CardTitle>Applications ({filteredApplications.length})</CardTitle>
           </CardHeader>
           <CardContent>
-            <ApplicationsTable applications={filteredApplications} isLoading={isLoading} />
+            <ApplicationsTable 
+              applications={filteredApplications} 
+              isLoading={isLoading}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+            />
           </CardContent>
         </Card>
       </div>

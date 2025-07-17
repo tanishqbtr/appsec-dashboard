@@ -38,7 +38,7 @@ export class MemStorage implements IStorage {
         riskScore: '8.5',
         totalFindings: JSON.stringify({ total: 372, C: 56, H: 192, M: 95, L: 29 }),
         labels: ['SCA', 'SAST'],
-        tags: ['Critical', 'Frontend'],
+        tags: ['HITRUST', 'SOC 2'],
         lastScan: '07/16/2025, 06:10:01',
         hasAlert: false,
         scanEngine: 'Mend'
@@ -51,7 +51,7 @@ export class MemStorage implements IStorage {
         riskScore: '7.2',
         totalFindings: JSON.stringify({ total: 27, C: 12, H: 27, M: 16, L: 5 }),
         labels: ['Containers'],
-        tags: ['Payment', 'Backend'],
+        tags: ['PCI DSS', 'HIPAA'],
         lastScan: '07/17/2025, 02:40:07',
         hasAlert: false,
         scanEngine: 'Mend'
@@ -64,7 +64,7 @@ export class MemStorage implements IStorage {
         riskScore: '6.8',
         totalFindings: JSON.stringify({ total: 39, C: 1, H: 23, M: 849, L: 102 }),
         labels: ['Web Applications'],
-        tags: ['Mobile', 'Production'],
+        tags: ['ISO 27001', 'HIPAA'],
         lastScan: '07/17/2025, 04:30:34',
         hasAlert: false,
         scanEngine: 'Escape'
@@ -77,7 +77,7 @@ export class MemStorage implements IStorage {
         riskScore: '9.1',
         totalFindings: JSON.stringify({ total: 11, C: 366, H: 1, M: 750, L: 88 }),
         labels: ['Images'],
-        tags: ['Security', 'Core'],
+        tags: ['HITRUST', 'ISO 27001'],
         lastScan: '07/17/2025, 10:03:15',
         hasAlert: false,
         scanEngine: 'Crowdstrike'
@@ -90,7 +90,7 @@ export class MemStorage implements IStorage {
         riskScore: '5.3',
         totalFindings: JSON.stringify({ total: 15, C: 2, H: 8, M: 4, L: 1 }),
         labels: ['APIs'],
-        tags: ['Coach', 'Assistant'],
+        tags: ['SOC 2'],
         lastScan: '07/17/2025, 09:54:27',
         hasAlert: true,
         scanEngine: 'Escape'
@@ -103,7 +103,7 @@ export class MemStorage implements IStorage {
         riskScore: '4.7',
         totalFindings: JSON.stringify({ total: 9, C: 0, H: 3, M: 5, L: 1 }),
         labels: ['Containers'],
-        tags: ['Eligibility', 'Core'],
+        tags: ['HIPAA', 'SOC 2'],
         lastScan: '07/17/2025, 05:04:28',
         hasAlert: true,
         scanEngine: 'Mend'
@@ -116,7 +116,7 @@ export class MemStorage implements IStorage {
         riskScore: '6.1',
         totalFindings: JSON.stringify({ total: 12, C: 1, H: 7, M: 3, L: 1 }),
         labels: ['Images'],
-        tags: ['Shipping', 'Logistics'],
+        tags: ['ISO 27001'],
         lastScan: '07/17/2025, 11:51:54',
         hasAlert: true,
         scanEngine: 'Crowdstrike'
@@ -129,7 +129,7 @@ export class MemStorage implements IStorage {
         riskScore: '3.9',
         totalFindings: JSON.stringify({ total: 6, C: 0, H: 2, M: 3, L: 1 }),
         labels: ['SCA'],
-        tags: ['Data', 'Integration'],
+        tags: ['HITRUST', 'HIPAA'],
         lastScan: '06/24/2025, 10:53:38',
         hasAlert: true,
         scanEngine: 'Mend'
@@ -142,7 +142,7 @@ export class MemStorage implements IStorage {
         riskScore: '2.8',
         totalFindings: JSON.stringify({ total: 6, C: 0, H: 2, M: 3, L: 1 }),
         labels: ['SAST'],
-        tags: ['CV', 'Development'],
+        tags: ['SOC 2'],
         lastScan: '06/19/2025, 06:20:03',
         hasAlert: false,
         scanEngine: 'Mend'
@@ -155,7 +155,7 @@ export class MemStorage implements IStorage {
         riskScore: '4.2',
         totalFindings: JSON.stringify({ total: 14, C: 1, H: 6, M: 6, L: 1 }),
         labels: ['Containers'],
-        tags: ['K8s', 'Airflow'],
+        tags: ['ISO 27001'],
         lastScan: '05/21/2025, 12:34:01',
         hasAlert: false,
         scanEngine: 'Mend'
@@ -168,7 +168,7 @@ export class MemStorage implements IStorage {
         riskScore: '3.5',
         totalFindings: JSON.stringify({ total: 9, C: 0, H: 4, M: 4, L: 1 }),
         labels: ['Images'],
-        tags: ['K8s', 'Testing'],
+        tags: ['SOC 2'],
         lastScan: '05/21/2025, 11:57:00',
         hasAlert: false,
         scanEngine: 'Crowdstrike'
@@ -181,7 +181,7 @@ export class MemStorage implements IStorage {
         riskScore: '1.9',
         totalFindings: JSON.stringify({ total: 5, C: 0, H: 1, M: 3, L: 1 }),
         labels: ['Web Applications'],
-        tags: ['Communication', 'Notifications'],
+        tags: ['HIPAA'],
         lastScan: '07/17/2025, 10:36:37',
         hasAlert: true,
         scanEngine: 'Escape'
@@ -194,7 +194,7 @@ export class MemStorage implements IStorage {
         riskScore: '8.9',
         totalFindings: JSON.stringify({ total: 25, C: 5, H: 12, M: 7, L: 1 }),
         labels: ['SCA', 'SAST'],
-        tags: ['Platform', 'Core'],
+        tags: ['HITRUST', 'PCI DSS'],
         lastScan: '07/09/2025, 07:22:28',
         hasAlert: true,
         scanEngine: 'Mend'
