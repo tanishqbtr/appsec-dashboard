@@ -387,10 +387,10 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
             <TableRow className="bg-gray-50">
               <SortableHeader field="name">Service Name</SortableHeader>
               <SortableHeader field="riskScore">Risk Score</SortableHeader>
-              <SortableHeader field="totalFindings">Total Findings</SortableHeader>
               <SortableHeader field="percentile">
                 Percentile
               </SortableHeader>
+              <SortableHeader field="totalFindings">Total Findings</SortableHeader>
               <SortableHeader field="criticalFindings">Critical Findings</SortableHeader>
               <SortableHeader field="highFindings">High Findings</SortableHeader>
               <SortableHeader field="mediumFindings">Medium Findings</SortableHeader>
@@ -426,10 +426,10 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                       <div className="text-sm font-bold text-orange-600">{app.riskScore}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="text-sm font-medium text-gray-900">{totalFindings.total}</div>
+                      <PercentileBadge percentile={percentile} />
                     </TableCell>
                     <TableCell>
-                      <PercentileBadge percentile={percentile} />
+                      <div className="text-sm font-medium text-gray-900">{totalFindings.total}</div>
                     </TableCell>
                     <TableCell>
                       <RiskBadge level="C" count={totalFindings.C} />
