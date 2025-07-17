@@ -553,7 +553,7 @@ export default function ServiceDetail() {
               target="_blank" 
               rel="noopener noreferrer"
             >
-              <Button className="bg-blue-600 hover:bg-blue-700 transition-all duration-200 hover:scale-105">
+              <Button variant="outline" className="transition-all duration-200 hover:scale-105 border-blue-200 hover:bg-blue-50">
                 <Shield className="h-4 w-4 mr-2" />
                 Take me to Mend
                 <ExternalLink className="h-4 w-4 ml-2" />
