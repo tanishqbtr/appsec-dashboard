@@ -465,7 +465,6 @@ export default function ServiceDetail() {
                       <p className="text-2xl font-bold text-orange-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
                         {application.riskScore}
                       </p>
-                      <ServiceTierBadge percentile={percentile} />
                     </div>
                   </div>
 
@@ -475,7 +474,7 @@ export default function ServiceDetail() {
                       <p className="text-2xl font-bold text-blue-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
                         {Math.round(percentile)}%
                       </p>
-                      <PercentileBadge percentile={percentile} />
+                      <ServiceTierBadge percentile={percentile} />
                     </div>
                     <div className="text-sm text-gray-600 mt-1">Based on total findings</div>
                   </div>
