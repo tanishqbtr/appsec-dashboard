@@ -18,6 +18,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useState } from "react";
 import type { Application } from "@shared/schema";
 import * as XLSX from 'xlsx';
@@ -124,6 +131,8 @@ function LoadingSkeleton() {
 export default function ApplicationsTable({ applications, isLoading, searchTerm, onSearchChange, selectedEngine, selectedLabels, selectedTags }: ApplicationsTableProps) {
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [, setLocation] = useLocation();
 
   const handleSort = (field: string) => {
@@ -198,6 +207,26 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
       return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
     }
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedApplications.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedApplications = sortedApplications.slice(startIndex, endIndex);
+
+  // Reset to first page when pageSize changes
+  const handlePageSizeChange = (newPageSize: string) => {
+    setPageSize(parseInt(newPageSize));
+    setCurrentPage(1);
+  };
+
+  const handlePreviousPage = () => {
+    setCurrentPage(prev => Math.max(1, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(totalPages, prev + 1));
+  };
 
   const generateFileName = (format: string) => {
     const now = new Date();
@@ -403,7 +432,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
             {isLoading ? (
               <LoadingSkeleton />
             ) : (
-              sortedApplications.map((app, index) => {
+              paginatedApplications.map((app, index) => {
                 const totalFindings: FindingsData = JSON.parse(app.totalFindings);
                 const percentile = calculatePercentile(applications, app);
                 
@@ -463,24 +492,64 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
       {/* Pagination */}
       <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
         <div className="flex-1 flex justify-between sm:hidden">
-          <Button variant="outline" size="sm">Previous</Button>
-          <Button variant="outline" size="sm">Next</Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handlePreviousPage}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
         </div>
         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-          <div>
+          <div className="flex items-center gap-4">
             <p className="text-sm text-gray-700">
-              1 to {Math.min(50, applications.length)} of {applications.length}
+              {startIndex + 1} to {Math.min(endIndex, sortedApplications.length)} of {sortedApplications.length}
             </p>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-700">Show:</span>
+              <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-gray-700">per page</span>
+            </div>
           </div>
           <div>
             <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-              <Button variant="outline" size="sm" className="rounded-l-md">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="rounded-l-md"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+              >
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button variant="outline" size="sm" className="rounded-none">
-                Page 1 of 3
+                Page {currentPage} of {totalPages}
               </Button>
-              <Button variant="outline" size="sm" className="rounded-r-md">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="rounded-r-md"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+              >
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </nav>
