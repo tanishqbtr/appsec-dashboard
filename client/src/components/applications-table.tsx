@@ -65,6 +65,46 @@ function RiskBadge({ level, count }: { level: string; count: number }) {
   );
 }
 
+function PercentileBadge({ percentile }: { percentile: number }) {
+  let color = "bg-gray-500";
+  let label = "Average";
+  
+  if (percentile >= 90) {
+    color = "bg-red-600";
+    label = "Top 10%";
+  } else if (percentile >= 75) {
+    color = "bg-orange-500";
+    label = "Top 25%";
+  } else if (percentile >= 50) {
+    color = "bg-yellow-500";
+    label = "Top 50%";
+  } else if (percentile >= 25) {
+    color = "bg-blue-500";
+    label = "Bottom 50%";
+  } else {
+    color = "bg-green-500";
+    label = "Bottom 25%";
+  }
+
+  return (
+    <Badge className={`${color} text-white text-xs px-2 py-0.5`}>
+      {Math.round(percentile)}%
+    </Badge>
+  );
+}
+
+// Calculate percentile ranking based on total findings
+function calculatePercentile(applications: Application[], currentApp: Application): number {
+  const currentFindings = JSON.parse(currentApp.totalFindings).total;
+  const allFindings = applications.map(app => JSON.parse(app.totalFindings).total);
+  
+  // Count how many applications have fewer findings than current app
+  const lowerCount = allFindings.filter(findings => findings < currentFindings).length;
+  
+  // Calculate percentile (higher findings = higher percentile)
+  return (lowerCount / applications.length) * 100;
+}
+
 function LoadingSkeleton() {
   return (
     <>
@@ -168,13 +208,15 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   };
 
   const exportToCSV = () => {
-    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
+    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const csvData = sortedApplications.map(app => {
       const findings = JSON.parse(app.totalFindings);
+      const percentile = calculatePercentile(applications, app);
       return [
         app.name,
         app.riskScore,
         findings.total,
+        `${Math.round(percentile)}%`,
         findings.C,
         findings.H,
         findings.M,
@@ -197,13 +239,15 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   };
 
   const exportToXLSX = () => {
-    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
+    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const data = sortedApplications.map(app => {
       const findings = JSON.parse(app.totalFindings);
+      const percentile = calculatePercentile(applications, app);
       return [
         app.name,
         app.riskScore,
         findings.total,
+        `${Math.round(percentile)}%`,
         findings.C,
         findings.H,
         findings.M,
@@ -237,13 +281,15 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     doc.setFontSize(10);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
 
-    const headers = [['Service Name', 'Risk Score', 'Total', 'Critical', 'High', 'Medium', 'Low', 'Tags']];
+    const headers = [['Service Name', 'Risk Score', 'Total', 'Percentile', 'Critical', 'High', 'Medium', 'Low', 'Tags']];
     const data = sortedApplications.map(app => {
       const findings = JSON.parse(app.totalFindings);
+      const percentile = calculatePercentile(applications, app);
       return [
         app.name,
         app.riskScore,
         findings.total.toString(),
+        `${Math.round(percentile)}%`,
         findings.C.toString(),
         findings.H.toString(),
         findings.M.toString(),
@@ -259,14 +305,15 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
       styles: { fontSize: 8 },
       headStyles: { fillColor: [59, 130, 246] },
       columnStyles: {
-        0: { cellWidth: 40 },
+        0: { cellWidth: 35 },
         1: { cellWidth: 15 },
         2: { cellWidth: 12 },
         3: { cellWidth: 15 },
         4: { cellWidth: 12 },
-        5: { cellWidth: 15 },
+        5: { cellWidth: 12 },
         6: { cellWidth: 12 },
-        7: { cellWidth: 30 }
+        7: { cellWidth: 12 },
+        8: { cellWidth: 25 }
       }
     });
 
@@ -337,6 +384,10 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               <SortableHeader field="name">Service Name</SortableHeader>
               <SortableHeader field="riskScore">Risk Score</SortableHeader>
               <SortableHeader field="totalFindings">Total Findings</SortableHeader>
+              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">
+                Percentile
+                <span className="text-xs text-gray-400 block mt-1">Based on findings</span>
+              </TableHead>
               <SortableHeader field="criticalFindings">Critical Findings</SortableHeader>
               <SortableHeader field="highFindings">High Findings</SortableHeader>
               <SortableHeader field="mediumFindings">Medium Findings</SortableHeader>
@@ -353,6 +404,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
             ) : (
               sortedApplications.map((app) => {
                 const totalFindings: FindingsData = JSON.parse(app.totalFindings);
+                const percentile = calculatePercentile(applications, app);
                 
                 return (
                   <TableRow 
@@ -373,6 +425,9 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                     </TableCell>
                     <TableCell>
                       <div className="text-sm font-medium text-gray-900">{totalFindings.total}</div>
+                    </TableCell>
+                    <TableCell>
+                      <PercentileBadge percentile={percentile} />
                     </TableCell>
                     <TableCell>
                       <RiskBadge level="C" count={totalFindings.C} />
