@@ -13,7 +13,7 @@ Reports page: Document generation and export functionality for compliance report
 Color scheme: Consistent green theme throughout interface - dark green for primary actions, light green for secondary
 Animations: Smooth hover effects with 200ms transitions and subtle scaling
 Other pages: Empty placeholder pages for future development
-Percentile system: Services ranked by total findings with color-coded badges (Top 10%, Top 25%, Top 50%, Bottom 50%, Bottom 25%) (updated July 17, 2025)
+Percentile system: Services ranked by total findings with color-coded badges - services with fewer findings get higher percentiles (Top 10% = Green, Top 25% = Blue, Top 50% = Yellow, Bottom 50% = Orange, Bottom 25% = Red) (updated July 17, 2025)
 
 ## System Architecture
 

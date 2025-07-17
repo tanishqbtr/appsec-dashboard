@@ -70,19 +70,19 @@ function PercentileBadge({ percentile }: { percentile: number }) {
   let label = "Average";
   
   if (percentile >= 90) {
-    color = "bg-red-600";
+    color = "bg-green-600";
     label = "Top 10%";
   } else if (percentile >= 75) {
-    color = "bg-orange-500";
+    color = "bg-blue-500";
     label = "Top 25%";
   } else if (percentile >= 50) {
     color = "bg-yellow-500";
     label = "Top 50%";
   } else if (percentile >= 25) {
-    color = "bg-blue-500";
+    color = "bg-orange-500";
     label = "Bottom 50%";
   } else {
-    color = "bg-green-500";
+    color = "bg-red-600";
     label = "Bottom 25%";
   }
 
@@ -98,11 +98,11 @@ function calculatePercentile(applications: Application[], currentApp: Applicatio
   const currentFindings = JSON.parse(currentApp.totalFindings).total;
   const allFindings = applications.map(app => JSON.parse(app.totalFindings).total);
   
-  // Count how many applications have fewer findings than current app
-  const lowerCount = allFindings.filter(findings => findings < currentFindings).length;
+  // Count how many applications have more findings than current app
+  const higherCount = allFindings.filter(findings => findings > currentFindings).length;
   
-  // Calculate percentile (higher findings = higher percentile)
-  return (lowerCount / applications.length) * 100;
+  // Calculate percentile (fewer findings = higher percentile)
+  return (higherCount / applications.length) * 100;
 }
 
 function LoadingSkeleton() {
@@ -181,6 +181,10 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         const bLowFindings = JSON.parse(b.totalFindings);
         aValue = aLowFindings.L;
         bValue = bLowFindings.L;
+        break;
+      case 'percentile':
+        aValue = calculatePercentile(applications, a);
+        bValue = calculatePercentile(applications, b);
         break;
       default:
         return 0;
@@ -384,10 +388,10 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               <SortableHeader field="name">Service Name</SortableHeader>
               <SortableHeader field="riskScore">Risk Score</SortableHeader>
               <SortableHeader field="totalFindings">Total Findings</SortableHeader>
-              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">
+              <SortableHeader field="percentile">
                 Percentile
                 <span className="text-xs text-gray-400 block mt-1">Based on findings</span>
-              </TableHead>
+              </SortableHeader>
               <SortableHeader field="criticalFindings">Critical Findings</SortableHeader>
               <SortableHeader field="highFindings">High Findings</SortableHeader>
               <SortableHeader field="mediumFindings">Medium Findings</SortableHeader>
