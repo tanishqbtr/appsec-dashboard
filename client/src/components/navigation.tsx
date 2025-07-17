@@ -14,6 +14,7 @@ import {
   Server,
   BarChart,
   AlertTriangle,
+  TrendingUp,
   Settings,
   HelpCircle,
   User,
@@ -22,9 +23,10 @@ import HingeLogo from "./hinge-logo";
 
 interface NavigationProps {
   onLogout: () => void;
+  currentPage?: string;
 }
 
-export default function Navigation({ onLogout }: NavigationProps) {
+export default function Navigation({ onLogout, currentPage = "services" }: NavigationProps) {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   return (
@@ -51,19 +53,40 @@ export default function Navigation({ onLogout }: NavigationProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button variant="ghost" className="text-white hover:text-gray-200 px-3 py-2 text-sm font-medium">
+              <Button 
+                variant="ghost" 
+                className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${currentPage === 'services' ? 'bg-blue-800' : ''}`}
+                onClick={() => window.location.href = '/services'}
+              >
                 <Server className="h-4 w-4 mr-2" />
                 Services
               </Button>
               
-              <Button variant="ghost" className="text-white hover:text-gray-200 px-3 py-2 text-sm font-medium">
+              <Button 
+                variant="ghost" 
+                className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${currentPage === 'reports' ? 'bg-blue-800' : ''}`}
+                onClick={() => window.location.href = '/reports'}
+              >
                 <BarChart className="h-4 w-4 mr-2" />
                 Reports
               </Button>
               
-              <Button variant="ghost" className="text-white hover:text-gray-200 px-3 py-2 text-sm font-medium">
+              <Button 
+                variant="ghost" 
+                className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${currentPage === 'alerts' ? 'bg-blue-800' : ''}`}
+                onClick={() => window.location.href = '/alerts'}
+              >
                 <AlertTriangle className="h-4 w-4 mr-2" />
                 Alerts
+              </Button>
+
+              <Button 
+                variant="ghost" 
+                className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium ${currentPage === 'risk-scoring' ? 'bg-blue-800' : ''}`}
+                onClick={() => window.location.href = '/risk-scoring'}
+              >
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Risk Scoring
               </Button>
             </div>
           </div>
