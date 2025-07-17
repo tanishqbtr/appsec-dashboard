@@ -26,7 +26,7 @@ interface FindingsData {
 }
 
 function RiskBadge({ level, count }: { level: string; count: number }) {
-  if (count === 0) return null;
+  if (count === 0) return <span className="text-xs text-gray-400">0</span>;
 
   const colors = {
     C: "bg-critical text-white",
@@ -48,12 +48,11 @@ function LoadingSkeleton() {
       {Array.from({ length: 10 }).map((_, i) => (
         <TableRow key={i}>
           <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+          <TableCell><Skeleton className="h-4 w-12" /></TableCell>
           <TableCell><Skeleton className="h-4 w-16" /></TableCell>
           <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+          <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+          <TableCell><Skeleton className="h-4 w-12" /></TableCell>
           <TableCell><Skeleton className="h-4 w-32" /></TableCell>
         </TableRow>
       ))}
@@ -68,14 +67,13 @@ export default function ApplicationsTable({ applications, isLoading }: Applicati
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
-              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Name</TableHead>
-              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Projects</TableHead>
-              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Violating Findings</TableHead>
-              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Dependencies Risk Factors</TableHead>
+              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Service Name</TableHead>
+              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Risk Score</TableHead>
               <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Total Findings</TableHead>
-              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Labels</TableHead>
+              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">High Findings</TableHead>
+              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Medium Findings</TableHead>
+              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Low Findings</TableHead>
               <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Tags</TableHead>
-              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">Last Scan</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -83,7 +81,6 @@ export default function ApplicationsTable({ applications, isLoading }: Applicati
               <LoadingSkeleton />
             ) : (
               applications.map((app) => {
-                const violatingFindings: FindingsData = JSON.parse(app.violatingFindings);
                 const totalFindings: FindingsData = JSON.parse(app.totalFindings);
                 
                 return (
@@ -91,33 +88,20 @@ export default function ApplicationsTable({ applications, isLoading }: Applicati
                     <TableCell>
                       <div className="text-sm font-medium text-gray-900">{app.name}</div>
                     </TableCell>
-                    <TableCell className="text-sm text-gray-500">{app.projects}</TableCell>
-                    <TableCell className="text-sm text-gray-500">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-900">{violatingFindings.total}</span>
-                        {app.hasAlert && <AlertTriangle className="h-4 w-4 text-orange-500" />}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm text-gray-500">{app.riskFactors}</TableCell>
-                    <TableCell className="text-sm text-gray-500">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-900">{totalFindings.total}</span>
-                        <div className="flex space-x-1">
-                          <RiskBadge level="C" count={totalFindings.C} />
-                          <RiskBadge level="H" count={totalFindings.H} />
-                          <RiskBadge level="M" count={totalFindings.M} />
-                          <RiskBadge level="L" count={totalFindings.L} />
-                        </div>
-                      </div>
+                    <TableCell>
+                      <div className="text-sm font-bold text-primary">{app.riskScore}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex space-x-1">
-                        {app.labels?.map((label, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {label}
-                          </Badge>
-                        ))}
-                      </div>
+                      <div className="text-sm font-medium text-gray-900">{totalFindings.total}</div>
+                    </TableCell>
+                    <TableCell>
+                      <RiskBadge level="H" count={totalFindings.H} />
+                    </TableCell>
+                    <TableCell>
+                      <RiskBadge level="M" count={totalFindings.M} />
+                    </TableCell>
+                    <TableCell>
+                      <RiskBadge level="L" count={totalFindings.L} />
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-1">
@@ -128,7 +112,6 @@ export default function ApplicationsTable({ applications, isLoading }: Applicati
                         ))}
                       </div>
                     </TableCell>
-                    <TableCell className="text-sm text-gray-500">{app.lastScan}</TableCell>
                   </TableRow>
                 );
               })
