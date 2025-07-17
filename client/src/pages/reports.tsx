@@ -222,9 +222,9 @@ export default function Reports() {
           {/* Header */}
           <div className="mb-8 flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Security Analytics & Reports</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Security Reports</h1>
               <p className="mt-2 text-gray-600">
-                Comprehensive security insights, trends, and compliance metrics
+                Generate detailed compliance reports and export security documentation
               </p>
             </div>
             <div className="flex gap-3">
