@@ -324,13 +324,21 @@ export default function ServiceDetail() {
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center justify-between mb-4">
               <Link href="/services">
                 <Button variant="outline" className="transition-all duration-200 hover:scale-105">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to Services
                 </Button>
               </Link>
+              
+              <Button 
+                onClick={handleEdit}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Edit3 className="h-4 w-4 mr-2" />
+                Edit Service Info
+              </Button>
             </div>
             
             <div className="flex items-start justify-between">
@@ -339,27 +347,12 @@ export default function ServiceDetail() {
                 <p className="mt-2 text-gray-600">
                   {application.description || "Comprehensive security analysis and vulnerability management"}
                 </p>
-                <div className="flex items-center gap-4 mt-4">
-                  <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">
-                    {application.scanEngine}
-                  </Badge>
-                </div>
               </div>
               
-              <div className="text-right space-y-4">
-                <div>
-                  <div className="text-sm text-gray-600">Risk Score</div>
-                  <div className="text-3xl font-bold text-orange-600">{application.riskScore}</div>
-                  <div className="text-sm text-gray-600">Medium Risk</div>
-                </div>
-                
-                <Button 
-                  onClick={handleEdit}
-                  className="bg-green-600 hover:bg-green-700 text-white"
-                >
-                  <Edit3 className="h-4 w-4 mr-2" />
-                  Edit Service Info
-                </Button>
+              <div className="text-right">
+                <div className="text-sm text-gray-600">Risk Score</div>
+                <div className="text-3xl font-bold text-orange-600">{application.riskScore}</div>
+                <div className="text-sm text-gray-600">Medium Risk</div>
               </div>
             </div>
           </div>
