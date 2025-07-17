@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
   ArrowLeft,
@@ -240,90 +240,94 @@ export default function ServiceDetail() {
           </div>
 
           {/* Service Information & Links */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
-              <CardContent className="p-4">
-                <a 
-                  href={application.githubRepo || "#"} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                >
-                  <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <Github className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-medium">GitHub Repo</p>
-                    <p className="text-sm text-gray-600">View source code</p>
-                  </div>
-                  <ExternalLink className="h-4 w-4 ml-auto" />
-                </a>
-              </CardContent>
-            </Card>
-            
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
-              <CardContent className="p-4">
-                <a 
-                  href={application.jiraProject || "#"} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                >
-                  <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Target className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Jira Project</p>
-                    <p className="text-sm text-gray-600">Track issues</p>
-                  </div>
-                  <ExternalLink className="h-4 w-4 ml-auto" />
-                </a>
-              </CardContent>
-            </Card>
-            
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
-              <CardContent className="p-4">
-                <a 
-                  href={application.slackChannel || "#"} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                >
-                  <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <MessageSquare className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Slack Channel</p>
-                    <p className="text-sm text-gray-600">Team communication</p>
-                  </div>
-                  <ExternalLink className="h-4 w-4 ml-auto" />
-                </a>
-              </CardContent>
-            </Card>
-            
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
-                    <User className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium">Service Owner</p>
-                    <p className="text-sm text-green-600">
-                      {application.serviceOwner || "Engineering Team"}
-                    </p>
-                  </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleEdit}
-                    className="hover:bg-green-50 hover:border-green-300"
+          <div className="flex justify-between items-start mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1">
+              <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+                <CardContent className="p-4">
+                  <a 
+                    href={application.githubRepo || "#"} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
                   >
-                    <Edit3 className="h-3 w-3" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                    <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Github className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">GitHub Repo</p>
+                      <p className="text-sm text-gray-600">View source code</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 ml-auto" />
+                  </a>
+                </CardContent>
+              </Card>
+              
+              <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+                <CardContent className="p-4">
+                  <a 
+                    href={application.jiraProject || "#"} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
+                  >
+                    <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Target className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Jira Project</p>
+                      <p className="text-sm text-gray-600">Track issues</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 ml-auto" />
+                  </a>
+                </CardContent>
+              </Card>
+              
+              <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+                <CardContent className="p-4">
+                  <a 
+                    href={application.slackChannel || "#"} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
+                  >
+                    <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <MessageSquare className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Slack Channel</p>
+                      <p className="text-sm text-gray-600">Team communication</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 ml-auto" />
+                  </a>
+                </CardContent>
+              </Card>
+              
+              <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+                      <User className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">Service Owner</p>
+                      <p className="text-sm text-green-600">
+                        {application.serviceOwner || "Engineering Team"}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="ml-6">
+              <Button 
+                onClick={handleEdit}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Edit3 className="h-4 w-4 mr-2" />
+                Edit Service Info
+              </Button>
+            </div>
           </div>
 
           {/* Security Findings */}
@@ -432,6 +436,9 @@ export default function ServiceDetail() {
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>Edit Service Information</DialogTitle>
+                <DialogDescription>
+                  Update the service links and owner information below.
+                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div>
