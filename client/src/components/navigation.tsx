@@ -20,6 +20,7 @@ import {
   User,
   Cog,
 } from "lucide-react";
+import HingeLogo from "./hinge-logo";
 
 interface NavigationProps {
   onLogout: () => void;
@@ -34,7 +35,7 @@ export default function Navigation({ onLogout }: NavigationProps) {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <Shield className="h-6 w-6 text-white mr-3" />
+              <HingeLogo size="md" className="mr-3" />
               <span className="text-white font-semibold text-lg">Hinge Health</span>
             </div>
             <div className="hidden md:ml-6 md:flex md:space-x-8">
