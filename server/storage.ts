@@ -36,7 +36,7 @@ export class MemStorage implements IStorage {
         violatingFindings: JSON.stringify({ total: 0, C: 0, H: 0, M: 0, L: 0 }),
         riskFactors: '33K',
         totalFindings: JSON.stringify({ total: 372, C: 56, H: 192, M: 95, L: 29 }),
-        labels: ['L1', 'Production'],
+        labels: ['L1', 'Production', 'SCA', 'SAST'],
         tags: [],
         lastScan: '07/16/2025, 06:10:01',
         hasAlert: false
@@ -47,7 +47,7 @@ export class MemStorage implements IStorage {
         violatingFindings: JSON.stringify({ total: 0, C: 0, H: 0, M: 0, L: 0 }),
         riskFactors: '4.3K',
         totalFindings: JSON.stringify({ total: 27, C: 12, H: 27, M: 16, L: 5 }),
-        labels: ['L1', 'Production'],
+        labels: ['L1', 'Production', 'Containers'],
         tags: [],
         lastScan: '07/17/2025, 02:40:07',
         hasAlert: false
@@ -58,7 +58,7 @@ export class MemStorage implements IStorage {
         violatingFindings: JSON.stringify({ total: 0, C: 0, H: 0, M: 0, L: 0 }),
         riskFactors: '4.8K',
         totalFindings: JSON.stringify({ total: 39, C: 1, H: 23, M: 849, L: 102 }),
-        labels: ['L1', 'Development'],
+        labels: ['L1', 'Development', 'Web Applications'],
         tags: [],
         lastScan: '07/17/2025, 04:30:34',
         hasAlert: false
@@ -69,7 +69,7 @@ export class MemStorage implements IStorage {
         violatingFindings: JSON.stringify({ total: 0, C: 0, H: 0, M: 0, L: 0 }),
         riskFactors: '2.1K',
         totalFindings: JSON.stringify({ total: 11, C: 366, H: 1, M: 750, L: 88 }),
-        labels: ['L1', 'Testing'],
+        labels: ['L1', 'Testing', 'Images'],
         tags: ['L1'],
         lastScan: '07/17/2025, 10:03:15',
         hasAlert: false
@@ -80,7 +80,7 @@ export class MemStorage implements IStorage {
         violatingFindings: JSON.stringify({ total: 0, C: 0, H: 0, M: 0, L: 0 }),
         riskFactors: '1.6K',
         totalFindings: JSON.stringify({ total: 15, C: 264, H: 651, M: 759, L: 33 }),
-        labels: ['L1', 'Production'],
+        labels: ['L1', 'Production', 'APIs'],
         tags: [],
         lastScan: '07/17/2025, 09:54:27',
         hasAlert: true
@@ -91,7 +91,7 @@ export class MemStorage implements IStorage {
         violatingFindings: JSON.stringify({ total: 0, C: 0, H: 0, M: 0, L: 0 }),
         riskFactors: '1.6K',
         totalFindings: JSON.stringify({ total: 9, C: 234, H: 617, M: 743, L: 45 }),
-        labels: ['L1', 'Development'],
+        labels: ['L1', 'Development', 'Containers'],
         tags: ['L1'],
         lastScan: '07/17/2025, 05:04:28',
         hasAlert: true
