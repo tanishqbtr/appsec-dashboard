@@ -1,4 +1,4 @@
-import hingeHealthLogo from "@assets/ChatGPT Image Jul 17, 2025, 07_08_44 PM_1752759864189.png";
+import hingeHealthLogo from "@assets/ChatGPT Image Jul 17, 2025, 07_08_44 PM_1752760077600.png";
 
 interface HingeLogoProps {
   className?: string;
@@ -9,20 +9,14 @@ export default function HingeLogo({ className = "", size = "md" }: HingeLogoProp
   const sizeClasses = {
     sm: "h-6 w-16",
     md: "h-8 w-20", 
-    lg: "h-80 w-160"
+    lg: "h-32 w-80"
   };
 
   return (
-    <div 
-      className={`${sizeClasses[size]} ${className} rounded overflow-hidden flex items-center justify-center`}
-      style={{
-        backgroundImage: `url(${hingeHealthLogo})`,
-        backgroundSize: "contain",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat"
-      }}
-    >
-      {/* This creates a cropped view of the logo focusing on the center where the logo text is */}
-    </div>
+    <img 
+      src={hingeHealthLogo}
+      alt="Hinge Health Logo"
+      className={`${sizeClasses[size]} ${className} object-contain`}
+    />
   );
 }

@@ -21,7 +21,7 @@ import {
   User,
 } from "lucide-react";
 import HingeLogo from "./hinge-logo";
-import hingeHealthLogoPath from "@assets/ChatGPT Image Jul 17, 2025, 07_08_44 PM_1752759864189.png";
+import hingeHealthLogoPath from "@assets/ChatGPT Image Jul 17, 2025, 07_08_44 PM_1752760077600.png";
 
 interface NavigationProps {
   onLogout: () => void;
