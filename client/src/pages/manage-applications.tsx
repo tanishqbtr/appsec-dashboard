@@ -58,7 +58,6 @@ export default function ManageApplications() {
     tags: [],
     labels: []
   });
-  const [tagInput, setTagInput] = useState("");
   const [labelInput, setLabelInput] = useState("");
 
   const handleLogout = async () => {
@@ -138,18 +137,7 @@ export default function ManageApplications() {
       tags: [],
       labels: []
     });
-    setTagInput("");
     setLabelInput("");
-  };
-
-  const handleAddTag = () => {
-    if (tagInput.trim() && !newApp.tags.includes(tagInput.trim())) {
-      setNewApp(prev => ({
-        ...prev,
-        tags: [...prev.tags, tagInput.trim()]
-      }));
-      setTagInput("");
-    }
   };
 
   const handleAddLabel = () => {
@@ -349,17 +337,25 @@ export default function ManageApplications() {
 
                     <div>
                       <Label>Compliance Tags</Label>
-                      <div className="flex gap-2 mb-2">
-                        <Input
-                          placeholder="Add tag (e.g., SOC2, HIPAA)"
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
-                        />
-                        <Button type="button" variant="outline" onClick={handleAddTag}>
-                          Add
-                        </Button>
-                      </div>
+                      <Select onValueChange={(value) => {
+                        if (value && !newApp.tags.includes(value)) {
+                          setNewApp(prev => ({
+                            ...prev,
+                            tags: [...prev.tags, value]
+                          }));
+                        }
+                      }}>
+                        <SelectTrigger className="mb-2">
+                          <SelectValue placeholder="Select compliance tags" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="HITRUST">HITRUST</SelectItem>
+                          <SelectItem value="ISO 27001">ISO 27001</SelectItem>
+                          <SelectItem value="SOC 2">SOC 2</SelectItem>
+                          <SelectItem value="HIPAA">HIPAA</SelectItem>
+                          <SelectItem value="PCI DSS">PCI DSS</SelectItem>
+                        </SelectContent>
+                      </Select>
                       <div className="flex flex-wrap gap-2">
                         {newApp.tags.map((tag, index) => (
                           <Badge key={index} variant="outline" className="bg-green-50 border-green-200 text-green-700">
