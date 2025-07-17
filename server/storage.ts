@@ -149,7 +149,12 @@ export class MemStorage implements IStorage {
         tags: ['ISO 27001'],
         lastScan: '07/17/2025, 11:51:54',
         hasAlert: true,
-        scanEngine: 'Crowdstrike'
+        scanEngine: 'Crowdstrike',
+        githubRepo: 'https://github.com/hingehealth/shipment-tracking',
+        jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/SHIP',
+        serviceOwner: 'Carlos Rivera (Logistics Team)',
+        slackChannel: 'https://hingehealth.slack.com/channels/logistics-team',
+        description: 'Service for tracking device shipments and delivery status'
       },
       {
         name: 'Member Data Integration Service',
@@ -162,7 +167,12 @@ export class MemStorage implements IStorage {
         tags: ['HITRUST', 'HIPAA'],
         lastScan: '06/24/2025, 10:53:38',
         hasAlert: true,
-        scanEngine: 'Mend'
+        scanEngine: 'Mend',
+        githubRepo: 'https://github.com/hingehealth/member-data-integration',
+        jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/MDI',
+        serviceOwner: 'Alex Chen (Data Engineering)',
+        slackChannel: 'https://hingehealth.slack.com/channels/data-integration',
+        description: 'Service for integrating and synchronizing member health data'
       },
       {
         name: 'CV Reforge Service',
@@ -175,7 +185,12 @@ export class MemStorage implements IStorage {
         tags: ['SOC 2'],
         lastScan: '06/19/2025, 06:20:03',
         hasAlert: false,
-        scanEngine: 'Mend'
+        scanEngine: 'Mend',
+        githubRepo: 'https://github.com/hingehealth/cv-reforge',
+        jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/CVR',
+        serviceOwner: 'Michael Chen (Computer Vision Team)',
+        slackChannel: 'https://hingehealth.slack.com/channels/cv-team',
+        description: 'Computer vision service for exercise form analysis and feedback'
       },
       {
         name: 'Kubernetes Airflow Lineage',

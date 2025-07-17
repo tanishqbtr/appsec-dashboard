@@ -3,6 +3,9 @@ import PageWrapper from "@/components/page-wrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import {
   ArrowLeft,
   Github,
@@ -15,11 +18,16 @@ import {
   Target,
   Activity,
   TrendingUp,
-  Clock
+  Clock,
+  Edit3,
+  Save,
+  X
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import { useParams, Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 import type { Application } from "@shared/schema";
 
 interface FindingsData {
@@ -34,10 +42,10 @@ function RiskBadge({ level, count }: { level: string; count: number }) {
   if (count === 0) return <span className="text-xs text-gray-400">0</span>;
 
   const colors = {
-    C: "bg-red-600 text-white hover:bg-red-700",
-    H: "bg-orange-500 text-white hover:bg-orange-600", 
-    M: "bg-yellow-500 text-white hover:bg-yellow-600",
-    L: "bg-green-500 text-white hover:bg-green-600"
+    C: "bg-red-600 text-white",
+    H: "bg-orange-500 text-white", 
+    M: "bg-yellow-500 text-white",
+    L: "bg-green-500 text-white"
   };
 
   const labels = {
@@ -48,15 +56,40 @@ function RiskBadge({ level, count }: { level: string; count: number }) {
   };
 
   return (
-    <Badge className={`${colors[level as keyof typeof colors]} text-sm px-3 py-1 transition-all duration-200 hover:scale-105`}>
+    <Badge className={`${colors[level as keyof typeof colors]} text-sm px-3 py-1`}>
       {count} {labels[level as keyof typeof labels]}
     </Badge>
+  );
+}
+
+function EngineBadge({ engine, findings }: { engine: string; findings: FindingsData }) {
+  const engineColors = {
+    mend: "bg-blue-100 text-blue-800 border-blue-200",
+    crowdstrike: "bg-red-100 text-red-800 border-red-200",
+    escape: "bg-purple-100 text-purple-800 border-purple-200"
+  };
+
+  return (
+    <div className="border rounded-lg p-3 space-y-2">
+      <div className={`text-xs font-medium px-2 py-1 rounded-full border ${engineColors[engine as keyof typeof engineColors]}`}>
+        {engine.charAt(0).toUpperCase() + engine.slice(1)}
+      </div>
+      <div className="flex flex-wrap gap-1 text-xs">
+        <span className="bg-red-50 text-red-700 px-1 py-0.5 rounded">C: {findings.C}</span>
+        <span className="bg-orange-50 text-orange-700 px-1 py-0.5 rounded">H: {findings.H}</span>
+        <span className="bg-yellow-50 text-yellow-700 px-1 py-0.5 rounded">M: {findings.M}</span>
+        <span className="bg-green-50 text-green-700 px-1 py-0.5 rounded">L: {findings.L}</span>
+      </div>
+    </div>
   );
 }
 
 export default function ServiceDetail() {
   const params = useParams();
   const serviceId = params.id;
+  const { toast } = useToast();
+  const [editingService, setEditingService] = useState<any>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
@@ -68,6 +101,50 @@ export default function ServiceDetail() {
   });
 
   const application = applications.find(app => app.id.toString() === serviceId);
+
+  const updateServiceMutation = useMutation({
+    mutationFn: async (updatedData: any) => {
+      const response = await fetch(`/api/applications/${serviceId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedData),
+      });
+      if (!response.ok) throw new Error("Failed to update service");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
+      setIsEditDialogOpen(false);
+      setEditingService(null);
+      toast({
+        title: "Service Updated",
+        description: "Service information has been successfully updated.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update service information.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEdit = () => {
+    setEditingService({
+      githubRepo: application?.githubRepo || "",
+      jiraProject: application?.jiraProject || "",
+      slackChannel: application?.slackChannel || "",
+      serviceOwner: application?.serviceOwner || "",
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSave = () => {
+    updateServiceMutation.mutate(editingService);
+  };
 
   if (isLoading) {
     return (
@@ -91,7 +168,7 @@ export default function ServiceDetail() {
 
   if (!application) {
     return (
-      <PageWrapper loadingMessage="Loading Service Details...">
+      <PageWrapper loadingMessage="Service not found">
         <div className="min-h-screen bg-gray-50">
           <Navigation onLogout={handleLogout} currentPage="services" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -112,7 +189,13 @@ export default function ServiceDetail() {
   }
 
   const findings: FindingsData = JSON.parse(application.totalFindings);
-  const violatingFindings: FindingsData = JSON.parse(application.violatingFindings);
+  
+  // Mock engine findings data
+  const engineFindings = {
+    mend: { total: Math.floor(findings.total * 0.4), C: Math.floor(findings.C * 0.5), H: Math.floor(findings.H * 0.3), M: Math.floor(findings.M * 0.4), L: Math.floor(findings.L * 0.5) },
+    crowdstrike: { total: Math.floor(findings.total * 0.35), C: Math.floor(findings.C * 0.3), H: Math.floor(findings.H * 0.4), M: Math.floor(findings.M * 0.3), L: Math.floor(findings.L * 0.3) },
+    escape: { total: Math.floor(findings.total * 0.25), C: Math.floor(findings.C * 0.2), H: Math.floor(findings.H * 0.3), M: Math.floor(findings.M * 0.3), L: Math.floor(findings.L * 0.2) }
+  };
 
   return (
     <PageWrapper loadingMessage="Loading Service Details...">
@@ -156,94 +239,95 @@ export default function ServiceDetail() {
             </div>
           </div>
 
-          {/* Quick Actions & Links */}
+          {/* Service Information & Links */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            {application.githubRepo && (
-              <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
-                <CardContent className="p-4">
-                  <a 
-                    href={application.githubRepo} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                  >
-                    <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                      <Github className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="font-medium">GitHub Repo</p>
-                      <p className="text-sm text-gray-600">View source code</p>
-                    </div>
-                    <ExternalLink className="h-4 w-4 ml-auto" />
-                  </a>
-                </CardContent>
-              </Card>
-            )}
-
-            {application.jiraProject && (
-              <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
-                <CardContent className="p-4">
-                  <a 
-                    href={application.jiraProject} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                  >
-                    <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Target className="h-5 w-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Jira Project</p>
-                      <p className="text-sm text-gray-600">Track issues</p>
-                    </div>
-                    <ExternalLink className="h-4 w-4 ml-auto" />
-                  </a>
-                </CardContent>
-              </Card>
-            )}
-
-            {application.slackChannel && (
-              <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
-                <CardContent className="p-4">
-                  <a 
-                    href={application.slackChannel} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                  >
-                    <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <MessageSquare className="h-5 w-5 text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="font-medium">Slack Channel</p>
-                      <p className="text-sm text-gray-600">Team communication</p>
-                    </div>
-                    <ExternalLink className="h-4 w-4 ml-auto" />
-                  </a>
-                </CardContent>
-              </Card>
-            )}
-
+            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+              <CardContent className="p-4">
+                <a 
+                  href={application.githubRepo || "#"} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
+                >
+                  <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <Github className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-medium">GitHub Repo</p>
+                    <p className="text-sm text-gray-600">View source code</p>
+                  </div>
+                  <ExternalLink className="h-4 w-4 ml-auto" />
+                </a>
+              </CardContent>
+            </Card>
+            
+            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+              <CardContent className="p-4">
+                <a 
+                  href={application.jiraProject || "#"} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
+                >
+                  <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Target className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Jira Project</p>
+                    <p className="text-sm text-gray-600">Track issues</p>
+                  </div>
+                  <ExternalLink className="h-4 w-4 ml-auto" />
+                </a>
+              </CardContent>
+            </Card>
+            
+            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+              <CardContent className="p-4">
+                <a 
+                  href={application.slackChannel || "#"} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
+                >
+                  <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <MessageSquare className="h-5 w-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-medium">Slack Channel</p>
+                    <p className="text-sm text-gray-600">Team communication</p>
+                  </div>
+                  <ExternalLink className="h-4 w-4 ml-auto" />
+                </a>
+              </CardContent>
+            </Card>
+            
             <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
                     <User className="h-5 w-5 text-green-600" />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium">Service Owner</p>
                     <p className="text-sm text-green-600">
                       {application.serviceOwner || "Engineering Team"}
                     </p>
                   </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleEdit}
+                    className="hover:bg-green-50 hover:border-green-300"
+                  >
+                    <Edit3 className="h-3 w-3" />
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Findings Overview */}
+          {/* Security Findings */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Security Findings */}
             <Card className="transition-all duration-200 hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -254,7 +338,7 @@ export default function ServiceDetail() {
               <CardContent>
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Total Findings</h4>
+                    <h4 className="font-medium text-gray-900 mb-3">Total by Severity</h4>
                     <div className="flex flex-wrap gap-3">
                       <RiskBadge level="C" count={findings.C} />
                       <RiskBadge level="H" count={findings.H} />
@@ -262,27 +346,22 @@ export default function ServiceDetail() {
                       <RiskBadge level="L" count={findings.L} />
                     </div>
                     <div className="mt-3 text-sm text-gray-600">
-                      Total: {findings.total} findings across {application.projects} projects
+                      Total: {findings.total} findings
                     </div>
                   </div>
 
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Violating Findings</h4>
-                    <div className="flex flex-wrap gap-3">
-                      <RiskBadge level="C" count={violatingFindings.C} />
-                      <RiskBadge level="H" count={violatingFindings.H} />
-                      <RiskBadge level="M" count={violatingFindings.M} />
-                      <RiskBadge level="L" count={violatingFindings.L} />
-                    </div>
-                    <div className="mt-3 text-sm text-gray-600">
-                      {violatingFindings.total} findings require immediate attention
+                    <h4 className="font-medium text-gray-900 mb-3">Findings by Scanner</h4>
+                    <div className="grid grid-cols-3 gap-2">
+                      <EngineBadge engine="mend" findings={engineFindings.mend} />
+                      <EngineBadge engine="crowdstrike" findings={engineFindings.crowdstrike} />
+                      <EngineBadge engine="escape" findings={engineFindings.escape} />
                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Service Information */}
             <Card className="transition-all duration-200 hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -292,20 +371,9 @@ export default function ServiceDetail() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Risk Score</p>
-                      <p className="text-2xl font-bold text-orange-600">{application.riskScore}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Projects</p>
-                      <p className="text-2xl font-bold text-gray-900">{application.projects}</p>
-                    </div>
-                  </div>
-
                   <div>
-                    <p className="text-sm text-gray-600 mb-2">Risk Factors</p>
-                    <p className="text-sm text-gray-900">{application.riskFactors}</p>
+                    <p className="text-sm text-gray-600">Risk Score</p>
+                    <p className="text-2xl font-bold text-orange-600">{application.riskScore}</p>
                   </div>
 
                   <div>
@@ -344,7 +412,7 @@ export default function ServiceDetail() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-4">
+          <div className="flex gap-4 mb-8">
             <Button className="bg-green-600 hover:bg-green-700 transition-all duration-200 hover:scale-105">
               <Shield className="h-4 w-4 mr-2" />
               Trigger New Scan
@@ -358,6 +426,67 @@ export default function ServiceDetail() {
               Schedule Scan
             </Button>
           </div>
+
+          {/* Edit Dialog */}
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Edit Service Information</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div>
+                  <Label htmlFor="githubRepo">GitHub Repository</Label>
+                  <Input
+                    id="githubRepo"
+                    placeholder="https://github.com/company/repo"
+                    value={editingService?.githubRepo || ""}
+                    onChange={(e) => setEditingService({...editingService, githubRepo: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="jiraProject">Jira Project</Label>
+                  <Input
+                    id="jiraProject"
+                    placeholder="https://company.atlassian.net/browse/PROJECT"
+                    value={editingService?.jiraProject || ""}
+                    onChange={(e) => setEditingService({...editingService, jiraProject: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="slackChannel">Slack Channel</Label>
+                  <Input
+                    id="slackChannel"
+                    placeholder="https://company.slack.com/channels/team"
+                    value={editingService?.slackChannel || ""}
+                    onChange={(e) => setEditingService({...editingService, slackChannel: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="serviceOwner">Service Owner</Label>
+                  <Input
+                    id="serviceOwner"
+                    placeholder="John Doe (Team Name)"
+                    value={editingService?.serviceOwner || ""}
+                    onChange={(e) => setEditingService({...editingService, serviceOwner: e.target.value})}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSave}
+                  disabled={updateServiceMutation.isPending}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateServiceMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </PageWrapper>

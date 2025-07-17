@@ -37,6 +37,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update application endpoint
+  app.patch("/api/applications/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      const applications = await storage.getApplications();
+      const applicationIndex = applications.findIndex((app: any) => app.id?.toString() === id);
+      
+      if (applicationIndex === -1) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+      
+      // Update the application with new data
+      applications[applicationIndex] = {
+        ...applications[applicationIndex],
+        ...updates
+      };
+      
+      res.json(applications[applicationIndex]);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
