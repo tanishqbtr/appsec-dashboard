@@ -67,28 +67,25 @@ function RiskBadge({ level, count }: { level: string; count: number }) {
 
 function PercentileBadge({ percentile }: { percentile: number }) {
   let color = "bg-gray-500";
-  let label = "Average";
+  let label = "Platinum";
   
-  if (percentile >= 90) {
-    color = "bg-green-600";
-    label = "Top 10%";
-  } else if (percentile >= 75) {
-    color = "bg-blue-500";
-    label = "Top 25%";
-  } else if (percentile >= 50) {
+  if (percentile >= 76) {
+    color = "bg-purple-600";
+    label = "Platinum";
+  } else if (percentile >= 51) {
     color = "bg-yellow-500";
-    label = "Top 50%";
-  } else if (percentile >= 25) {
-    color = "bg-orange-500";
-    label = "Bottom 50%";
+    label = "Gold";
+  } else if (percentile >= 26) {
+    color = "bg-gray-500";
+    label = "Silver";
   } else {
-    color = "bg-red-600";
-    label = "Bottom 25%";
+    color = "bg-orange-500";
+    label = "Bronze";
   }
 
   return (
     <Badge className={`${color} text-white text-xs px-2 py-0.5`}>
-      {Math.round(percentile)}%
+      {Math.round(percentile)}% {label}
     </Badge>
   );
 }

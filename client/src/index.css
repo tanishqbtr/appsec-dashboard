@@ -145,3 +145,84 @@
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+/* Confetti animations for Platinum badges */
+@keyframes confetti-1 {
+  0% { transform: translateY(0) rotateZ(0deg); opacity: 1; }
+  100% { transform: translateY(-50px) rotateZ(180deg); opacity: 0; }
+}
+
+@keyframes confetti-2 {
+  0% { transform: translateY(0) rotateZ(0deg); opacity: 1; }
+  100% { transform: translateY(-60px) translateX(-20px) rotateZ(270deg); opacity: 0; }
+}
+
+@keyframes confetti-3 {
+  0% { transform: translateY(0) rotateZ(0deg); opacity: 1; }
+  100% { transform: translateY(-45px) translateX(15px) rotateZ(360deg); opacity: 0; }
+}
+
+@keyframes confetti-4 {
+  0% { transform: translateX(0) rotateZ(0deg); opacity: 1; }
+  100% { transform: translateX(-40px) translateY(-30px) rotateZ(180deg); opacity: 0; }
+}
+
+@keyframes confetti-5 {
+  0% { transform: translateX(0) rotateZ(0deg); opacity: 1; }
+  100% { transform: translateX(35px) translateY(-40px) rotateZ(270deg); opacity: 0; }
+}
+
+@keyframes confetti-6 {
+  0% { transform: translateY(0) rotateZ(0deg); opacity: 1; }
+  100% { transform: translateY(-35px) translateX(-25px) rotateZ(360deg); opacity: 0; }
+}
+
+@keyframes confetti-7 {
+  0% { transform: translateY(0) rotateZ(0deg); opacity: 1; }
+  100% { transform: translateY(-55px) translateX(10px) rotateZ(180deg); opacity: 0; }
+}
+
+@keyframes confetti-8 {
+  0% { transform: translateY(0) rotateZ(0deg); opacity: 1; }
+  100% { transform: translateY(-40px) translateX(20px) rotateZ(270deg); opacity: 0; }
+}
+
+.animate-confetti-1 {
+  animation: confetti-1 2s ease-out infinite;
+  animation-delay: 0s;
+}
+
+.animate-confetti-2 {
+  animation: confetti-2 2.2s ease-out infinite;
+  animation-delay: 0.2s;
+}
+
+.animate-confetti-3 {
+  animation: confetti-3 2.1s ease-out infinite;
+  animation-delay: 0.4s;
+}
+
+.animate-confetti-4 {
+  animation: confetti-4 2.3s ease-out infinite;
+  animation-delay: 0.1s;
+}
+
+.animate-confetti-5 {
+  animation: confetti-5 2.4s ease-out infinite;
+  animation-delay: 0.3s;
+}
+
+.animate-confetti-6 {
+  animation: confetti-6 2.2s ease-out infinite;
+  animation-delay: 0.5s;
+}
+
+.animate-confetti-7 {
+  animation: confetti-7 2.1s ease-out infinite;
+  animation-delay: 0.6s;
+}
+
+.animate-confetti-8 {
+  animation: confetti-8 2.3s ease-out infinite;
+  animation-delay: 0.7s;
+}
