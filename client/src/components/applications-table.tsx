@@ -361,7 +361,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300">
+              <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" data-tutorial-target="export-button">
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
@@ -388,7 +388,9 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               <SortableHeader field="name">Service Name</SortableHeader>
               <SortableHeader field="riskScore">Risk Score</SortableHeader>
               <SortableHeader field="percentile">
-                Percentile
+                <div data-tutorial-target="percentile-column">
+                  Percentile
+                </div>
               </SortableHeader>
               <SortableHeader field="totalFindings">Total Findings</SortableHeader>
               <SortableHeader field="criticalFindings">Critical Findings</SortableHeader>
@@ -413,6 +415,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                     key={app.id} 
                     className="hover:bg-green-50 cursor-pointer transition-all duration-200 hover:shadow-sm"
                     onClick={() => setLocation(`/services/${app.id}`)}
+                    data-tutorial-target="service-row"
                   >
                     <TableCell>
                       <div className="flex items-center gap-2">
