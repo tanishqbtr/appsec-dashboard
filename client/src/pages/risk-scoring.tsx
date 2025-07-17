@@ -19,7 +19,15 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -46,6 +54,20 @@ export default function RiskScoring() {
   const [sortBy, setSortBy] = useState<"name" | "score" | "findings">("score");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [searchTerm, setSearchTerm] = useState("");
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  
+  // Risk assessment form state
+  const [riskFactors, setRiskFactors] = useState({
+    dataClassification: "",
+    phi: "",
+    eligibilityData: "",
+    confidentialityImpact: "",
+    integrityImpact: "",
+    availabilityImpact: "",
+    publicEndpoint: "",
+    discoverability: "",
+    awareness: ""
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -89,6 +111,19 @@ export default function RiskScoring() {
     setEditingId(app.id!);
     setEditingScore(app.riskScore);
     setEditingReason("");
+    setEditDialogOpen(true);
+    // Reset form state
+    setRiskFactors({
+      dataClassification: "",
+      phi: "",
+      eligibilityData: "",
+      confidentialityImpact: "",
+      integrityImpact: "",
+      availabilityImpact: "",
+      publicEndpoint: "",
+      discoverability: "",
+      awareness: ""
+    });
   };
 
   const handleSave = () => {
@@ -115,6 +150,18 @@ export default function RiskScoring() {
     setEditingId(null);
     setEditingScore("");
     setEditingReason("");
+    setEditDialogOpen(false);
+    setRiskFactors({
+      dataClassification: "",
+      phi: "",
+      eligibilityData: "",
+      confidentialityImpact: "",
+      integrityImpact: "",
+      availabilityImpact: "",
+      publicEndpoint: "",
+      discoverability: "",
+      awareness: ""
+    });
   };
 
   const getRiskLevel = (score: number) => {
@@ -338,35 +385,7 @@ export default function RiskScoring() {
                       <TableRow key={app.id}>
                         <TableCell className="font-medium">{app.name}</TableCell>
                         <TableCell>
-                          {isEditing ? (
-                            <div className="flex gap-2 items-center">
-                              <Input
-                                type="number"
-                                min="0"
-                                max="10"
-                                step="0.1"
-                                value={editingScore}
-                                onChange={(e) => setEditingScore(e.target.value)}
-                                className="w-20"
-                              />
-                              <Button
-                                size="sm"
-                                onClick={handleSave}
-                                disabled={updateRiskScoreMutation.isPending}
-                              >
-                                <Save className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={handleCancel}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          ) : (
-                            <span className="text-lg font-semibold">{riskScore.toFixed(1)}</span>
-                          )}
+                          <span className="text-lg font-semibold">{riskScore.toFixed(1)}</span>
                         </TableCell>
                         <TableCell>
                           <Badge className={riskInfo.color}>
@@ -382,40 +401,14 @@ export default function RiskScoring() {
                         </TableCell>
 
                         <TableCell>
-                          {isEditing ? (
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button size="sm" variant="outline">
-                                  Add Reason
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent>
-                                <DialogHeader>
-                                  <DialogTitle>Risk Score Update Reason</DialogTitle>
-                                </DialogHeader>
-                                <div className="space-y-4">
-                                  <div>
-                                    <Label htmlFor="reason">Reason for Risk Score Change</Label>
-                                    <Textarea
-                                      id="reason"
-                                      placeholder="Explain why you're changing the risk score..."
-                                      value={editingReason}
-                                      onChange={(e) => setEditingReason(e.target.value)}
-                                    />
-                                  </div>
-                                </div>
-                              </DialogContent>
-                            </Dialog>
-                          ) : (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleEdit(app)}
-                            >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Edit
-                            </Button>
-                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleEdit(app)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Edit
+                          </Button>
                         </TableCell>
                       </TableRow>
                     );
@@ -424,6 +417,203 @@ export default function RiskScoring() {
               </Table>
             </CardContent>
           </Card>
+
+          {/* Risk Assessment Dialog */}
+          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Risk Assessment - {filteredAndSortedApplications.find(app => app.id === editingId)?.name}</DialogTitle>
+              </DialogHeader>
+              
+              <div className="space-y-8">
+                {/* Data Classification Factors */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Data Classification Factors</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="dataClassification">Data Classification</Label>
+                      <Select 
+                        value={riskFactors.dataClassification} 
+                        onValueChange={(value) => setRiskFactors(prev => ({...prev, dataClassification: value}))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select classification" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sensitive-regulated">Sensitive/Regulated</SelectItem>
+                          <SelectItem value="restricted">Restricted</SelectItem>
+                          <SelectItem value="confidential">Confidential</SelectItem>
+                          <SelectItem value="public">Public</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="phi">PHI</Label>
+                      <Select 
+                        value={riskFactors.phi} 
+                        onValueChange={(value) => setRiskFactors(prev => ({...prev, phi: value}))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select PHI status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="eligibilityData">Eligibility Data</Label>
+                      <Select 
+                        value={riskFactors.eligibilityData} 
+                        onValueChange={(value) => setRiskFactors(prev => ({...prev, eligibilityData: value}))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select eligibility status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CIA Triad */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">CIA Triad</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="confidentialityImpact">Confidentiality Impact</Label>
+                      <Select 
+                        value={riskFactors.confidentialityImpact} 
+                        onValueChange={(value) => setRiskFactors(prev => ({...prev, confidentialityImpact: value}))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select impact level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="low">Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="integrityImpact">Integrity Impact</Label>
+                      <Select 
+                        value={riskFactors.integrityImpact} 
+                        onValueChange={(value) => setRiskFactors(prev => ({...prev, integrityImpact: value}))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select impact level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="low">Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="availabilityImpact">Availability Impact</Label>
+                      <Select 
+                        value={riskFactors.availabilityImpact} 
+                        onValueChange={(value) => setRiskFactors(prev => ({...prev, availabilityImpact: value}))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select impact level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="low">Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Attack Surface Factors */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Attack Surface Factors</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="publicEndpoint">Public Endpoint</Label>
+                      <Select 
+                        value={riskFactors.publicEndpoint} 
+                        onValueChange={(value) => setRiskFactors(prev => ({...prev, publicEndpoint: value}))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select endpoint status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="yes">Yes</SelectItem>
+                          <SelectItem value="no">No</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="discoverability">Discoverability</Label>
+                      <Select 
+                        value={riskFactors.discoverability} 
+                        onValueChange={(value) => setRiskFactors(prev => ({...prev, discoverability: value}))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select discoverability level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="low">Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="awareness">Awareness</Label>
+                      <Select 
+                        value={riskFactors.awareness} 
+                        onValueChange={(value) => setRiskFactors(prev => ({...prev, awareness: value}))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select awareness level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="low">Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Risk Scores */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Risk Scores</h3>
+                  <div className="text-sm text-gray-500">
+                    Risk scoring calculations will be displayed here based on the selected factors.
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={handleCancel}>
+                  Cancel
+                </Button>
+                <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
+                  Save Assessment
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
     </PageWrapper>
