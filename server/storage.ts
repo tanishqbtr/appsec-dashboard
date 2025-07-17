@@ -7,6 +7,7 @@ export interface IStorage {
   getApplications(): Promise<Application[]>;
   getApplication(id: number): Promise<Application | undefined>;
   createApplication(application: InsertApplication): Promise<Application>;
+  updateApplication(id: number, updates: Partial<Application>): Promise<Application | undefined>;
 }
 
 export class MemStorage implements IStorage {
@@ -287,6 +288,21 @@ export class MemStorage implements IStorage {
     };
     this.applications.set(id, application);
     return application;
+  }
+
+  async updateApplication(id: number, updates: Partial<Application>): Promise<Application | undefined> {
+    const existingApplication = this.applications.get(id);
+    if (!existingApplication) {
+      return undefined;
+    }
+    
+    const updatedApplication = {
+      ...existingApplication,
+      ...updates
+    };
+    
+    this.applications.set(id, updatedApplication);
+    return updatedApplication;
   }
 }
 

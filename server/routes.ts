@@ -69,21 +69,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const updates = req.body;
       
-      const applications = await storage.getApplications();
-      const applicationIndex = applications.findIndex((app: any) => app.id?.toString() === id);
+      const updatedApplication = await storage.updateApplication(parseInt(id), updates);
       
-      if (applicationIndex === -1) {
+      if (!updatedApplication) {
         return res.status(404).json({ message: "Application not found" });
       }
       
-      // Update the application with new data
-      applications[applicationIndex] = {
-        ...applications[applicationIndex],
-        ...updates
-      };
-      
-      res.json(applications[applicationIndex]);
+      res.json(updatedApplication);
     } catch (error) {
+      console.error("Update application error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
