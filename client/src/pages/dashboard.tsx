@@ -13,7 +13,7 @@ import type { Application } from "@shared/schema";
 export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedEngine, setSelectedEngine] = useState("Dependencies");
+  const [selectedEngine, setSelectedEngine] = useState("Mend");
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
 
   const { data: applications, isLoading, refetch } = useQuery<Application[]>({
@@ -24,12 +24,31 @@ export default function Dashboard() {
     setLocation("/login");
   };
 
+  const handleEngineSelect = (engine: string) => {
+    setSelectedEngine(engine);
+    setSelectedLabels([]); // Clear labels when switching engines
+  };
+
   const handleLabelSelect = (label: string) => {
     setSelectedLabels(prev => 
       prev.includes(label) 
         ? prev.filter(l => l !== label)
         : [...prev, label]
     );
+  };
+
+  // Define available labels based on selected engine
+  const getAvailableLabels = () => {
+    switch (selectedEngine) {
+      case "Mend":
+        return ["SCA", "SAST", "Containers"];
+      case "Escape":
+        return ["Web Applications", "APIs"];
+      case "Crowdstrike":
+        return ["Images", "Containers"];
+      default:
+        return [];
+    }
   };
 
   const filteredApplications = applications?.filter((app) => {
@@ -60,55 +79,41 @@ export default function Dashboard() {
           <div className="flex flex-wrap gap-2 items-center">
             <span className="text-sm text-gray-700 font-medium">Scan engine</span>
             <Badge 
-              variant={selectedEngine === "Dependencies" ? "default" : "secondary"}
+              variant={selectedEngine === "Mend" ? "default" : "secondary"}
               className="cursor-pointer"
-              onClick={() => setSelectedEngine("Dependencies")}
+              onClick={() => handleEngineSelect("Mend")}
             >
-              Dependencies
+              Mend
             </Badge>
             <Badge 
-              variant={selectedEngine === "Code" ? "default" : "secondary"}
+              variant={selectedEngine === "Escape" ? "default" : "secondary"}
               className="cursor-pointer"
-              onClick={() => setSelectedEngine("Code")}
+              onClick={() => handleEngineSelect("Escape")}
             >
-              Code
+              Escape
             </Badge>
             <Badge 
-              variant={selectedEngine === "Containers" ? "default" : "secondary"}
+              variant={selectedEngine === "Crowdstrike" ? "default" : "secondary"}
               className="cursor-pointer"
-              onClick={() => setSelectedEngine("Containers")}
+              onClick={() => handleEngineSelect("Crowdstrike")}
             >
-              Containers
-            </Badge>
-            <Badge variant="outline" className="cursor-pointer text-primary">
-              Select all
+              Crowdstrike
             </Badge>
           </div>
           
           <div className="flex gap-4 items-center">
             <span className="text-sm text-gray-700 font-medium">Labels</span>
             <div className="flex gap-2">
-              <Badge 
-                variant={selectedLabels.includes("Production") ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => handleLabelSelect("Production")}
-              >
-                Production
-              </Badge>
-              <Badge 
-                variant={selectedLabels.includes("Development") ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => handleLabelSelect("Development")}
-              >
-                Development
-              </Badge>
-              <Badge 
-                variant={selectedLabels.includes("Testing") ? "default" : "outline"}
-                className="cursor-pointer"
-                onClick={() => handleLabelSelect("Testing")}
-              >
-                Testing
-              </Badge>
+              {getAvailableLabels().map((label) => (
+                <Badge 
+                  key={label}
+                  variant={selectedLabels.includes(label) ? "default" : "outline"}
+                  className="cursor-pointer"
+                  onClick={() => handleLabelSelect(label)}
+                >
+                  {label}
+                </Badge>
+              ))}
               {selectedLabels.length > 0 && (
                 <Badge 
                   variant="ghost" 
