@@ -171,6 +171,87 @@ export default function RiskScoring() {
     return { level: "Low", color: "bg-green-100 text-green-800", icon: Shield };
   };
 
+  // Risk scoring calculations
+  const calculateDataClassificationScore = () => {
+    let score = 0;
+    
+    // Data Classification scoring
+    switch (riskFactors.dataClassification) {
+      case 'sensitive-regulated': score += 7; break;
+      case 'restricted': score += 5; break;
+      case 'confidential': score += 3; break;
+      case 'public': score += 1; break;
+    }
+    
+    // PHI scoring
+    if (riskFactors.phi === 'yes') score += 1;
+    
+    // Eligibility Data scoring
+    if (riskFactors.eligibilityData === 'yes') score += 1;
+    
+    return score;
+  };
+
+  const calculateCIATriadScore = () => {
+    let score = 0;
+    
+    // Confidentiality Impact
+    switch (riskFactors.confidentialityImpact) {
+      case 'high': score += 3; break;
+      case 'medium': score += 2; break;
+      case 'low': score += 1; break;
+    }
+    
+    // Integrity Impact
+    switch (riskFactors.integrityImpact) {
+      case 'high': score += 3; break;
+      case 'medium': score += 2; break;
+      case 'low': score += 1; break;
+    }
+    
+    // Availability Impact
+    switch (riskFactors.availabilityImpact) {
+      case 'high': score += 3; break;
+      case 'medium': score += 2; break;
+      case 'low': score += 1; break;
+    }
+    
+    return score;
+  };
+
+  const calculateAttackSurfaceScore = () => {
+    let score = 0;
+    
+    // Public Endpoint
+    if (riskFactors.publicEndpoint === 'yes') score += 3;
+    
+    // Discoverability
+    switch (riskFactors.discoverability) {
+      case 'high': score += 3; break;
+      case 'medium': score += 2; break;
+      case 'low': score += 1; break;
+    }
+    
+    // Awareness
+    switch (riskFactors.awareness) {
+      case 'high': score += 3; break;
+      case 'medium': score += 2; break;
+      case 'low': score += 1; break;
+    }
+    
+    return score;
+  };
+
+  const calculateFinalRiskScore = () => {
+    const dataScore = calculateDataClassificationScore();
+    const ciaScore = calculateCIATriadScore();
+    const attackScore = calculateAttackSurfaceScore();
+    
+    if (dataScore === 0 && ciaScore === 0 && attackScore === 0) return 0;
+    
+    return ((dataScore + ciaScore + attackScore) / 3).toFixed(1);
+  };
+
   const handleSort = (field: "name" | "score" | "findings") => {
     if (sortBy === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -598,8 +679,39 @@ export default function RiskScoring() {
                 {/* Risk Scores */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900">Risk Scores</h3>
-                  <div className="text-sm text-gray-500">
-                    Risk scoring calculations will be displayed here based on the selected factors.
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-blue-50 p-4 rounded-lg">
+                      <div className="text-sm font-medium text-blue-600">Data Classification Score</div>
+                      <div className="text-2xl font-bold text-blue-800">{calculateDataClassificationScore()}</div>
+                    </div>
+                    
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <div className="text-sm font-medium text-purple-600">CIA Triad Score</div>
+                      <div className="text-2xl font-bold text-purple-800">{calculateCIATriadScore()}</div>
+                    </div>
+                    
+                    <div className="bg-orange-50 p-4 rounded-lg">
+                      <div className="text-sm font-medium text-orange-600">Attack Surface Score</div>
+                      <div className="text-2xl font-bold text-orange-800">{calculateAttackSurfaceScore()}</div>
+                    </div>
+                    
+                    <div className="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
+                      <div className="text-sm font-medium text-gray-600">Final Risk Score</div>
+                      <div className="text-2xl font-bold text-gray-800">{calculateFinalRiskScore()}</div>
+                      <div className="mt-1">
+                        {(() => {
+                          const finalScore = parseFloat(calculateFinalRiskScore());
+                          const riskInfo = getRiskLevel(finalScore);
+                          const RiskIcon = riskInfo.icon;
+                          return (
+                            <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${riskInfo.color}`}>
+                              <RiskIcon className="h-3 w-3 mr-1" />
+                              {riskInfo.level}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
