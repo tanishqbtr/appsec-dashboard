@@ -2,6 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import Navigation from "@/components/navigation";
 import ApplicationsTable from "@/components/applications-table";
+import OnboardingTutorial from "@/components/onboarding-tutorial";
+import { useOnboarding } from "@/hooks/use-onboarding";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,6 +29,8 @@ export default function Services() {
   const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["/api/applications"],
   });
+
+  const { showOnboarding, completeOnboarding, skipOnboarding, resetOnboarding } = useOnboarding();
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
@@ -91,7 +95,12 @@ export default function Services() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navigation onLogout={handleLogout} currentPage="services" />
+      <Navigation onLogout={handleLogout} currentPage="services" onRestartTutorial={resetOnboarding} />
+      <OnboardingTutorial 
+        isVisible={showOnboarding}
+        onComplete={completeOnboarding}
+        onSkip={skipOnboarding}
+      />
       
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -102,7 +111,7 @@ export default function Services() {
         </div>
 
         {/* Filters */}
-        <div className="mb-6 bg-white border border-gray-200 rounded-lg p-6">
+        <div className="mb-6 bg-white border border-gray-200 rounded-lg p-6" data-tutorial-target="filter-section">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Side - Scan Engine and Labels */}
             <div>
@@ -214,7 +223,7 @@ export default function Services() {
         </div>
 
         {/* Applications Table */}
-        <Card>
+        <Card data-tutorial-target="services-table">
           <CardHeader>
             <CardTitle>Services ({filteredApplications.length})</CardTitle>
           </CardHeader>

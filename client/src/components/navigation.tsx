@@ -19,6 +19,7 @@ import {
   Settings,
   HelpCircle,
   User,
+  RotateCcw,
 } from "lucide-react";
 import HingeLogo from "./hinge-logo";
 import hingeHealthLogoPath from "@assets/ChatGPT Image Jul 17, 2025, 07_08_44 PM_1752760077600.png";
@@ -26,9 +27,10 @@ import hingeHealthLogoPath from "@assets/ChatGPT Image Jul 17, 2025, 07_08_44 PM
 interface NavigationProps {
   onLogout: () => void;
   currentPage?: string;
+  onRestartTutorial?: () => void;
 }
 
-export default function Navigation({ onLogout, currentPage }: NavigationProps) {
+export default function Navigation({ onLogout, currentPage, onRestartTutorial }: NavigationProps) {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [location] = useLocation();
   
@@ -46,7 +48,7 @@ export default function Navigation({ onLogout, currentPage }: NavigationProps) {
   const activePage = getCurrentPage();
 
   return (
-    <nav className="bg-primary shadow-sm">
+    <nav className="bg-primary shadow-sm" data-tutorial-target="nav">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
@@ -111,6 +113,16 @@ export default function Navigation({ onLogout, currentPage }: NavigationProps) {
           </div>
           
           <div className="flex items-center">
+            {onRestartTutorial && (
+              <Button 
+                variant="ghost" 
+                className="text-white hover:text-gray-200 p-2 transition-all duration-200 hover:scale-110 hover:bg-green-800"
+                onClick={onRestartTutorial}
+                title="Restart Tutorial"
+              >
+                <RotateCcw className="h-5 w-5" />
+              </Button>
+            )}
             <Button variant="ghost" className="text-white hover:text-gray-200 p-2 transition-all duration-200 hover:scale-110 hover:bg-green-800">
               <HelpCircle className="h-5 w-5" />
             </Button>
