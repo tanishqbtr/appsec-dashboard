@@ -253,6 +253,9 @@ export default function ServiceDetail() {
       serviceOwner: application?.serviceOwner || "",
       riskScore: application?.riskScore || 0,
       tags: application?.tags || [],
+      mendLink: application?.mendLink || "",
+      crowdstrikeLink: application?.crowdstrikeLink || "",
+      escapeLink: application?.escapeLink || "",
     });
     setIsEditDialogOpen(true);
   };
@@ -543,20 +546,41 @@ export default function ServiceDetail() {
             </Card>
           </div>
 
-          {/* Action Buttons */}
+          {/* Security Scanner Links */}
           <div className="flex gap-4 mb-8">
-            <Button className="bg-green-600 hover:bg-green-700 transition-all duration-200 hover:scale-105">
-              <Shield className="h-4 w-4 mr-2" />
-              Trigger New Scan
-            </Button>
-            <Button variant="outline" className="transition-all duration-200 hover:scale-105">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              View History
-            </Button>
-            <Button variant="outline" className="transition-all duration-200 hover:scale-105">
-              <Clock className="h-4 w-4 mr-2" />
-              Schedule Scan
-            </Button>
+            <a 
+              href={application.mendLink || "#"} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <Button className="bg-blue-600 hover:bg-blue-700 transition-all duration-200 hover:scale-105">
+                <Shield className="h-4 w-4 mr-2" />
+                Take me to Mend
+                <ExternalLink className="h-4 w-4 ml-2" />
+              </Button>
+            </a>
+            <a 
+              href={application.crowdstrikeLink || "#"} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" className="transition-all duration-200 hover:scale-105 border-red-200 hover:bg-red-50">
+                <Shield className="h-4 w-4 mr-2" />
+                Take me to Crowdstrike
+                <ExternalLink className="h-4 w-4 ml-2" />
+              </Button>
+            </a>
+            <a 
+              href={application.escapeLink || "#"} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <Button variant="outline" className="transition-all duration-200 hover:scale-105 border-purple-200 hover:bg-purple-50">
+                <Shield className="h-4 w-4 mr-2" />
+                Take me to Escape
+                <ExternalLink className="h-4 w-4 ml-2" />
+              </Button>
+            </a>
           </div>
 
           {/* Edit Dialog */}
@@ -709,6 +733,38 @@ export default function ServiceDetail() {
                     value={editingService?.slackChannel || ""}
                     onChange={(e) => setEditingService({...editingService, slackChannel: e.target.value})}
                   />
+                </div>
+                
+                {/* Security Scanner Links */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h4 className="font-medium text-gray-900">Security Scanner Links</h4>
+                  <div>
+                    <Label htmlFor="mendLink">Mend Scanner Link</Label>
+                    <Input
+                      id="mendLink"
+                      placeholder="https://mend.company.com/project/..."
+                      value={editingService?.mendLink || ""}
+                      onChange={(e) => setEditingService({...editingService, mendLink: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="crowdstrikeLink">Crowdstrike Scanner Link</Label>
+                    <Input
+                      id="crowdstrikeLink"
+                      placeholder="https://falcon.crowdstrike.com/investigate/..."
+                      value={editingService?.crowdstrikeLink || ""}
+                      onChange={(e) => setEditingService({...editingService, crowdstrikeLink: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="escapeLink">Escape Scanner Link</Label>
+                    <Input
+                      id="escapeLink"
+                      placeholder="https://escape.company.com/dashboard/..."
+                      value={editingService?.escapeLink || ""}
+                      onChange={(e) => setEditingService({...editingService, escapeLink: e.target.value})}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="flex justify-end gap-2">
