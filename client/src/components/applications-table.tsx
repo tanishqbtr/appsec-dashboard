@@ -390,7 +390,6 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               <SortableHeader field="totalFindings">Total Findings</SortableHeader>
               <SortableHeader field="percentile">
                 Percentile
-                <span className="text-xs text-gray-400 block mt-1">Based on findings</span>
               </SortableHeader>
               <SortableHeader field="criticalFindings">Critical Findings</SortableHeader>
               <SortableHeader field="highFindings">High Findings</SortableHeader>
@@ -398,7 +397,6 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               <SortableHeader field="lowFindings">Low Findings</SortableHeader>
               <TableHead className="font-medium text-gray-500 uppercase tracking-wider">
                 Tags
-                <span className="text-xs text-gray-400 block mt-1">Click row to view details</span>
               </TableHead>
             </TableRow>
           </TableHeader>
