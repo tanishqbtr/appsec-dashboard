@@ -85,7 +85,7 @@ function PercentileBadge({ percentile }: { percentile: number }) {
 
   return (
     <Badge className={`${color} text-white text-xs px-2 py-0.5`}>
-      {Math.round(percentile)}% {label}
+      {Math.round(percentile)}%
     </Badge>
   );
 }
