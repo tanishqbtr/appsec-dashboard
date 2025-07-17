@@ -67,6 +67,14 @@ const tutorialSteps: TutorialStep[] = [
     position: 'bottom'
   },
   {
+    id: 'manage-services',
+    title: 'Manage Services',
+    description: 'Use the Manage Services button to add new applications, edit existing ones, or remove services from your security dashboard.',
+    target: 'manage-services-button',
+    icon: <Target className="h-5 w-5" />,
+    position: 'bottom'
+  },
+  {
     id: 'service-details',
     title: 'Service Details',
     description: 'Click any service row to view detailed security findings, risk scores, percentile ranks, and management links for GitHub, Jira, and Slack.',
@@ -103,6 +111,17 @@ export default function OnboardingTutorial({ isVisible, onComplete, onSkip }: On
     }
   }, [currentStep, isVisible]);
 
+  // Force repositioning when step changes
+  useEffect(() => {
+    if (isVisible) {
+      const timer = setTimeout(() => {
+        // Trigger a re-render to recalculate positions
+        setCurrentStep(prev => prev);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [currentStep, isVisible]);
+
   if (!isVisible) return null;
 
   const step = tutorialSteps[currentStep];
@@ -124,19 +143,60 @@ export default function OnboardingTutorial({ isVisible, onComplete, onSkip }: On
   };
 
   const getPositionClasses = () => {
+    // Try to get target element for dynamic positioning
+    const targetElement = step.target ? document.querySelector(`[data-tutorial-target="${step.target}"]`) : null;
+    
+    if (targetElement) {
+      const rect = targetElement.getBoundingClientRect();
+      const elementCenterX = rect.left + rect.width / 2;
+      const elementCenterY = rect.top + rect.height / 2;
+      
+      switch (step.position) {
+        case 'top':
+          return {
+            position: 'fixed',
+            top: `${Math.max(20, rect.top - 200)}px`,
+            left: `${Math.max(20, Math.min(window.innerWidth - 400, elementCenterX - 200))}px`,
+            transform: 'none'
+          };
+        case 'bottom':
+          return {
+            position: 'fixed',
+            top: `${Math.min(window.innerHeight - 200, rect.bottom + 20)}px`,
+            left: `${Math.max(20, Math.min(window.innerWidth - 400, elementCenterX - 200))}px`,
+            transform: 'none'
+          };
+        case 'left':
+          return {
+            position: 'fixed',
+            top: `${Math.max(20, Math.min(window.innerHeight - 200, elementCenterY - 100))}px`,
+            left: `${Math.max(20, rect.left - 420)}px`,
+            transform: 'none'
+          };
+        case 'right':
+          return {
+            position: 'fixed',
+            top: `${Math.max(20, Math.min(window.innerHeight - 200, elementCenterY - 100))}px`,
+            left: `${Math.min(window.innerWidth - 420, rect.right + 20)}px`,
+            transform: 'none'
+          };
+      }
+    }
+    
+    // Fallback to centered positioning
     switch (step.position) {
       case 'center':
-        return 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2';
+        return { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
       case 'top':
-        return 'fixed top-20 left-1/2 transform -translate-x-1/2';
+        return { position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)' };
       case 'bottom':
-        return 'fixed bottom-20 left-1/2 transform -translate-x-1/2';
+        return { position: 'fixed', bottom: '80px', left: '50%', transform: 'translateX(-50%)' };
       case 'left':
-        return 'fixed top-1/2 left-20 transform -translate-y-1/2';
+        return { position: 'fixed', top: '50%', left: '80px', transform: 'translateY(-50%)' };
       case 'right':
-        return 'fixed top-1/2 right-20 transform -translate-y-1/2';
+        return { position: 'fixed', top: '50%', right: '80px', transform: 'translateY(-50%)' };
       default:
-        return 'fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2';
+        return { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
     }
   };
 
@@ -166,7 +226,10 @@ export default function OnboardingTutorial({ isVisible, onComplete, onSkip }: On
       )}
 
       {/* Tutorial Card */}
-      <Card className={`${getPositionClasses()} z-50 w-96 max-w-sm mx-4 shadow-2xl border-green-200 bg-white`}>
+      <Card 
+        className="z-50 w-96 max-w-sm mx-4 shadow-2xl border-green-200 bg-white"
+        style={getPositionClasses()}
+      >
         <CardContent className="p-6">
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
