@@ -123,9 +123,15 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
                 <RotateCcw className="h-5 w-5" />
               </Button>
             )}
-            <Button variant="ghost" className="text-white hover:text-gray-200 p-2 transition-all duration-200 hover:scale-110 hover:bg-green-800">
-              <HelpCircle className="h-5 w-5" />
-            </Button>
+            <a 
+              href="https://hingehealth.atlassian.net/wiki/spaces/SAI/pages/388562946/Application+Security+Homepage" 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <Button variant="ghost" className="text-white hover:text-gray-200 p-2 transition-all duration-200 hover:scale-110 hover:bg-green-800">
+                <HelpCircle className="h-5 w-5" />
+              </Button>
+            </a>
             <Button variant="ghost" className="text-white hover:text-gray-200 p-2 ml-2 transition-all duration-200 hover:scale-110 hover:bg-green-800">
               <Settings className="h-5 w-5" />
             </Button>
