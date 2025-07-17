@@ -9,16 +9,27 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertTriangle, ChevronLeft, ChevronRight, Search, ArrowUpDown } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, Search, ArrowUpDown, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import type { Application } from "@shared/schema";
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 interface ApplicationsTableProps {
   applications: Application[];
   isLoading: boolean;
   searchTerm: string;
   onSearchChange: (term: string) => void;
+  selectedEngine: string;
+  selectedLabels: string[];
 }
 
 interface FindingsData {
@@ -65,7 +76,7 @@ function LoadingSkeleton() {
   );
 }
 
-export default function ApplicationsTable({ applications, isLoading, searchTerm, onSearchChange }: ApplicationsTableProps) {
+export default function ApplicationsTable({ applications, isLoading, searchTerm, onSearchChange, selectedEngine, selectedLabels }: ApplicationsTableProps) {
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
@@ -138,6 +149,113 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     }
   });
 
+  const generateFileName = (format: string) => {
+    const now = new Date();
+    const dateTime = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const engine = selectedEngine || 'All';
+    const labels = selectedLabels.length > 0 ? selectedLabels.join('-') : 'All';
+    return `${engine}_${labels}_${dateTime}.${format}`;
+  };
+
+  const exportToCSV = () => {
+    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
+    const csvData = sortedApplications.map(app => {
+      const findings = JSON.parse(app.totalFindings);
+      return [
+        app.name,
+        app.riskScore,
+        findings.total,
+        findings.C,
+        findings.H,
+        findings.M,
+        findings.L,
+        app.tags?.join(', ') || ''
+      ];
+    });
+
+    const csvContent = [headers, ...csvData]
+      .map(row => row.map(cell => `"${cell}"`).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = generateFileName('csv');
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const exportToXLSX = () => {
+    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
+    const data = sortedApplications.map(app => {
+      const findings = JSON.parse(app.totalFindings);
+      return [
+        app.name,
+        app.riskScore,
+        findings.total,
+        findings.C,
+        findings.H,
+        findings.M,
+        findings.L,
+        app.tags?.join(', ') || ''
+      ];
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...data]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Applications');
+    XLSX.writeFile(wb, generateFileName('xlsx'));
+  };
+
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    // Add title
+    const title = `Security Applications Report - ${selectedEngine || 'All Engines'}${selectedLabels.length > 0 ? ` (${selectedLabels.join(', ')})` : ''}`;
+    doc.setFontSize(16);
+    doc.text(title, 14, 20);
+    
+    // Add timestamp
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+
+    const headers = [['Service Name', 'Risk Score', 'Total', 'Critical', 'High', 'Medium', 'Low', 'Tags']];
+    const data = sortedApplications.map(app => {
+      const findings = JSON.parse(app.totalFindings);
+      return [
+        app.name,
+        app.riskScore,
+        findings.total.toString(),
+        findings.C.toString(),
+        findings.H.toString(),
+        findings.M.toString(),
+        findings.L.toString(),
+        app.tags?.join(', ') || ''
+      ];
+    });
+
+    (doc as any).autoTable({
+      head: headers,
+      body: data,
+      startY: 40,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [59, 130, 246] },
+      columnStyles: {
+        0: { cellWidth: 40 },
+        1: { cellWidth: 15 },
+        2: { cellWidth: 12 },
+        3: { cellWidth: 15 },
+        4: { cellWidth: 12 },
+        5: { cellWidth: 15 },
+        6: { cellWidth: 12 },
+        7: { cellWidth: 30 }
+      }
+    });
+
+    doc.save(generateFileName('pdf'));
+  };
+
   const SortableHeader = ({ field, children }: { field: string; children: React.ReactNode }) => (
     <TableHead 
       className="font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
@@ -152,9 +270,9 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
 
   return (
     <div className="bg-white shadow overflow-hidden sm:rounded-md">
-      {/* Search Bar */}
-      <div className="px-6 py-4 border-b border-gray-200">
-        <div className="relative">
+      {/* Search Bar and Export */}
+      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <Input
             type="text"
@@ -164,6 +282,26 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
             className="pl-10"
           />
         </div>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="ml-4">
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={exportToCSV}>
+              Export as CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={exportToXLSX}>
+              Export as XLSX
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={exportToPDF}>
+              Export as PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="overflow-x-auto">

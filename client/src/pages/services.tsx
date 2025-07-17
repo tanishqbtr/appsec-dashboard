@@ -154,6 +154,8 @@ export default function Services() {
               isLoading={isLoading}
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
+              selectedEngine={selectedEngine}
+              selectedLabels={selectedLabels}
             />
           </CardContent>
         </Card>
