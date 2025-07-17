@@ -7,6 +7,7 @@ import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Services from "@/pages/services";
 import ServiceDetail from "@/pages/service-detail";
+import ManageApplications from "@/pages/manage-applications";
 import Dashboards from "@/pages/dashboards";
 import Reports from "@/pages/reports";
 import Alerts from "@/pages/alerts";
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/dashboard" component={Services} />
       <Route path="/services" component={Services} />
       <Route path="/services/:id" component={ServiceDetail} />
+      <Route path="/manage-applications" component={ManageApplications} />
       <Route path="/dashboards" component={Dashboards} />
       <Route path="/reports" component={Reports} />
       <Route path="/alerts" component={Alerts} />

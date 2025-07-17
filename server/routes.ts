@@ -62,6 +62,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add application endpoint
+  app.post("/api/applications", async (req, res) => {
+    try {
+      const newApplication = req.body;
+      
+      const applications = await storage.getApplications();
+      applications.push(newApplication);
+      
+      res.status(201).json(newApplication);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Delete application endpoint
+  app.delete("/api/applications/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const applications = await storage.getApplications();
+      const applicationIndex = applications.findIndex((app: any) => app.id?.toString() === id);
+      
+      if (applicationIndex === -1) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+      
+      // Remove the application
+      applications.splice(applicationIndex, 1);
+      
+      res.json({ message: "Application deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
