@@ -41,7 +41,12 @@ export class MemStorage implements IStorage {
         tags: ['HITRUST', 'SOC 2'],
         lastScan: '07/16/2025, 06:10:01',
         hasAlert: false,
-        scanEngine: 'Mend'
+        scanEngine: 'Mend',
+        githubRepo: 'https://github.com/hingehealth/web-portal',
+        jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/WEB',
+        serviceOwner: 'Sarah Chen (Frontend Team Lead)',
+        slackChannel: 'https://hingehealth.slack.com/channels/web-portal-team',
+        description: 'Main customer-facing web application for Hinge Health platform'
       },
       {
         name: 'Payment Processing API',
@@ -54,7 +59,12 @@ export class MemStorage implements IStorage {
         tags: ['PCI DSS', 'HIPAA'],
         lastScan: '07/17/2025, 02:40:07',
         hasAlert: false,
-        scanEngine: 'Mend'
+        scanEngine: 'Mend',
+        githubRepo: 'https://github.com/hingehealth/payment-api',
+        jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/PAY',
+        serviceOwner: 'Marcus Rodriguez (Backend Team Lead)',
+        slackChannel: 'https://hingehealth.slack.com/channels/payments-team',
+        description: 'Secure payment processing service handling billing and transactions'
       },
       {
         name: 'Mobile App Service',
@@ -67,7 +77,12 @@ export class MemStorage implements IStorage {
         tags: ['ISO 27001', 'HIPAA'],
         lastScan: '07/17/2025, 04:30:34',
         hasAlert: false,
-        scanEngine: 'Escape'
+        scanEngine: 'Escape',
+        githubRepo: 'https://github.com/hingehealth/mobile-app',
+        jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/MOB',
+        serviceOwner: 'Lisa Park (Mobile Team Lead)',
+        slackChannel: 'https://hingehealth.slack.com/channels/mobile-team',
+        description: 'Backend services supporting the Hinge Health mobile application'
       },
       {
         name: 'User Authentication Service',
@@ -80,7 +95,12 @@ export class MemStorage implements IStorage {
         tags: ['HITRUST', 'ISO 27001'],
         lastScan: '07/17/2025, 10:03:15',
         hasAlert: false,
-        scanEngine: 'Crowdstrike'
+        scanEngine: 'Crowdstrike',
+        githubRepo: 'https://github.com/hingehealth/auth-service',
+        jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/AUTH',
+        serviceOwner: 'David Kim (Security Team Lead)',
+        slackChannel: 'https://hingehealth.slack.com/channels/auth-security',
+        description: 'Core authentication and authorization service'
       },
       {
         name: 'Coach Assistant Service',
@@ -93,7 +113,12 @@ export class MemStorage implements IStorage {
         tags: ['SOC 2'],
         lastScan: '07/17/2025, 09:54:27',
         hasAlert: true,
-        scanEngine: 'Escape'
+        scanEngine: 'Escape',
+        githubRepo: 'https://github.com/hingehealth/coach-assistant',
+        jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/COACH',
+        serviceOwner: 'Emma Thompson (AI/ML Team)',
+        slackChannel: 'https://hingehealth.slack.com/channels/coach-ai-team',
+        description: 'AI-powered coaching assistant for personalized health recommendations'
       },
       {
         name: 'Eligibility Service',
@@ -106,7 +131,12 @@ export class MemStorage implements IStorage {
         tags: ['HIPAA', 'SOC 2'],
         lastScan: '07/17/2025, 05:04:28',
         hasAlert: true,
-        scanEngine: 'Mend'
+        scanEngine: 'Mend',
+        githubRepo: 'https://github.com/hingehealth/eligibility-service',
+        jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/ELIG',
+        serviceOwner: 'Jennifer Martinez (Healthcare Integration)',
+        slackChannel: 'https://hingehealth.slack.com/channels/eligibility-team',
+        description: 'Service for validating member eligibility and benefits'
       },
       {
         name: 'Shipment Tracking Service',

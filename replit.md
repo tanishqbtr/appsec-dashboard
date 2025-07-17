@@ -7,7 +7,7 @@ This is a full-stack security dashboard application built with Express.js backen
 Preferred communication style: Simple, everyday language.
 Navigation menu items: "Dashboard (main analytics), Services, Reports, Alerts, Risk Scoring" (updated July 17, 2025)
 Login page: Green background matching Hinge Health logo color (updated July 17, 2025)
-Services page: Main application management page with full functionality (updated July 17, 2025)
+Services page: Main application management page with clickable rows leading to detailed service pages (updated July 17, 2025)
 Dashboard page: Comprehensive analytics with real-time charts, metrics, and security insights (updated July 17, 2025)
 Reports page: Document generation and export functionality for compliance reporting (updated July 17, 2025)
 Color scheme: Consistent green theme throughout interface - dark green for primary actions, light green for secondary
@@ -46,13 +46,22 @@ Other pages: Empty placeholder pages for future development
 - Basic login/logout flow
 
 ### Application Management
-- Applications table with security metrics
+- Applications table with security metrics and clickable rows
 - Vulnerability findings categorized by severity
 - Risk factor calculations
 - Label and tag system for organization
 - Last scan timestamp tracking
 - Export functionality (CSV, XLSX, PDF) for filtered data
 - Two-column filtering: Scan Engine/Labels + Compliance Tags
+
+### Service Detail Pages
+- Individual service pages accessible via clickable table rows
+- Comprehensive security findings display with total and violating findings
+- GitHub repository, Jira project, and Slack channel links
+- Service owner information and descriptions
+- Risk score analysis and compliance tag management
+- Quick action buttons for scanning and history
+- Interactive badges for findings categorization
 
 ### Dashboard (Main Analytics)
 - Real-time security insights and comprehensive vulnerability management

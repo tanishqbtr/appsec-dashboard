@@ -21,6 +21,12 @@ export const applications = pgTable("applications", {
   lastScan: text("last_scan").notNull(),
   hasAlert: boolean("has_alert").default(false),
   scanEngine: text("scan_engine").notNull(),
+  // Service details
+  githubRepo: text("github_repo"),
+  jiraProject: text("jira_project"),
+  serviceOwner: text("service_owner"),
+  slackChannel: text("slack_channel"),
+  description: text("description"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
