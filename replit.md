@@ -5,6 +5,8 @@ This is a full-stack security dashboard application built with Express.js backen
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Navigation menu items: "Dashboards, Services, Reports, Alerts" (updated July 17, 2025)
+Login page: Green background matching Hinge Health logo color (updated July 17, 2025)
 
 ## System Architecture
 
