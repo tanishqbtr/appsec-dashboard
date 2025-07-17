@@ -3,6 +3,14 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema } from "@shared/schema";
 
+// Authentication middleware
+const requireAuth = (req: any, res: any, next: any) => {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Login endpoint
@@ -20,15 +28,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
-      // In a real app, you'd create a session or JWT token here
+      // Set session
+      req.session = { userId: user.id, username: user.username };
       res.json({ success: true, user: { id: user.id, username: user.username } });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
+  // Logout endpoint
+  app.post("/api/logout", async (req, res) => {
+    try {
+      // Clear session
+      req.session = null;
+      res.json({ success: true, message: "Logged out successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Get applications endpoint
-  app.get("/api/applications", async (req, res) => {
+  app.get("/api/applications", requireAuth, async (req, res) => {
     try {
       const applications = await storage.getApplications();
       res.json(applications);
@@ -38,7 +58,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update application endpoint
-  app.patch("/api/applications/:id", async (req, res) => {
+  app.patch("/api/applications/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -63,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add application endpoint
-  app.post("/api/applications", async (req, res) => {
+  app.post("/api/applications", requireAuth, async (req, res) => {
     try {
       const newApplication = req.body;
       
@@ -77,7 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete application endpoint
-  app.delete("/api/applications/:id", async (req, res) => {
+  app.delete("/api/applications/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       
