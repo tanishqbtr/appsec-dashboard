@@ -11,14 +11,12 @@ import {
   Shield,
   ChartLine,
   ChevronDown,
-  Box,
-  Folder,
-  Bug,
+  Server,
   BarChart,
+  AlertTriangle,
   Settings,
   HelpCircle,
   User,
-  Cog,
 } from "lucide-react";
 import HingeLogo from "./hinge-logo";
 
@@ -53,19 +51,9 @@ export default function Navigation({ onLogout }: NavigationProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button variant="ghost" className="text-white hover:text-gray-200 px-3 py-2 text-sm font-medium bg-blue-800">
-                <Box className="h-4 w-4 mr-2" />
-                Applications
-              </Button>
-              
               <Button variant="ghost" className="text-white hover:text-gray-200 px-3 py-2 text-sm font-medium">
-                <Folder className="h-4 w-4 mr-2" />
-                Projects
-              </Button>
-              
-              <Button variant="ghost" className="text-white hover:text-gray-200 px-3 py-2 text-sm font-medium">
-                <Bug className="h-4 w-4 mr-2" />
-                Findings
+                <Server className="h-4 w-4 mr-2" />
+                Services
               </Button>
               
               <Button variant="ghost" className="text-white hover:text-gray-200 px-3 py-2 text-sm font-medium">
@@ -74,8 +62,8 @@ export default function Navigation({ onLogout }: NavigationProps) {
               </Button>
               
               <Button variant="ghost" className="text-white hover:text-gray-200 px-3 py-2 text-sm font-medium">
-                <Cog className="h-4 w-4 mr-2" />
-                Workflows
+                <AlertTriangle className="h-4 w-4 mr-2" />
+                Alerts
               </Button>
             </div>
           </div>
