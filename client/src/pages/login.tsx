@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import HingeLogo from "@/components/hinge-logo";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -30,7 +31,7 @@ export default function Login() {
         setLocation("/dashboard");
       }
     } catch (err) {
-      setError("Invalid credentials. Please try admin/password");
+      setError("Invalid credentials");
     } finally {
       setIsLoading(false);
     }
@@ -40,11 +41,11 @@ export default function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-primary">
-            <Shield className="h-6 w-6 text-white" />
+          <div className="mx-auto flex items-center justify-center">
+            <HingeLogo size="lg" />
           </div>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
-            Hinge Health Security
+            Hinge Health Security Dashboard
           </h2>
           <p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
         </div>
@@ -81,13 +82,7 @@ export default function Login() {
                 </div>
               </div>
 
-              <div className="text-xs text-gray-500 bg-gray-100 p-3 rounded-md">
-                <strong>Demo Credentials:</strong>
-                <br />
-                Username: admin
-                <br />
-                Password: password
-              </div>
+
 
               {error && (
                 <Alert variant="destructive">
