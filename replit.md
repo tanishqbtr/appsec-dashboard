@@ -13,6 +13,7 @@ Reports page: Document generation and export functionality for compliance report
 Color scheme: Consistent green theme throughout interface - dark green for primary actions, light green for secondary
 Animations: Smooth hover effects with 200ms transitions and subtle scaling
 Other pages: Empty placeholder pages for future development
+Percentile system: Services ranked by total findings with color-coded badges (Top 10%, Top 25%, Top 50%, Bottom 50%, Bottom 25%) (updated July 17, 2025)
 
 ## System Architecture
 
@@ -53,6 +54,8 @@ Other pages: Empty placeholder pages for future development
 - Last scan timestamp tracking
 - Export functionality (CSV, XLSX, PDF) for filtered data
 - Two-column filtering: Scan Engine/Labels + Compliance Tags
+- Percentile ranking system based on total findings with color-coded badges
+- Mutually exclusive filtering between scan engines/labels and compliance tags
 
 ### Service Detail Pages
 - Individual service pages accessible via clickable table rows
@@ -62,6 +65,8 @@ Other pages: Empty placeholder pages for future development
 - Risk score analysis and compliance tag management
 - Quick action buttons for scanning and history
 - Interactive badges for findings categorization
+- Animated service tier badges (Bronze, Silver, Gold, Platinum) based on risk scores
+- Smooth badge reveal animations with shimmer effects and floating animations
 
 ### Dashboard (Main Analytics)
 - Real-time security insights and comprehensive vulnerability management
