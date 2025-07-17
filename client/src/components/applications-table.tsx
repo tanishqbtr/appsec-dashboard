@@ -304,7 +304,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
           <Link href="/manage-applications">
             <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300">
               <Settings className="h-4 w-4 mr-1" />
-              Manage Applications
+              Manage Services
             </Button>
           </Link>
           
