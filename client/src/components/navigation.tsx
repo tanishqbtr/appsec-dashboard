@@ -16,7 +16,7 @@ import {
   BarChart,
   AlertTriangle,
   TrendingUp,
-  Settings,
+
   HelpCircle,
   User,
   RotateCcw,
@@ -128,13 +128,14 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
               target="_blank" 
               rel="noopener noreferrer"
             >
-              <Button variant="ghost" className="text-white hover:text-gray-200 p-2 transition-all duration-200 hover:scale-110 hover:bg-green-800">
+              <Button 
+                variant="ghost" 
+                className="text-white hover:text-gray-200 p-2 transition-all duration-200 hover:scale-110 hover:bg-green-800"
+                title="Application Security Homepage"
+              >
                 <HelpCircle className="h-5 w-5" />
               </Button>
             </a>
-            <Button variant="ghost" className="text-white hover:text-gray-200 p-2 ml-2 transition-all duration-200 hover:scale-110 hover:bg-green-800">
-              <Settings className="h-5 w-5" />
-            </Button>
             
             <DropdownMenu open={openDropdown === "user"} onOpenChange={(open) => setOpenDropdown(open ? "user" : null)}>
               <DropdownMenuTrigger asChild>
