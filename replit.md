@@ -5,10 +5,11 @@ This is a full-stack security dashboard application built with Express.js backen
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
-Navigation menu items: "Dashboards, Services, Reports, Alerts, Risk Scoring" (updated July 17, 2025)
+Navigation menu items: "Dashboard (main analytics), Services, Reports, Alerts, Risk Scoring" (updated July 17, 2025)
 Login page: Green background matching Hinge Health logo color (updated July 17, 2025)
 Services page: Main application management page with full functionality (updated July 17, 2025)
-Reports page: Comprehensive analytics and reporting features with charts and metrics (updated July 17, 2025)
+Dashboard page: Comprehensive analytics with real-time charts, metrics, and security insights (updated July 17, 2025)
+Reports page: Document generation and export functionality for compliance reporting (updated July 17, 2025)
 Color scheme: Consistent green theme throughout interface - dark green for primary actions, light green for secondary
 Animations: Smooth hover effects with 200ms transitions and subtle scaling
 Other pages: Empty placeholder pages for future development
@@ -53,16 +54,21 @@ Other pages: Empty placeholder pages for future development
 - Export functionality (CSV, XLSX, PDF) for filtered data
 - Two-column filtering: Scan Engine/Labels + Compliance Tags
 
-### Reports and Analytics
-- Comprehensive security analytics dashboard
-- Interactive charts: Bar charts, pie charts, area charts, trend analysis
-- Key performance metrics: Total applications, critical findings, average risk score, compliance rate
-- Findings analysis by scan engine with stacked visualization
-- Risk score distribution visualization
-- 30-day trend analysis with simulated historical data
-- Compliance coverage metrics for all security standards
-- Recent scan activity timeline
-- Export functionality for comprehensive PDF reports
+### Dashboard (Main Analytics)
+- Real-time security insights and comprehensive vulnerability management
+- Interactive charts: Weekly trend lines, risk distribution pie charts, findings by engine bar charts
+- Key performance metrics: Total applications, critical findings, average risk score, active scans
+- Weekly activity trends showing scans completed, new findings, and resolved issues
+- Compliance standards coverage with progress indicators
+- Recent scan activity timeline with latest 4 scans
+- Quick stats summary with total findings, compliance rate, and response times
+- Dashboard export functionality for executive reporting
+
+### Reports Page
+- Focused on document generation and compliance reporting
+- Export capabilities for detailed security documentation
+- Report templates for different compliance standards
+- Historical data compilation and trend reporting
 
 ### UI Component System
 - Complete Shadcn/ui component library

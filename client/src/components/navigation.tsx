@@ -54,19 +54,15 @@ export default function Navigation({ onLogout, currentPage }: NavigationProps) {
               <span className="text-white font-semibold text-lg">Hinge Health</span>
             </div>
             <div className="hidden md:ml-6 md:flex md:space-x-8">
-              <DropdownMenu open={openDropdown === "dashboards"} onOpenChange={(open) => setOpenDropdown(open ? "dashboards" : null)}>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-white hover:text-gray-200 px-3 py-2 text-sm font-medium transition-all duration-200 hover:scale-105 hover:bg-green-800">
-                    <ChartLine className="h-4 w-4 mr-2" />
-                    Dashboards
-                    <ChevronDown className="h-3 w-3 ml-1" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>Security Overview</DropdownMenuItem>
-                  <DropdownMenuItem>Risk Assessment</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Link href="/dashboards">
+                <Button 
+                  variant="ghost" 
+                  className={`text-white hover:text-gray-200 px-3 py-2 text-sm font-medium transition-all duration-200 hover:scale-105 ${activePage === 'dashboards' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
+                >
+                  <ChartLine className="h-4 w-4 mr-2" />
+                  Dashboard
+                </Button>
+              </Link>
 
               <Link href="/services">
                 <Button 
