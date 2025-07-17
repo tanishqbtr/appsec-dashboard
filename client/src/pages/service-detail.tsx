@@ -84,22 +84,60 @@ function EngineBadge({ engine, findings }: { engine: string; findings: FindingsD
   );
 }
 
-function ServiceTierBadge({ riskScore }: { riskScore: string }) {
-  const score = parseFloat(riskScore);
+// Calculate percentile ranking based on total findings
+function calculatePercentile(applications: Application[], currentApp: Application): number {
+  const currentFindings = JSON.parse(currentApp.totalFindings).total;
+  const allFindings = applications.map(app => JSON.parse(app.totalFindings).total);
   
+  // Count how many applications have more findings than current app
+  const higherCount = allFindings.filter(findings => findings > currentFindings).length;
+  
+  // Calculate percentile (fewer findings = higher percentile)
+  return (higherCount / applications.length) * 100;
+}
+
+function PercentileBadge({ percentile }: { percentile: number }) {
+  let color = "bg-gray-500";
+  let label = "Average";
+  
+  if (percentile >= 90) {
+    color = "bg-green-600";
+    label = "Top 10%";
+  } else if (percentile >= 75) {
+    color = "bg-blue-500";
+    label = "Top 25%";
+  } else if (percentile >= 50) {
+    color = "bg-yellow-500";
+    label = "Top 50%";
+  } else if (percentile >= 25) {
+    color = "bg-orange-500";
+    label = "Bottom 50%";
+  } else {
+    color = "bg-red-600";
+    label = "Bottom 25%";
+  }
+
+  return (
+    <Badge className={`${color} text-white text-xs px-2 py-0.5`}>
+      {Math.round(percentile)}%
+    </Badge>
+  );
+}
+
+function ServiceTierBadge({ percentile }: { percentile: number }) {
   let tier: string;
   let colors: string;
   let glowColor: string;
   
-  if (score >= 9.0) {
+  if (percentile >= 90) {
     tier = "Platinum";
     colors = "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg";
     glowColor = "shadow-purple-400/50";
-  } else if (score >= 7.0) {
+  } else if (percentile >= 75) {
     tier = "Gold";
     colors = "bg-gradient-to-r from-yellow-400 to-yellow-500 text-white shadow-lg";
     glowColor = "shadow-yellow-400/50";
-  } else if (score >= 5.0) {
+  } else if (percentile >= 50) {
     tier = "Silver";
     colors = "bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg";
     glowColor = "shadow-gray-400/50";
@@ -240,6 +278,7 @@ export default function ServiceDetail() {
   }
 
   const findings: FindingsData = JSON.parse(application.totalFindings);
+  const percentile = calculatePercentile(applications, application);
   
   // Mock engine findings data
   const engineFindings = {
@@ -279,10 +318,19 @@ export default function ServiceDetail() {
               </div>
               
               <div className="text-right space-y-4">
-                <div>
-                  <div className="text-sm text-gray-600">Risk Score</div>
-                  <div className="text-3xl font-bold text-orange-600">{application.riskScore}</div>
-                  <div className="text-sm text-gray-600">Medium Risk</div>
+                <div className="flex items-center gap-6">
+                  <div>
+                    <div className="text-sm text-gray-600">Risk Score</div>
+                    <div className="text-3xl font-bold text-orange-600">{application.riskScore}</div>
+                    <div className="text-sm text-gray-600">Medium Risk</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-gray-600">Percentile Rank</div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <PercentileBadge percentile={percentile} />
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">Based on total findings</div>
+                  </div>
                 </div>
                 
                 <Button 
@@ -426,7 +474,7 @@ export default function ServiceDetail() {
                       <p className="text-2xl font-bold text-orange-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
                         {application.riskScore}
                       </p>
-                      <ServiceTierBadge riskScore={application.riskScore} />
+                      <ServiceTierBadge percentile={percentile} />
                     </div>
                   </div>
 
