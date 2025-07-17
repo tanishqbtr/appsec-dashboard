@@ -28,7 +28,7 @@ export default function Login() {
       });
 
       if (response.ok) {
-        setLocation("/dashboard");
+        setLocation("/dashboards");
       }
     } catch (err) {
       setError("Invalid credentials");

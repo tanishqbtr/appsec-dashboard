@@ -17,21 +17,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/login", async (req, res) => {
     try {
       const { username, password } = req.body;
+      console.log("Login attempt:", { username, password: password ? "***" : "missing" });
       
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
       }
       
       const user = await storage.getUserByUsername(username);
+      console.log("User found:", user ? { id: user.id, username: user.username } : "not found");
       
       if (!user || user.password !== password) {
+        console.log("Invalid credentials");
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
       // Set session
-      req.session = { userId: user.id, username: user.username };
+      req.session.userId = user.id;
+      req.session.username = user.username;
+      console.log("Session set:", { userId: req.session.userId, username: req.session.username });
       res.json({ success: true, user: { id: user.id, username: user.username } });
     } catch (error) {
+      console.error("Login error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -40,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/logout", async (req, res) => {
     try {
       // Clear session
-      req.session = null;
+      req.session.destroy();
       res.json({ success: true, message: "Logged out successfully" });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
