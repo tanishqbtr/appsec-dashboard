@@ -9,8 +9,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AlertTriangle, ChevronLeft, ChevronRight, Search, ArrowUpDown, Download, ExternalLink } from "lucide-react";
-import { useLocation } from "wouter";
+import { AlertTriangle, ChevronLeft, ChevronRight, Search, ArrowUpDown, Download, ExternalLink, Settings } from "lucide-react";
+import { useLocation, Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
@@ -300,13 +300,21 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
           />
         </div>
         
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="ml-4 transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300">
-              <Download className="h-4 w-4 mr-2" />
-              Export
+        <div className="flex gap-2">
+          <Link href="/manage-applications">
+            <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300">
+              <Settings className="h-4 w-4 mr-1" />
+              Manage Applications
             </Button>
-          </DropdownMenuTrigger>
+          </Link>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={exportToCSV}>
               Export as CSV
@@ -318,7 +326,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               Export as PDF
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="overflow-x-auto">

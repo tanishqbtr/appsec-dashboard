@@ -13,7 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Filter, Search } from "lucide-react";
+import { Filter, Search, Settings } from "lucide-react";
+import { Link } from "wouter";
 import type { Application } from "@shared/schema";
 
 export default function Services() {
