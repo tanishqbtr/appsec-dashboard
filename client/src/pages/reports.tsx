@@ -1,4 +1,5 @@
 import Navigation from "@/components/navigation";
+import PageWrapper from "@/components/page-wrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart } from "lucide-react";
 
@@ -9,8 +10,9 @@ export default function Reports() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation onLogout={handleLogout} />
+    <PageWrapper loadingMessage="Loading Reports...">
+      <div className="min-h-screen bg-gray-50">
+        <Navigation onLogout={handleLogout} currentPage="reports" />
       
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
@@ -33,5 +35,6 @@ export default function Reports() {
         </Card>
       </div>
     </div>
+    </PageWrapper>
   );
 }
