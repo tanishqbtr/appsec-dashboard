@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowLeft,
   Github,
@@ -243,6 +244,8 @@ export default function ServiceDetail() {
       jiraProject: application?.jiraProject || "",
       slackChannel: application?.slackChannel || "",
       serviceOwner: application?.serviceOwner || "",
+      riskScore: application?.riskScore || 0,
+      tags: application?.tags || [],
     });
     setIsEditDialogOpen(true);
   };
@@ -555,10 +558,52 @@ export default function ServiceDetail() {
               <DialogHeader>
                 <DialogTitle>Edit Service Information</DialogTitle>
                 <DialogDescription>
-                  Update the service links and owner information below.
+                  Update the service links, risk score, compliance tags, and owner information below.
                 </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4 py-4">
+              <div className="space-y-4 py-4 max-h-96 overflow-y-auto">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="riskScore">Risk Score</Label>
+                    <Input
+                      id="riskScore"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="10"
+                      placeholder="1.9"
+                      value={editingService?.riskScore || ""}
+                      onChange={(e) => setEditingService({...editingService, riskScore: parseFloat(e.target.value) || 0})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="serviceOwner">Service Owner</Label>
+                    <Input
+                      id="serviceOwner"
+                      placeholder="John Doe (Team Name)"
+                      value={editingService?.serviceOwner || ""}
+                      onChange={(e) => setEditingService({...editingService, serviceOwner: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="complianceTags">Compliance Tags</Label>
+                  <Textarea
+                    id="complianceTags"
+                    placeholder="Enter tags separated by commas (e.g., HIPAA, ISO 27001, SOC 2)"
+                    value={editingService?.tags?.join(", ") || ""}
+                    onChange={(e) => {
+                      const tags = e.target.value.split(",").map(tag => tag.trim()).filter(tag => tag.length > 0);
+                      setEditingService({...editingService, tags});
+                    }}
+                    rows={3}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Available tags: HITRUST, ISO 27001, SOC 2, HIPAA, PCI DSS
+                  </p>
+                </div>
+
                 <div>
                   <Label htmlFor="githubRepo">GitHub Repository</Label>
                   <Input
@@ -584,15 +629,6 @@ export default function ServiceDetail() {
                     placeholder="https://company.slack.com/channels/team"
                     value={editingService?.slackChannel || ""}
                     onChange={(e) => setEditingService({...editingService, slackChannel: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="serviceOwner">Service Owner</Label>
-                  <Input
-                    id="serviceOwner"
-                    placeholder="John Doe (Team Name)"
-                    value={editingService?.serviceOwner || ""}
-                    onChange={(e) => setEditingService({...editingService, serviceOwner: e.target.value})}
                   />
                 </div>
               </div>
