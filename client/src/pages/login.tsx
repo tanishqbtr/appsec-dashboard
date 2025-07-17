@@ -44,7 +44,7 @@ export default function Login() {
           <div className="mx-auto flex items-center justify-center">
             <HingeLogo size="lg" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-white">
+          <h2 className="mt-12 text-3xl font-bold text-white">
             Security Dashboard
           </h2>
           <p className="mt-2 text-sm text-gray-200">Sign in to your account</p>
