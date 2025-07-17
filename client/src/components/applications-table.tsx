@@ -146,7 +146,7 @@ export default function ApplicationsTable({ applications, isLoading }: Applicati
         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-gray-700">
-              1 to 50 of 115
+              1 to {Math.min(50, applications.length)} of {applications.length}
             </p>
           </div>
           <div>

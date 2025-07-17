@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEngine, setSelectedEngine] = useState("Dependencies");
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
 
   const { data: applications, isLoading, refetch } = useQuery<Application[]>({
     queryKey: ["/api/applications"],
@@ -23,9 +24,20 @@ export default function Dashboard() {
     setLocation("/login");
   };
 
-  const filteredApplications = applications?.filter((app) =>
-    app.name.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const handleLabelSelect = (label: string) => {
+    setSelectedLabels(prev => 
+      prev.includes(label) 
+        ? prev.filter(l => l !== label)
+        : [...prev, label]
+    );
+  };
+
+  const filteredApplications = applications?.filter((app) => {
+    const matchesSearch = app.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesLabels = selectedLabels.length === 0 || 
+      selectedLabels.some(label => app.labels?.includes(label));
+    return matchesSearch && matchesLabels;
+  }) || [];
 
   return (
     <div className="min-h-screen bg-white">
@@ -75,16 +87,38 @@ export default function Dashboard() {
           
           <div className="flex gap-4 items-center">
             <span className="text-sm text-gray-700 font-medium">Labels</span>
-            <Select>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Select labels" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="production">Production</SelectItem>
-                <SelectItem value="development">Development</SelectItem>
-                <SelectItem value="testing">Testing</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Badge 
+                variant={selectedLabels.includes("Production") ? "default" : "outline"}
+                className="cursor-pointer"
+                onClick={() => handleLabelSelect("Production")}
+              >
+                Production
+              </Badge>
+              <Badge 
+                variant={selectedLabels.includes("Development") ? "default" : "outline"}
+                className="cursor-pointer"
+                onClick={() => handleLabelSelect("Development")}
+              >
+                Development
+              </Badge>
+              <Badge 
+                variant={selectedLabels.includes("Testing") ? "default" : "outline"}
+                className="cursor-pointer"
+                onClick={() => handleLabelSelect("Testing")}
+              >
+                Testing
+              </Badge>
+              {selectedLabels.length > 0 && (
+                <Badge 
+                  variant="ghost" 
+                  className="cursor-pointer text-gray-500 hover:text-gray-700"
+                  onClick={() => setSelectedLabels([])}
+                >
+                  Clear filters
+                </Badge>
+              )}
+            </div>
           </div>
           
           <div className="flex items-center gap-4">
