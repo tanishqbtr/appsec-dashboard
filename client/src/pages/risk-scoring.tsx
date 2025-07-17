@@ -126,23 +126,38 @@ export default function RiskScoring() {
     });
   };
 
+  const isFormValid = () => {
+    return (
+      riskFactors.dataClassification &&
+      riskFactors.phi &&
+      riskFactors.eligibilityData &&
+      riskFactors.confidentialityImpact &&
+      riskFactors.integrityImpact &&
+      riskFactors.availabilityImpact &&
+      riskFactors.publicEndpoint &&
+      riskFactors.discoverability &&
+      riskFactors.awareness
+    );
+  };
+
   const handleSave = () => {
-    if (!editingId || !editingScore) return;
+    if (!editingId) return;
     
-    const score = parseFloat(editingScore);
-    if (isNaN(score) || score < 0 || score > 10) {
+    if (!isFormValid()) {
       toast({
-        title: "Invalid Score",
-        description: "Risk score must be a number between 0 and 10.",
+        title: "Incomplete Assessment",
+        description: "Please fill in all fields before saving the risk assessment.",
         variant: "destructive",
       });
       return;
     }
 
+    const finalScore = calculateFinalRiskScore();
+    
     updateRiskScoreMutation.mutate({
       id: editingId,
-      riskScore: editingScore,
-      reason: editingReason
+      riskScore: finalScore,
+      reason: `Risk assessment completed: Data Classification: ${calculateDataClassificationScore()}, CIA Triad: ${calculateCIATriadScore()}, Attack Surface: ${calculateAttackSurfaceScore()}`
     });
   };
 
@@ -695,23 +710,47 @@ export default function RiskScoring() {
                       <div className="text-2xl font-bold text-orange-800">{calculateAttackSurfaceScore()}</div>
                     </div>
                     
-                    <div className="bg-gray-50 p-4 rounded-lg border-2 border-gray-200">
-                      <div className="text-sm font-medium text-gray-600">Final Risk Score</div>
-                      <div className="text-2xl font-bold text-gray-800">{calculateFinalRiskScore()}</div>
-                      <div className="mt-1">
-                        {(() => {
-                          const finalScore = parseFloat(calculateFinalRiskScore());
-                          const riskInfo = getRiskLevel(finalScore);
-                          const RiskIcon = riskInfo.icon;
-                          return (
+                    {(() => {
+                      const finalScore = parseFloat(calculateFinalRiskScore());
+                      const riskInfo = getRiskLevel(finalScore);
+                      const RiskIcon = riskInfo.icon;
+                      
+                      let bgColor, borderColor, textColor, labelColor;
+                      if (finalScore >= 8) {
+                        bgColor = "bg-red-50";
+                        borderColor = "border-red-200";
+                        textColor = "text-red-800";
+                        labelColor = "text-red-600";
+                      } else if (finalScore >= 6) {
+                        bgColor = "bg-orange-50";
+                        borderColor = "border-orange-200";
+                        textColor = "text-orange-800";
+                        labelColor = "text-orange-600";
+                      } else if (finalScore >= 4) {
+                        bgColor = "bg-yellow-50";
+                        borderColor = "border-yellow-200";
+                        textColor = "text-yellow-800";
+                        labelColor = "text-yellow-600";
+                      } else {
+                        bgColor = "bg-green-50";
+                        borderColor = "border-green-200";
+                        textColor = "text-green-800";
+                        labelColor = "text-green-600";
+                      }
+                      
+                      return (
+                        <div className={`${bgColor} p-4 rounded-lg border-2 ${borderColor}`}>
+                          <div className={`text-sm font-medium ${labelColor}`}>Final Risk Score</div>
+                          <div className={`text-2xl font-bold ${textColor}`}>{calculateFinalRiskScore()}</div>
+                          <div className="mt-1">
                             <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${riskInfo.color}`}>
                               <RiskIcon className="h-3 w-3 mr-1" />
                               {riskInfo.level}
                             </div>
-                          );
-                        })()}
-                      </div>
-                    </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
@@ -720,8 +759,12 @@ export default function RiskScoring() {
                 <Button variant="outline" onClick={handleCancel}>
                   Cancel
                 </Button>
-                <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
-                  Save Assessment
+                <Button 
+                  onClick={handleSave} 
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  disabled={!isFormValid() || updateRiskScoreMutation.isPending}
+                >
+                  {updateRiskScoreMutation.isPending ? "Saving..." : "Save Assessment"}
                 </Button>
               </DialogFooter>
             </DialogContent>
