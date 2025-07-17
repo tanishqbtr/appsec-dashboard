@@ -21,6 +21,7 @@ import {
   User,
 } from "lucide-react";
 import HingeLogo from "./hinge-logo";
+import hingeHealthLogoPath from "@assets/Hinge_Health_Logo_1752759155411.png";
 
 interface NavigationProps {
   onLogout: () => void;
@@ -50,8 +51,11 @@ export default function Navigation({ onLogout, currentPage }: NavigationProps) {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <HingeLogo size="md" className="mr-3" />
-              <span className="text-white font-semibold text-lg">Hinge Health</span>
+              <img 
+                src={hingeHealthLogoPath} 
+                alt="Hinge Health Logo" 
+                className="h-8 w-auto"
+              />
             </div>
             <div className="hidden md:ml-6 md:flex md:space-x-8">
               <Link href="/dashboards">
