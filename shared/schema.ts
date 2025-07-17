@@ -36,3 +36,27 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Application = typeof applications.$inferSelect;
 export type InsertApplication = z.infer<typeof insertApplicationSchema>;
+
+// Analytics and reporting types
+export interface SecurityMetrics {
+  totalApplications: number;
+  totalFindings: number;
+  criticalFindings: number;
+  highFindings: number;
+  averageRiskScore: number;
+  complianceRate: number;
+}
+
+export interface TrendData {
+  date: string;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+}
+
+export interface ComplianceMetric {
+  tag: string;
+  coverage: number;
+  applications: string[];
+}
