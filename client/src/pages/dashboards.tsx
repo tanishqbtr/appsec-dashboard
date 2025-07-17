@@ -187,12 +187,8 @@ export default function Dashboards() {
 
   const totalFindings = applications.reduce((sum, app) => sum + JSON.parse(app.totalFindings).total, 0);
   const criticalFindings = applications.reduce((sum, app) => sum + JSON.parse(app.totalFindings).C, 0);
+  const highFindings = applications.reduce((sum, app) => sum + JSON.parse(app.totalFindings).H, 0);
   const averageRiskScore = applications.length > 0 ? (applications.reduce((sum, app) => sum + parseFloat(app.riskScore), 0) / applications.length) : 0;
-  const activeScans = applications.filter(app => {
-    const scanDate = new Date(app.lastScan);
-    const daysDiff = (new Date().getTime() - scanDate.getTime()) / (1000 * 3600 * 24);
-    return daysDiff <= 7;
-  }).length;
 
   return (
     <PageWrapper loadingMessage="Loading Dashboard...">
@@ -201,28 +197,12 @@ export default function Dashboards() {
       
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
-          <div className="mb-8 flex justify-between items-start">
+          <div className="mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Security Dashboard</h1>
               <p className="mt-2 text-gray-600">
                 Real-time security insights and comprehensive vulnerability management
               </p>
-            </div>
-            <div className="flex gap-3">
-              <Select value={timeRange} onValueChange={setTimeRange}>
-                <SelectTrigger className="w-32">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7d">Last 7 days</SelectItem>
-                  <SelectItem value="30d">Last 30 days</SelectItem>
-                  <SelectItem value="90d">Last 90 days</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button onClick={exportDashboard} className="bg-green-600 hover:bg-green-700 transition-all duration-200 hover:scale-105">
-                <Download className="h-4 w-4 mr-2" />
-                Export Dashboard
-              </Button>
             </div>
           </div>
 
@@ -262,12 +242,12 @@ export default function Dashboards() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Avg Risk Score</p>
-                    <p className="text-3xl font-bold text-orange-600">{averageRiskScore.toFixed(1)}</p>
-                    <p className="text-sm text-orange-600">Medium risk level</p>
+                    <p className="text-sm font-medium text-gray-600">High Findings</p>
+                    <p className="text-3xl font-bold text-orange-600">{highFindings}</p>
+                    <p className="text-sm text-orange-600">Needs attention</p>
                   </div>
                   <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-orange-600" />
+                    <AlertTriangle className="h-6 w-6 text-orange-600" />
                   </div>
                 </div>
               </CardContent>
@@ -277,12 +257,12 @@ export default function Dashboards() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Active Scans</p>
-                    <p className="text-3xl font-bold text-green-600">{activeScans}</p>
-                    <p className="text-sm text-green-600">This week</p>
+                    <p className="text-sm font-medium text-gray-600">Avg Risk Score</p>
+                    <p className="text-3xl font-bold text-orange-600">{averageRiskScore.toFixed(1)}</p>
+                    <p className="text-sm text-orange-600">Medium risk level</p>
                   </div>
-                  <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Zap className="h-6 w-6 text-green-600" />
+                  <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="h-6 w-6 text-orange-600" />
                   </div>
                 </div>
               </CardContent>
