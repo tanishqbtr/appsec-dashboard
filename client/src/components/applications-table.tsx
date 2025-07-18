@@ -291,6 +291,11 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     crowdstrikeContainersQuery.data
   ]);
 
+  // Check if any queries are loading
+  const isLoadingFindings = scaQuery.isLoading || sastQuery.isLoading || containersQuery.isLoading || 
+                           webAppsQuery.isLoading || apisQuery.isLoading || imagesQuery.isLoading || 
+                           crowdstrikeContainersQuery.isLoading;
+
   // Function to get findings data for a service (now using combined findings)
   const getServiceFindings = (serviceName: string): FindingsData => {
     // Only show findings if we have an active scan engine with selected labels
@@ -609,6 +614,30 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
           <TableBody>
             {isLoading ? (
               <LoadingSkeleton />
+            ) : isLoadingFindings && selectedEngine && selectedLabels.length > 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} className="h-24 text-center">
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                    <span className="text-gray-600">Loading findings data...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : !selectedEngine || selectedLabels.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} className="h-24 text-center">
+                  <div className="text-gray-500">
+                    <div className="text-lg font-medium mb-2">Select a scan engine and labels to view data</div>
+                    <div className="text-sm">Choose from Mend, Escape, or Crowdstrike engines and their respective labels</div>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : paginatedApplications.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} className="h-24 text-center">
+                  No applications found matching your criteria.
+                </TableCell>
+              </TableRow>
             ) : (
               paginatedApplications.map((app, index) => {
                 // Get findings from Mend data if available, otherwise use defaults
