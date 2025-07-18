@@ -97,19 +97,19 @@ function EngineBadge({ engine, findings }: { engine: string; findings: FindingsD
   );
 }
 
-// Calculate percentile ranking based on total findings
-function calculatePercentile(applications: Application[], currentApp: Application): number {
-  const currentFindings = currentApp.totalFindings ? JSON.parse(currentApp.totalFindings).total : 0;
-  const allFindings = applications.map(app => {
-    const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { total: 0 };
-    return findings.total;
-  });
+// Calculate percentile ranking based on total findings across ALL engines
+function calculatePercentileWithAllFindings(applications: Application[], app: Application, getAllServiceFindings: (serviceName: string) => FindingsData): number {
+  // Get total findings for this app across ALL engines
+  const appFindings = getAllServiceFindings(app.name);
+  const appTotal = appFindings.total;
   
-  // Count how many applications have more findings than current app
-  const higherCount = allFindings.filter(findings => findings > currentFindings).length;
+  // Count how many applications have fewer total findings than this one
+  const appsWithFewerFindings = applications.filter(otherApp => {
+    const otherFindings = getAllServiceFindings(otherApp.name);
+    return otherFindings.total < appTotal;
+  }).length;
   
-  // Calculate percentile (fewer findings = higher percentile)
-  return (higherCount / applications.length) * 100;
+  return Math.round((appsWithFewerFindings / applications.length) * 100);
 }
 
 function PercentileBadge({ percentile }: { percentile: number }) {
@@ -234,6 +234,35 @@ export default function ServiceDetail() {
     queryKey: ["/api/applications"],
   });
 
+  // Fetch all findings data for accurate percentile calculation
+  const allScaQuery = useQuery({
+    queryKey: ["/api/mend/sca"],
+  });
+  
+  const allSastQuery = useQuery({
+    queryKey: ["/api/mend/sast"],
+  });
+  
+  const allMendContainersQuery = useQuery({
+    queryKey: ["/api/mend/containers"],
+  });
+
+  const allWebAppsQuery = useQuery({
+    queryKey: ["/api/escape/webapps"],
+  });
+  
+  const allApisQuery = useQuery({
+    queryKey: ["/api/escape/apis"],
+  });
+
+  const allImagesQuery = useQuery({
+    queryKey: ["/api/crowdstrike/images"],
+  });
+  
+  const allCrowdstrikeContainersQuery = useQuery({
+    queryKey: ["/api/crowdstrike/containers"],
+  });
+
   const application = applications.find(app => app.id.toString() === serviceId);
 
   const updateServiceMutation = useMutation({
@@ -331,7 +360,49 @@ export default function ServiceDetail() {
   const findings: FindingsData = application.totalFindings ? 
     JSON.parse(application.totalFindings) : 
     { total: 0, C: 0, H: 0, M: 0, L: 0 };
-  const percentile = calculatePercentile(applications, application);
+  // Calculate percentile using all findings data across all engines
+  const getAllServiceFindings = (serviceName: string): FindingsData => {
+    let totalFindings = { total: 0, C: 0, H: 0, M: 0, L: 0 };
+    
+    // Helper function to add findings
+    const addFindings = (findings: any[]) => {
+      findings?.forEach((finding: any) => {
+        if (finding.serviceName === serviceName) {
+          totalFindings.C += finding.critical;
+          totalFindings.H += finding.high;
+          totalFindings.M += finding.medium;
+          totalFindings.L += finding.low;
+          totalFindings.total += finding.critical + finding.high + finding.medium + finding.low;
+        }
+      });
+    };
+
+    // Add findings from all engines
+    addFindings(allScaQuery.data);
+    addFindings(allSastQuery.data);
+    addFindings(allMendContainersQuery.data);
+    addFindings(allWebAppsQuery.data);
+    addFindings(allApisQuery.data);
+    addFindings(allImagesQuery.data);
+    addFindings(allCrowdstrikeContainersQuery.data);
+    
+    return totalFindings;
+  };
+
+  const calculatePercentileWithAllFindings = (apps: Application[], currentApp: Application): number => {
+    const currentFindings = getAllServiceFindings(currentApp.name);
+    const currentTotal = currentFindings.total;
+    
+    // Count how many applications have fewer total findings than this one
+    const appsWithFewerFindings = apps.filter(otherApp => {
+      const otherFindings = getAllServiceFindings(otherApp.name);
+      return otherFindings.total < currentTotal;
+    }).length;
+    
+    return Math.round((appsWithFewerFindings / apps.length) * 100);
+  };
+
+  const percentile = application ? calculatePercentileWithAllFindings(applications, application) : 0;
   
   // Mock engine findings data
   const engineFindings = {
