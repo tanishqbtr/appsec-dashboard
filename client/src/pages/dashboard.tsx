@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import Navigation from "@/components/navigation";
 import ApplicationsTable from "@/components/applications-table";
+import PageWrapper from "@/components/page-wrapper";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -58,9 +59,21 @@ export default function Dashboard() {
     return matchesSearch && matchesLabels;
   }) || [];
 
+  if (isLoading) {
+    return (
+      <PageWrapper loadingMessage="Loading Dashboard...">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-300 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-300 rounded"></div>
+        </div>
+      </PageWrapper>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-white">
-      <Navigation onLogout={handleLogout} />
+    <PageWrapper loadingMessage="Loading Dashboard...">
+      <div className="min-h-screen bg-white">
+        <Navigation onLogout={handleLogout} />
       
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Header */}
@@ -160,5 +173,6 @@ export default function Dashboard() {
         <ApplicationsTable applications={filteredApplications} isLoading={isLoading} />
       </div>
     </div>
+    </PageWrapper>
   );
 }
