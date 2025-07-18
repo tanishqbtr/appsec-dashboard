@@ -401,76 +401,82 @@ export class DatabaseStorage implements IStorage {
     return updatedApplication || undefined;
   }
 
-  // Mend findings methods - always return the most recent findings
+  // Mend findings methods - simplified since each service has only one record
   async getMendScaFindings(serviceName?: string): Promise<MendScaFinding[]> {
     if (serviceName) {
-      // Get the most recent finding for the specific service
       return await db.select().from(mendScaFindings)
-        .where(eq(mendScaFindings.serviceName, serviceName))
-        .orderBy(desc(mendScaFindings.scanDate))
-        .limit(1);
+        .where(eq(mendScaFindings.serviceName, serviceName));
     }
-    
-    // Get the most recent finding for each service (subquery approach)
-    const result = await db.execute(sql`
-      SELECT DISTINCT ON (service_name) *
-      FROM mend_sca_findings
-      ORDER BY service_name, scan_date DESC
-    `);
-    
-    return result.rows as MendScaFinding[];
+    return await db.select().from(mendScaFindings);
   }
 
   async getMendSastFindings(serviceName?: string): Promise<MendSastFinding[]> {
     if (serviceName) {
-      // Get the most recent finding for the specific service
       return await db.select().from(mendSastFindings)
-        .where(eq(mendSastFindings.serviceName, serviceName))
-        .orderBy(desc(mendSastFindings.scanDate))
-        .limit(1);
+        .where(eq(mendSastFindings.serviceName, serviceName));
     }
-    
-    // Get the most recent finding for each service (subquery approach)
-    const result = await db.execute(sql`
-      SELECT DISTINCT ON (service_name) *
-      FROM mend_sast_findings
-      ORDER BY service_name, scan_date DESC
-    `);
-    
-    return result.rows as MendSastFinding[];
+    return await db.select().from(mendSastFindings);
   }
 
   async getMendContainersFindings(serviceName?: string): Promise<MendContainersFinding[]> {
     if (serviceName) {
-      // Get the most recent finding for the specific service
       return await db.select().from(mendContainersFindings)
-        .where(eq(mendContainersFindings.serviceName, serviceName))
-        .orderBy(desc(mendContainersFindings.scanDate))
-        .limit(1);
+        .where(eq(mendContainersFindings.serviceName, serviceName));
     }
-    
-    // Get the most recent finding for each service (subquery approach)
-    const result = await db.execute(sql`
-      SELECT DISTINCT ON (service_name) *
-      FROM mend_containers_findings
-      ORDER BY service_name, scan_date DESC
-    `);
-    
-    return result.rows as MendContainersFinding[];
+    return await db.select().from(mendContainersFindings);
   }
 
   async createMendScaFinding(finding: InsertMendScaFinding): Promise<MendScaFinding> {
-    const [created] = await db.insert(mendScaFindings).values(finding).returning();
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(mendScaFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: mendScaFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
     return created;
   }
 
   async createMendSastFinding(finding: InsertMendSastFinding): Promise<MendSastFinding> {
-    const [created] = await db.insert(mendSastFindings).values(finding).returning();
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(mendSastFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: mendSastFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
     return created;
   }
 
   async createMendContainersFinding(finding: InsertMendContainersFinding): Promise<MendContainersFinding> {
-    const [created] = await db.insert(mendContainersFindings).values(finding).returning();
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(mendContainersFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: mendContainersFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
     return created;
   }
 }
