@@ -124,6 +124,10 @@ export default function Dashboards() {
     queryKey: ["/api/dashboard/scan-engine-findings"],
   });
 
+  const { data: riskDistribution = [], isLoading: isRiskDistributionLoading } = useQuery({
+    queryKey: ["/api/dashboard/risk-distribution"],
+  });
+
   const analytics = processAnalyticsData(applications);
 
   // Weekly trend data - simulate 7 days of findings by severity
@@ -172,7 +176,7 @@ export default function Dashboards() {
     doc.save(`Dashboard_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
-  if (isLoading || isMetricsLoading || isScanEngineLoading) {
+  if (isLoading || isMetricsLoading || isScanEngineLoading || isRiskDistributionLoading) {
     return (
       <PageWrapper loadingMessage="Loading Dashboard...">
         <div className="min-h-screen bg-gray-50">
@@ -345,7 +349,7 @@ export default function Dashboards() {
                 <ResponsiveContainer width="100%" height={300}>
                   <RechartsPieChart>
                     <Pie
-                      data={Object.entries(analytics.riskDistribution).map(([name, value]) => ({ name, value }))}
+                      data={riskDistribution}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -354,7 +358,7 @@ export default function Dashboards() {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {Object.entries(analytics.riskDistribution).map((entry, index) => (
+                      {riskDistribution.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
                     </Pie>
