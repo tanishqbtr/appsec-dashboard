@@ -96,7 +96,9 @@ export default function Services() {
       if ((selectedEngine === "Mend" && selectedLabels.length > 0 && 
           selectedLabels.some(label => ["SCA", "SAST", "Containers"].includes(label))) ||
           (selectedEngine === "Escape" && selectedLabels.length > 0 && 
-          selectedLabels.some(label => ["Web Applications", "APIs"].includes(label)))) {
+          selectedLabels.some(label => ["Web Applications", "APIs"].includes(label))) ||
+          (selectedEngine === "Crowdstrike" && selectedLabels.length > 0 && 
+          selectedLabels.some(label => ["Images", "Containers"].includes(label)))) {
         return matchesSearch; // Show all services, findings will be populated from APIs
       }
       

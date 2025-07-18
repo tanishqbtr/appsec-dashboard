@@ -165,6 +165,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Crowdstrike findings endpoints
+  app.get("/api/crowdstrike/images", async (req, res) => {
+    try {
+      const { serviceName } = req.query;
+      const storage = await getStorage();
+      const findings = await storage.getCrowdstrikeImagesFindings(serviceName as string);
+      res.json(findings);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/crowdstrike/containers", async (req, res) => {
+    try {
+      const { serviceName } = req.query;
+      const storage = await getStorage();
+      const findings = await storage.getCrowdstrikeContainersFindings(serviceName as string);
+      res.json(findings);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

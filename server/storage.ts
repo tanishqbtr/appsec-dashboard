@@ -6,6 +6,8 @@ import {
   mendContainersFindings,
   escapeWebAppsFindings,
   escapeApisFindings,
+  crowdstrikeImagesFindings,
+  crowdstrikeContainersFindings,
   type User, 
   type InsertUser, 
   type Application, 
@@ -19,7 +21,11 @@ import {
   type EscapeWebAppsFinding,
   type InsertEscapeWebAppsFinding,
   type EscapeApisFinding,
-  type InsertEscapeApisFinding
+  type InsertEscapeApisFinding,
+  type CrowdstrikeImagesFinding,
+  type InsertCrowdstrikeImagesFinding,
+  type CrowdstrikeContainersFinding,
+  type InsertCrowdstrikeContainersFinding
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
@@ -44,6 +50,11 @@ export interface IStorage {
   getEscapeApisFindings(serviceName?: string): Promise<EscapeApisFinding[]>;
   createEscapeWebAppsFinding(finding: InsertEscapeWebAppsFinding): Promise<EscapeWebAppsFinding>;
   createEscapeApisFinding(finding: InsertEscapeApisFinding): Promise<EscapeApisFinding>;
+  // Crowdstrike findings methods
+  getCrowdstrikeImagesFindings(serviceName?: string): Promise<CrowdstrikeImagesFinding[]>;
+  getCrowdstrikeContainersFindings(serviceName?: string): Promise<CrowdstrikeContainersFinding[]>;
+  createCrowdstrikeImagesFinding(finding: InsertCrowdstrikeImagesFinding): Promise<CrowdstrikeImagesFinding>;
+  createCrowdstrikeContainersFinding(finding: InsertCrowdstrikeContainersFinding): Promise<CrowdstrikeContainersFinding>;
 }
 
 export class MemStorage implements IStorage {
@@ -382,6 +393,23 @@ export class MemStorage implements IStorage {
   async createEscapeApisFinding(finding: InsertEscapeApisFinding): Promise<EscapeApisFinding> {
     throw new Error("Escape findings not supported in memory storage");
   }
+
+  // Crowdstrike findings methods (stub implementations for MemStorage)
+  async getCrowdstrikeImagesFindings(serviceName?: string): Promise<CrowdstrikeImagesFinding[]> {
+    return [];
+  }
+
+  async getCrowdstrikeContainersFindings(serviceName?: string): Promise<CrowdstrikeContainersFinding[]> {
+    return [];
+  }
+
+  async createCrowdstrikeImagesFinding(finding: InsertCrowdstrikeImagesFinding): Promise<CrowdstrikeImagesFinding> {
+    throw new Error("Crowdstrike findings not supported in memory storage");
+  }
+
+  async createCrowdstrikeContainersFinding(finding: InsertCrowdstrikeContainersFinding): Promise<CrowdstrikeContainersFinding> {
+    throw new Error("Crowdstrike findings not supported in memory storage");
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -549,6 +577,59 @@ export class DatabaseStorage implements IStorage {
       .values(finding)
       .onConflictDoUpdate({
         target: escapeApisFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
+    return created;
+  }
+
+  // Crowdstrike findings methods
+  async getCrowdstrikeImagesFindings(serviceName?: string): Promise<CrowdstrikeImagesFinding[]> {
+    if (serviceName) {
+      return await db.select().from(crowdstrikeImagesFindings)
+        .where(eq(crowdstrikeImagesFindings.serviceName, serviceName));
+    }
+    return await db.select().from(crowdstrikeImagesFindings);
+  }
+
+  async getCrowdstrikeContainersFindings(serviceName?: string): Promise<CrowdstrikeContainersFinding[]> {
+    if (serviceName) {
+      return await db.select().from(crowdstrikeContainersFindings)
+        .where(eq(crowdstrikeContainersFindings.serviceName, serviceName));
+    }
+    return await db.select().from(crowdstrikeContainersFindings);
+  }
+
+  async createCrowdstrikeImagesFinding(finding: InsertCrowdstrikeImagesFinding): Promise<CrowdstrikeImagesFinding> {
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(crowdstrikeImagesFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: crowdstrikeImagesFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
+    return created;
+  }
+
+  async createCrowdstrikeContainersFinding(finding: InsertCrowdstrikeContainersFinding): Promise<CrowdstrikeContainersFinding> {
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(crowdstrikeContainersFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: crowdstrikeContainersFindings.serviceName,
         set: {
           scanDate: finding.scanDate,
           critical: finding.critical,
