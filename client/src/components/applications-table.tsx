@@ -97,16 +97,16 @@ function PercentileBadge({ percentile }: { percentile: number }) {
   );
 }
 
-// Calculate percentile ranking based on total findings
+// Calculate percentile ranking based on risk score (since totalFindings is removed)
 function calculatePercentile(applications: Application[], currentApp: Application): number {
-  const currentFindings = JSON.parse(currentApp.totalFindings).total;
-  const allFindings = applications.map(app => JSON.parse(app.totalFindings).total);
+  const currentRiskScore = parseFloat(currentApp.riskScore);
+  const allRiskScores = applications.map(app => parseFloat(app.riskScore));
   
-  // Count how many applications have more findings than current app
-  const higherCount = allFindings.filter(findings => findings > currentFindings).length;
+  // Count how many applications have higher risk scores than current app
+  const higherCount = allRiskScores.filter(score => score > currentRiskScore).length;
   
-  // Calculate percentile (fewer findings = higher percentile)
-  return (higherCount / applications.length) * 100;
+  // Calculate percentile (lower risk = higher percentile)
+  return ((applications.length - higherCount) / applications.length) * 100;
 }
 
 function LoadingSkeleton() {
@@ -159,34 +159,29 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         bValue = parseFloat(b.riskScore);
         break;
       case 'totalFindings':
-        const aTotalFindings = JSON.parse(a.totalFindings);
-        const bTotalFindings = JSON.parse(b.totalFindings);
-        aValue = aTotalFindings.total;
-        bValue = bTotalFindings.total;
+        // Since totalFindings is removed, default to 0 for now
+        aValue = 0;
+        bValue = 0;
         break;
       case 'criticalFindings':
-        const aCriticalFindings = JSON.parse(a.totalFindings);
-        const bCriticalFindings = JSON.parse(b.totalFindings);
-        aValue = aCriticalFindings.C;
-        bValue = bCriticalFindings.C;
+        // Since totalFindings is removed, default to 0 for now
+        aValue = 0;
+        bValue = 0;
         break;
       case 'highFindings':
-        const aHighFindings = JSON.parse(a.totalFindings);
-        const bHighFindings = JSON.parse(b.totalFindings);
-        aValue = aHighFindings.H;
-        bValue = bHighFindings.H;
+        // Since totalFindings is removed, default to 0 for now
+        aValue = 0;
+        bValue = 0;
         break;
       case 'mediumFindings':
-        const aMediumFindings = JSON.parse(a.totalFindings);
-        const bMediumFindings = JSON.parse(b.totalFindings);
-        aValue = aMediumFindings.M;
-        bValue = bMediumFindings.M;
+        // Since totalFindings is removed, default to 0 for now
+        aValue = 0;
+        bValue = 0;
         break;
       case 'lowFindings':
-        const aLowFindings = JSON.parse(a.totalFindings);
-        const bLowFindings = JSON.parse(b.totalFindings);
-        aValue = aLowFindings.L;
-        bValue = bLowFindings.L;
+        // Since totalFindings is removed, default to 0 for now
+        aValue = 0;
+        bValue = 0;
         break;
       case 'percentile':
         aValue = calculatePercentile(applications, a);
@@ -240,7 +235,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const exportToCSV = () => {
     const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const csvData = sortedApplications.map(app => {
-      const findings = JSON.parse(app.totalFindings);
+      // Since totalFindings is removed, use default values for now
+      const findings = { total: 0, C: 0, H: 0, M: 0, L: 0 };
       const percentile = calculatePercentile(applications, app);
       return [
         app.name,
@@ -271,7 +267,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const exportToXLSX = () => {
     const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const data = sortedApplications.map(app => {
-      const findings = JSON.parse(app.totalFindings);
+      // Since totalFindings is removed, use default values for now
+      const findings = { total: 0, C: 0, H: 0, M: 0, L: 0 };
       const percentile = calculatePercentile(applications, app);
       return [
         app.name,
@@ -313,7 +310,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
 
     const headers = [['Service Name', 'Risk Score', 'Total', 'Percentile', 'Critical', 'High', 'Medium', 'Low', 'Tags']];
     const data = sortedApplications.map(app => {
-      const findings = JSON.parse(app.totalFindings);
+      // Since totalFindings is removed, use default values for now
+      const findings = { total: 0, C: 0, H: 0, M: 0, L: 0 };
       const percentile = calculatePercentile(applications, app);
       return [
         app.name,
@@ -433,7 +431,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               <LoadingSkeleton />
             ) : (
               paginatedApplications.map((app, index) => {
-                const totalFindings: FindingsData = JSON.parse(app.totalFindings);
+                // Since totalFindings is removed, use default values for now
+                const totalFindings: FindingsData = { total: 0, C: 0, H: 0, M: 0, L: 0 };
                 const percentile = calculatePercentile(applications, app);
                 
                 return (
