@@ -78,7 +78,7 @@ export default function RiskScoring() {
   };
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
-    queryKey: ["/api/applications"],
+    queryKey: ["/api/applications-with-risk"],
   });
 
   // Risk assessment data query
