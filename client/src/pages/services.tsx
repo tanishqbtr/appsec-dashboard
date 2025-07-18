@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import Navigation from "@/components/navigation";
 import PageWrapper from "@/components/page-wrapper";
@@ -6,8 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Search, ExternalLink, Shield, ChevronUp, ChevronDown } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Search, ExternalLink, Shield, ChevronUp, ChevronDown, Plus } from "lucide-react";
 import { Link } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import type { Application } from "@shared/schema";
 
 type SortField = "name" | "riskScore" | "percentile";
@@ -17,6 +22,18 @@ export default function Services() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
+  const [newService, setNewService] = useState({
+    name: "",
+    description: "",
+    serviceOwner: "",
+    githubRepo: "",
+    jiraProject: "",
+    slackChannel: "",
+  });
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["/api/services-with-risk-scores"],
@@ -30,6 +47,63 @@ export default function Services() {
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
+  };
+
+  // Mutation for creating a new service
+  const createServiceMutation = useMutation({
+    mutationFn: async (serviceData: typeof newService) => {
+      return apiRequest("/api/applications", {
+        method: "POST",
+        body: JSON.stringify({
+          ...serviceData,
+          riskScore: "0.0", // Default risk score as requested
+          labels: [],
+          tags: [],
+          hasAlert: false,
+        }),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Service Added",
+        description: "New service has been successfully added.",
+      });
+      setIsAddServiceOpen(false);
+      setNewService({
+        name: "",
+        description: "",
+        serviceOwner: "",
+        githubRepo: "",
+        jiraProject: "",
+        slackChannel: "",
+      });
+      // Invalidate and refetch services data
+      queryClient.invalidateQueries({ queryKey: ["/api/services-with-risk-scores"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/services-total-findings"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add service. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddService = () => {
+    if (!newService.name.trim()) {
+      toast({
+        title: "Service Name Required",
+        description: "Please enter a service name.",
+        variant: "destructive",
+      });
+      return;
+    }
+    createServiceMutation.mutate(newService);
+  };
+
+  const handleInputChange = (field: keyof typeof newService, value: string) => {
+    setNewService(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSort = (field: SortField) => {
@@ -180,16 +254,107 @@ export default function Services() {
                           </Button>
                         </th>
                         <th className="text-center py-3 px-4 w-1/4">
-                          <Button
-                            variant="ghost"
-                            onClick={() => handleSort("percentile")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full"
-                          >
-                            Percentile Ranking
-                            {sortField === "percentile" && (
-                              sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
+                          <div className="flex items-center justify-between">
+                            <Button
+                              variant="ghost"
+                              onClick={() => handleSort("percentile")}
+                              className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900"
+                            >
+                              Percentile Ranking
+                              {sortField === "percentile" && (
+                                sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  size="sm" 
+                                  className="bg-green-600 hover:bg-green-700 text-white ml-2"
+                                >
+                                  <Plus className="h-4 w-4 mr-1" />
+                                  Add Service
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Add New Service</DialogTitle>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label htmlFor="name">Service Name *</Label>
+                                      <Input
+                                        id="name"
+                                        placeholder="Enter service name"
+                                        value={newService.name}
+                                        onChange={(e) => handleInputChange("name", e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label htmlFor="serviceOwner">Service Owner</Label>
+                                      <Input
+                                        id="serviceOwner"
+                                        placeholder="Enter service owner"
+                                        value={newService.serviceOwner}
+                                        onChange={(e) => handleInputChange("serviceOwner", e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label htmlFor="description">Description</Label>
+                                    <Textarea
+                                      id="description"
+                                      placeholder="Enter service description"
+                                      value={newService.description}
+                                      onChange={(e) => handleInputChange("description", e.target.value)}
+                                      rows={3}
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                      <Label htmlFor="githubRepo">GitHub Repository</Label>
+                                      <Input
+                                        id="githubRepo"
+                                        placeholder="https://github.com/org/repo"
+                                        value={newService.githubRepo}
+                                        onChange={(e) => handleInputChange("githubRepo", e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="space-y-2">
+                                      <Label htmlFor="jiraProject">Jira Project</Label>
+                                      <Input
+                                        id="jiraProject"
+                                        placeholder="PROJECT-KEY"
+                                        value={newService.jiraProject}
+                                        onChange={(e) => handleInputChange("jiraProject", e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label htmlFor="slackChannel">Slack Channel</Label>
+                                    <Input
+                                      id="slackChannel"
+                                      placeholder="#team-channel"
+                                      value={newService.slackChannel}
+                                      onChange={(e) => handleInputChange("slackChannel", e.target.value)}
+                                    />
+                                  </div>
+                                </div>
+                                <DialogFooter>
+                                  <Button variant="outline" onClick={() => setIsAddServiceOpen(false)}>
+                                    Cancel
+                                  </Button>
+                                  <Button 
+                                    onClick={handleAddService}
+                                    disabled={createServiceMutation.isPending || !newService.name.trim()}
+                                    className="bg-green-600 hover:bg-green-700"
+                                  >
+                                    {createServiceMutation.isPending ? "Adding..." : "Add Service"}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
                         </th>
                         <th className="text-right py-3 px-4 w-12"></th>
                       </tr>
