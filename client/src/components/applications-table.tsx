@@ -146,38 +146,74 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const [pageSize, setPageSize] = useState(20);
   const [, setLocation] = useLocation();
 
-  // Determine which Mend API to query based on selected labels
-  const getMendEndpoint = () => {
+  // Determine which Mend APIs to query based on selected labels
+  const getMendEndpoints = () => {
+    const endpoints: string[] = [];
     if (selectedEngine === "Mend" && selectedLabels.length > 0) {
-      if (selectedLabels.includes("SCA")) return "/api/mend/sca";
-      if (selectedLabels.includes("SAST")) return "/api/mend/sast";
-      if (selectedLabels.includes("Containers")) return "/api/mend/containers";
+      if (selectedLabels.includes("SCA")) endpoints.push("/api/mend/sca");
+      if (selectedLabels.includes("SAST")) endpoints.push("/api/mend/sast");
+      if (selectedLabels.includes("Containers")) endpoints.push("/api/mend/containers");
     }
-    return null;
+    return endpoints;
   };
 
-  // Fetch Mend findings when appropriate filters are selected
-  const { data: mendFindings = [] } = useQuery<MendFindings[]>({
-    queryKey: [getMendEndpoint()],
-    enabled: getMendEndpoint() !== null,
+  // Fetch Mend findings from multiple endpoints when multiple labels are selected
+  const mendEndpoints = getMendEndpoints();
+  
+  const scaQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/sca"],
+    enabled: mendEndpoints.includes("/api/mend/sca"),
+  });
+  
+  const sastQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/sast"],
+    enabled: mendEndpoints.includes("/api/mend/sast"),
+  });
+  
+  const containersQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/containers"],
+    enabled: mendEndpoints.includes("/api/mend/containers"),
   });
 
-  // Create a map of service name to findings for quick lookup
-  const mendFindingsMap = new Map<string, MendFindings>();
-  mendFindings.forEach(finding => {
-    mendFindingsMap.set(finding.serviceName, finding);
-  });
+  // Combine findings from all selected scan types
+  const combinedMendFindings = new Map<string, MendFindings>();
+  
+  // Helper function to add findings to the combined map
+  const addFindings = (findings: MendFindings[], scanType: string) => {
+    findings.forEach(finding => {
+      const existing = combinedMendFindings.get(finding.serviceName);
+      if (existing) {
+        // Sum the findings if service already exists
+        combinedMendFindings.set(finding.serviceName, {
+          ...existing,
+          critical: existing.critical + finding.critical,
+          high: existing.high + finding.high,
+          medium: existing.medium + finding.medium,
+          low: existing.low + finding.low,
+          scanDate: finding.scanDate > existing.scanDate ? finding.scanDate : existing.scanDate // Keep most recent date
+        });
+      } else {
+        // Add new service
+        combinedMendFindings.set(finding.serviceName, { ...finding });
+      }
+    });
+  };
 
-  // Function to get findings data for a service
+  // Add findings from each enabled query
+  if (scaQuery.data) addFindings(scaQuery.data, "SCA");
+  if (sastQuery.data) addFindings(sastQuery.data, "SAST");
+  if (containersQuery.data) addFindings(containersQuery.data, "Containers");
+
+  // Function to get findings data for a service (now using combined findings)
   const getServiceFindings = (serviceName: string): FindingsData => {
-    const mendFinding = mendFindingsMap.get(serviceName);
-    if (mendFinding) {
+    const combinedFinding = combinedMendFindings.get(serviceName);
+    if (combinedFinding) {
       return {
-        total: mendFinding.critical + mendFinding.high + mendFinding.medium + mendFinding.low,
-        C: mendFinding.critical,
-        H: mendFinding.high,
-        M: mendFinding.medium,
-        L: mendFinding.low
+        total: combinedFinding.critical + combinedFinding.high + combinedFinding.medium + combinedFinding.low,
+        C: combinedFinding.critical,
+        H: combinedFinding.high,
+        M: combinedFinding.medium,
+        L: combinedFinding.low
       };
     }
     // Return zeros if no findings found
