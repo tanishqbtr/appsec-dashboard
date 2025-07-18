@@ -1,5 +1,6 @@
 import Navigation from "@/components/navigation";
 import PageWrapper from "@/components/page-wrapper";
+import DashboardTutorial from "@/components/dashboard-tutorial";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,8 @@ import {
   Target,
   Clock,
   Users,
-  Zap
+  Zap,
+  HelpCircle
 } from "lucide-react";
 import {
   BarChart,
@@ -44,6 +46,7 @@ import {
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { format, subDays } from "date-fns";
 import type { Application } from "@shared/schema";
 
@@ -106,10 +109,24 @@ const processAnalyticsData = (applications: Application[]) => {
 
 export default function Dashboards() {
   const [timeRange, setTimeRange] = useState("7d");
+  const [showTutorial, setShowTutorial] = useState(false);
+  const { toast } = useToast();
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
+  };
+
+  const handleStartTutorial = () => {
+    setShowTutorial(true);
+  };
+
+  const handleCompleteTutorial = () => {
+    setShowTutorial(false);
+    toast({
+      title: "Tutorial Complete!",
+      description: "You've learned how to use the comprehensive security dashboard analytics.",
+    });
   };
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
@@ -210,17 +227,50 @@ export default function Dashboards() {
       
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
-          <div className="mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Security Dashboard</h1>
-              <p className="mt-2 text-gray-600">
-                Real-time security insights and comprehensive vulnerability management
-              </p>
+          <div className="mb-8" data-tutorial="dashboard-header">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Security Dashboard</h1>
+                <p className="mt-2 text-gray-600">
+                  Real-time security insights and comprehensive vulnerability management
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <Select value={timeRange} onValueChange={setTimeRange}>
+                  <SelectTrigger className="w-32" data-tutorial="time-range">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="24h">24 Hours</SelectItem>
+                    <SelectItem value="7d">7 Days</SelectItem>
+                    <SelectItem value="30d">30 Days</SelectItem>
+                    <SelectItem value="90d">90 Days</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant="outline"
+                  onClick={exportDashboard}
+                  className="flex items-center gap-2"
+                  data-tutorial="export-button"
+                >
+                  <Download className="h-4 w-4" />
+                  Export Report
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleStartTutorial}
+                  className="flex items-center gap-2"
+                  data-tutorial="tutorial-button"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  Take Tutorial
+                </Button>
+              </div>
             </div>
           </div>
 
           {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" data-tutorial="key-metrics">
             <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -285,7 +335,7 @@ export default function Dashboards() {
           {/* Charts Row 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Weekly Findings by Severity */}
-            <Card className="chart-enter card-hover">
+            <Card className="chart-enter card-hover" data-tutorial="weekly-trends">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="h-5 w-5" />
@@ -338,7 +388,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Risk Distribution */}
-            <Card className="chart-enter card-hover">
+            <Card className="chart-enter card-hover" data-tutorial="risk-distribution">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <PieChart className="h-5 w-5" />
@@ -372,7 +422,7 @@ export default function Dashboards() {
           {/* Charts Row 2 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Findings by Engine */}
-            <Card className="chart-enter card-hover">
+            <Card className="chart-enter card-hover" data-tutorial="engine-findings">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
@@ -397,7 +447,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Compliance Overview */}
-            <Card className="chart-enter card-hover">
+            <Card className="chart-enter card-hover" data-tutorial="compliance-coverage">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5" />
@@ -440,7 +490,7 @@ export default function Dashboards() {
           {/* Recent Activity & Quick Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Findings Trend */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="transition-all duration-200 hover:shadow-lg" data-tutorial="findings-trend-area">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="h-5 w-5" />
@@ -465,7 +515,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Quick Stats */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="transition-all duration-200 hover:shadow-lg" data-tutorial="security-summary">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
@@ -510,6 +560,13 @@ export default function Dashboards() {
               </CardContent>
             </Card>
           </div>
+          
+          {/* Dashboard Tutorial */}
+          <DashboardTutorial
+            isOpen={showTutorial}
+            onClose={() => setShowTutorial(false)}
+            onComplete={handleCompleteTutorial}
+          />
         </div>
       </div>
     </PageWrapper>
