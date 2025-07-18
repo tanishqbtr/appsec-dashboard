@@ -4,6 +4,8 @@ import {
   mendScaFindings, 
   mendSastFindings, 
   mendContainersFindings,
+  escapeWebAppsFindings,
+  escapeApisFindings,
   type User, 
   type InsertUser, 
   type Application, 
@@ -13,7 +15,11 @@ import {
   type MendSastFinding,
   type InsertMendSastFinding,
   type MendContainersFinding,
-  type InsertMendContainersFinding
+  type InsertMendContainersFinding,
+  type EscapeWebAppsFinding,
+  type InsertEscapeWebAppsFinding,
+  type EscapeApisFinding,
+  type InsertEscapeApisFinding
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
@@ -33,6 +39,11 @@ export interface IStorage {
   createMendScaFinding(finding: InsertMendScaFinding): Promise<MendScaFinding>;
   createMendSastFinding(finding: InsertMendSastFinding): Promise<MendSastFinding>;
   createMendContainersFinding(finding: InsertMendContainersFinding): Promise<MendContainersFinding>;
+  // Escape findings methods
+  getEscapeWebAppsFindings(serviceName?: string): Promise<EscapeWebAppsFinding[]>;
+  getEscapeApisFindings(serviceName?: string): Promise<EscapeApisFinding[]>;
+  createEscapeWebAppsFinding(finding: InsertEscapeWebAppsFinding): Promise<EscapeWebAppsFinding>;
+  createEscapeApisFinding(finding: InsertEscapeApisFinding): Promise<EscapeApisFinding>;
 }
 
 export class MemStorage implements IStorage {
@@ -354,6 +365,23 @@ export class MemStorage implements IStorage {
   async createMendContainersFinding(finding: InsertMendContainersFinding): Promise<MendContainersFinding> {
     throw new Error("Mend findings not supported in memory storage");
   }
+
+  // Escape findings methods (stub implementations for MemStorage)
+  async getEscapeWebAppsFindings(serviceName?: string): Promise<EscapeWebAppsFinding[]> {
+    return [];
+  }
+
+  async getEscapeApisFindings(serviceName?: string): Promise<EscapeApisFinding[]> {
+    return [];
+  }
+
+  async createEscapeWebAppsFinding(finding: InsertEscapeWebAppsFinding): Promise<EscapeWebAppsFinding> {
+    throw new Error("Escape findings not supported in memory storage");
+  }
+
+  async createEscapeApisFinding(finding: InsertEscapeApisFinding): Promise<EscapeApisFinding> {
+    throw new Error("Escape findings not supported in memory storage");
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -468,6 +496,59 @@ export class DatabaseStorage implements IStorage {
       .values(finding)
       .onConflictDoUpdate({
         target: mendContainersFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
+    return created;
+  }
+
+  // Escape findings methods
+  async getEscapeWebAppsFindings(serviceName?: string): Promise<EscapeWebAppsFinding[]> {
+    if (serviceName) {
+      return await db.select().from(escapeWebAppsFindings)
+        .where(eq(escapeWebAppsFindings.serviceName, serviceName));
+    }
+    return await db.select().from(escapeWebAppsFindings);
+  }
+
+  async getEscapeApisFindings(serviceName?: string): Promise<EscapeApisFinding[]> {
+    if (serviceName) {
+      return await db.select().from(escapeApisFindings)
+        .where(eq(escapeApisFindings.serviceName, serviceName));
+    }
+    return await db.select().from(escapeApisFindings);
+  }
+
+  async createEscapeWebAppsFinding(finding: InsertEscapeWebAppsFinding): Promise<EscapeWebAppsFinding> {
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(escapeWebAppsFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: escapeWebAppsFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
+    return created;
+  }
+
+  async createEscapeApisFinding(finding: InsertEscapeApisFinding): Promise<EscapeApisFinding> {
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(escapeApisFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: escapeApisFindings.serviceName,
         set: {
           scanDate: finding.scanDate,
           critical: finding.critical,

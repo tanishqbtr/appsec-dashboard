@@ -56,6 +56,28 @@ export const mendContainersFindings = pgTable("mend_containers_findings", {
   low: integer("low").notNull().default(0),
 });
 
+// Escape Web Applications findings table
+export const escapeWebAppsFindings = pgTable("escape_webapps_findings", {
+  id: serial("id").primaryKey(),
+  serviceName: text("service_name").notNull(),
+  scanDate: text("scan_date").notNull(),
+  critical: integer("critical").notNull().default(0),
+  high: integer("high").notNull().default(0),
+  medium: integer("medium").notNull().default(0),
+  low: integer("low").notNull().default(0),
+});
+
+// Escape APIs findings table
+export const escapeApisFindings = pgTable("escape_apis_findings", {
+  id: serial("id").primaryKey(),
+  serviceName: text("service_name").notNull(),
+  scanDate: text("scan_date").notNull(),
+  critical: integer("critical").notNull().default(0),
+  high: integer("high").notNull().default(0),
+  medium: integer("medium").notNull().default(0),
+  low: integer("low").notNull().default(0),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -77,6 +99,14 @@ export const insertMendContainersFindingsSchema = createInsertSchema(mendContain
   id: true,
 });
 
+export const insertEscapeWebAppsFindingsSchema = createInsertSchema(escapeWebAppsFindings).omit({
+  id: true,
+});
+
+export const insertEscapeApisFindingsSchema = createInsertSchema(escapeApisFindings).omit({
+  id: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Application = typeof applications.$inferSelect;
@@ -87,6 +117,10 @@ export type MendSastFinding = typeof mendSastFindings.$inferSelect;
 export type InsertMendSastFinding = z.infer<typeof insertMendSastFindingsSchema>;
 export type MendContainersFinding = typeof mendContainersFindings.$inferSelect;
 export type InsertMendContainersFinding = z.infer<typeof insertMendContainersFindingsSchema>;
+export type EscapeWebAppsFinding = typeof escapeWebAppsFindings.$inferSelect;
+export type InsertEscapeWebAppsFinding = z.infer<typeof insertEscapeWebAppsFindingsSchema>;
+export type EscapeApisFinding = typeof escapeApisFindings.$inferSelect;
+export type InsertEscapeApisFinding = z.infer<typeof insertEscapeApisFindingsSchema>;
 
 // Analytics and reporting types
 export interface SecurityMetrics {

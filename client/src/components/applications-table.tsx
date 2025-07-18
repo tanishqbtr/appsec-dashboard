@@ -58,6 +58,16 @@ interface MendFindings {
   low: number;
 }
 
+interface EscapeFindings {
+  id: number;
+  serviceName: string;
+  scanDate: string;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+}
+
 interface FindingsData {
   total: number;
   C: number;
@@ -146,45 +156,64 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const [pageSize, setPageSize] = useState(20);
   const [, setLocation] = useLocation();
 
-  // Determine which Mend APIs to query based on selected labels
-  const getMendEndpoints = () => {
+  // Determine which APIs to query based on selected engine and labels
+  const getActiveEndpoints = () => {
     const endpoints: string[] = [];
+    
     if (selectedEngine === "Mend" && selectedLabels.length > 0) {
       if (selectedLabels.includes("SCA")) endpoints.push("/api/mend/sca");
       if (selectedLabels.includes("SAST")) endpoints.push("/api/mend/sast");
       if (selectedLabels.includes("Containers")) endpoints.push("/api/mend/containers");
     }
+    
+    if (selectedEngine === "Escape" && selectedLabels.length > 0) {
+      if (selectedLabels.includes("Web Applications")) endpoints.push("/api/escape/webapps");
+      if (selectedLabels.includes("APIs")) endpoints.push("/api/escape/apis");
+    }
+    
     return endpoints;
   };
 
-  // Fetch Mend findings from multiple endpoints when multiple labels are selected
-  const mendEndpoints = getMendEndpoints();
+  // Fetch findings from multiple endpoints when multiple labels are selected
+  const activeEndpoints = getActiveEndpoints();
   
+  // Mend queries
   const scaQuery = useQuery<MendFindings[]>({
     queryKey: ["/api/mend/sca"],
-    enabled: mendEndpoints.includes("/api/mend/sca"),
+    enabled: activeEndpoints.includes("/api/mend/sca"),
   });
   
   const sastQuery = useQuery<MendFindings[]>({
     queryKey: ["/api/mend/sast"],
-    enabled: mendEndpoints.includes("/api/mend/sast"),
+    enabled: activeEndpoints.includes("/api/mend/sast"),
   });
   
   const containersQuery = useQuery<MendFindings[]>({
     queryKey: ["/api/mend/containers"],
-    enabled: mendEndpoints.includes("/api/mend/containers"),
+    enabled: activeEndpoints.includes("/api/mend/containers"),
+  });
+
+  // Escape queries
+  const webAppsQuery = useQuery<EscapeFindings[]>({
+    queryKey: ["/api/escape/webapps"],
+    enabled: activeEndpoints.includes("/api/escape/webapps"),
+  });
+  
+  const apisQuery = useQuery<EscapeFindings[]>({
+    queryKey: ["/api/escape/apis"],
+    enabled: activeEndpoints.includes("/api/escape/apis"),
   });
 
   // Combine findings from all selected scan types
-  const combinedMendFindings = new Map<string, MendFindings>();
+  const combinedFindings = new Map<string, MendFindings | EscapeFindings>();
   
   // Helper function to add findings to the combined map
-  const addFindings = (findings: MendFindings[], scanType: string) => {
+  const addFindings = (findings: (MendFindings | EscapeFindings)[], scanType: string) => {
     findings.forEach(finding => {
-      const existing = combinedMendFindings.get(finding.serviceName);
+      const existing = combinedFindings.get(finding.serviceName);
       if (existing) {
         // Sum the findings if service already exists
-        combinedMendFindings.set(finding.serviceName, {
+        combinedFindings.set(finding.serviceName, {
           ...existing,
           critical: existing.critical + finding.critical,
           high: existing.high + finding.high,
@@ -194,7 +223,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         });
       } else {
         // Add new service
-        combinedMendFindings.set(finding.serviceName, { ...finding });
+        combinedFindings.set(finding.serviceName, { ...finding });
       }
     });
   };
@@ -203,10 +232,12 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   if (scaQuery.data) addFindings(scaQuery.data, "SCA");
   if (sastQuery.data) addFindings(sastQuery.data, "SAST");
   if (containersQuery.data) addFindings(containersQuery.data, "Containers");
+  if (webAppsQuery.data) addFindings(webAppsQuery.data, "Web Applications");
+  if (apisQuery.data) addFindings(apisQuery.data, "APIs");
 
   // Function to get findings data for a service (now using combined findings)
   const getServiceFindings = (serviceName: string): FindingsData => {
-    const combinedFinding = combinedMendFindings.get(serviceName);
+    const combinedFinding = combinedFindings.get(serviceName);
     if (combinedFinding) {
       return {
         total: combinedFinding.critical + combinedFinding.high + combinedFinding.medium + combinedFinding.low,

@@ -83,11 +83,13 @@ export default function Services() {
     
     // Apply either labels OR tags filtering, never both
     if (filterMode === "labels") {
-      // Special handling for Mend engine: show all services when Mend labels are selected
-      // because findings data comes from separate Mend tables, not service labels
-      if (selectedEngine === "Mend" && selectedLabels.length > 0 && 
-          selectedLabels.some(label => ["SCA", "SAST", "Containers"].includes(label))) {
-        return matchesSearch; // Show all services, findings will be populated from Mend APIs
+      // Special handling for Mend and Escape engines: show all services when their labels are selected
+      // because findings data comes from separate database tables, not service labels
+      if ((selectedEngine === "Mend" && selectedLabels.length > 0 && 
+          selectedLabels.some(label => ["SCA", "SAST", "Containers"].includes(label))) ||
+          (selectedEngine === "Escape" && selectedLabels.length > 0 && 
+          selectedLabels.some(label => ["Web Applications", "APIs"].includes(label)))) {
+        return matchesSearch; // Show all services, findings will be populated from APIs
       }
       
       // For other engines, filter by service labels as before
