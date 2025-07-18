@@ -142,6 +142,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Escape findings endpoints
+  app.get("/api/escape/webapps", async (req, res) => {
+    try {
+      const { serviceName } = req.query;
+      const storage = await getStorage();
+      const findings = await storage.getEscapeWebAppsFindings(serviceName as string);
+      res.json(findings);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/escape/apis", async (req, res) => {
+    try {
+      const { serviceName } = req.query;
+      const storage = await getStorage();
+      const findings = await storage.getEscapeApisFindings(serviceName as string);
+      res.json(findings);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
