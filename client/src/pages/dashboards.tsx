@@ -41,6 +41,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { format, subDays } from "date-fns";
 import type { Application } from "@shared/schema";
 
@@ -104,11 +105,7 @@ const processAnalyticsData = (applications: Application[]) => {
 export default function Dashboards() {
   const [showTutorial, setShowTutorial] = useState(false);
   const { toast } = useToast();
-
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/login";
-  };
+  const { logout } = useAuth();
 
   const handleStartTutorial = () => {
     setShowTutorial(true);
@@ -172,7 +169,7 @@ export default function Dashboards() {
     return (
       <PageWrapper loadingMessage="Loading Dashboard...">
         <div className="min-h-screen bg-gray-50">
-          <Navigation onLogout={handleLogout} currentPage="dashboards" />
+          <Navigation onLogout={logout} currentPage="dashboards" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -198,7 +195,7 @@ export default function Dashboards() {
   return (
     <PageWrapper loadingMessage="Loading Dashboard...">
       <div className="min-h-screen bg-gray-50">
-        <Navigation onLogout={handleLogout} currentPage="dashboards" />
+        <Navigation onLogout={logout} currentPage="dashboards" />
       
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}

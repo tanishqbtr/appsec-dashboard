@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import HingeLogo from "@/components/hinge-logo";
 
 export default function Login() {
@@ -28,6 +28,8 @@ export default function Login() {
       });
 
       if (response.ok) {
+        // Invalidate auth queries to trigger re-fetch
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         setLocation("/dashboards");
       }
     } catch (err) {

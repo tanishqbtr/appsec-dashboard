@@ -5,6 +5,7 @@ import ApplicationsTable from "@/components/applications-table";
 import ReportsTutorial from "@/components/reports-tutorial";
 import PageWrapper from "@/components/page-wrapper";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,11 +34,7 @@ export default function Reports() {
   });
 
   const { toast } = useToast();
-
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/login";
-  };
+  const { logout } = useAuth();
 
   const handleStartTutorial = () => {
     setShowTutorial(true);
@@ -146,7 +143,7 @@ export default function Reports() {
   return (
     <PageWrapper loadingMessage="Loading Reports...">
       <div className="min-h-screen bg-gray-50">
-        <Navigation onLogout={handleLogout} currentPage="reports" />
+        <Navigation onLogout={logout} currentPage="reports" />
       
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">

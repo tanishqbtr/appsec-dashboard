@@ -45,6 +45,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import type { Application } from "@shared/schema";
 
 interface FindingsData {
@@ -225,17 +226,13 @@ export default function ServiceDetail() {
   const params = useParams();
   const serviceId = params.id;
   const { toast } = useToast();
+  const { logout } = useAuth();
   const [editingService, setEditingService] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [newTagInput, setNewTagInput] = useState("");
 
   const handleGoBack = () => {
     window.history.back();
-  };
-
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/login";
   };
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
@@ -341,7 +338,7 @@ export default function ServiceDetail() {
     return (
       <PageWrapper loadingMessage="Loading Service Details...">
         <div className="min-h-screen bg-gray-50">
-          <Navigation onLogout={handleLogout} currentPage="services" />
+          <Navigation onLogout={logout} currentPage="services" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -361,7 +358,7 @@ export default function ServiceDetail() {
     return (
       <PageWrapper loadingMessage="Service not found">
         <div className="min-h-screen bg-gray-50">
-          <Navigation onLogout={handleLogout} currentPage="services" />
+          <Navigation onLogout={logout} currentPage="services" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-gray-900 mb-4">Service Not Found</h1>
@@ -489,7 +486,7 @@ export default function ServiceDetail() {
     <PageWrapper loadingMessage="Loading Service Details...">
       <TooltipProvider>
         <div className="min-h-screen bg-gray-50">
-          <Navigation onLogout={handleLogout} currentPage="services" />
+          <Navigation onLogout={logout} currentPage="services" />
       
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}

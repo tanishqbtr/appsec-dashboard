@@ -32,6 +32,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   TrendingUp, 
   Edit, 
@@ -73,12 +74,8 @@ export default function RiskScoring() {
     awareness: ""
   });
   const { toast } = useToast();
+  const { logout } = useAuth();
   const queryClient = useQueryClient();
-
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/login";
-  };
 
   const handleStartTutorial = () => {
     setShowTutorial(true);
@@ -395,7 +392,7 @@ export default function RiskScoring() {
     return (
       <PageWrapper loadingMessage="Loading Risk Scoring...">
         <div className="min-h-screen bg-gray-50">
-          <Navigation onLogout={handleLogout} currentPage="risk-scoring" />
+          <Navigation onLogout={logout} currentPage="risk-scoring" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -411,7 +408,7 @@ export default function RiskScoring() {
   return (
     <PageWrapper loadingMessage="Loading Risk Scoring...">
       <div className="min-h-screen bg-gray-50">
-        <Navigation onLogout={handleLogout} currentPage="risk-scoring" />
+        <Navigation onLogout={logout} currentPage="risk-scoring" />
         
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 page-enter page-enter-active">
           <div className="mb-8 stagger-item">

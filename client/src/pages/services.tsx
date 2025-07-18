@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Search, ExternalLink, Shield, ChevronUp, ChevronDown, Plus, Trash2, X, HelpCircle } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import type { Application } from "@shared/schema";
 
@@ -39,6 +40,7 @@ export default function Services() {
   });
 
   const { toast } = useToast();
+  const { logout } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
@@ -49,11 +51,6 @@ export default function Services() {
   const { data: servicesWithFindings = [] } = useQuery({
     queryKey: ["/api/services-total-findings"],
   });
-
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/login";
-  };
 
   const handleStartTutorial = () => {
     setShowTutorial(true);
@@ -264,7 +261,7 @@ export default function Services() {
   return (
     <PageWrapper loadingMessage="Loading Services...">
       <div className="min-h-screen bg-gray-50">
-        <Navigation onLogout={handleLogout} currentPage="services" />
+        <Navigation onLogout={logout} currentPage="services" />
         
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           {/* Header */}
