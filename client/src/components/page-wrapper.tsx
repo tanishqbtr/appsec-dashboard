@@ -26,5 +26,11 @@ export default function PageWrapper({
     return <Loading message={loadingMessage} />;
   }
 
-  return <>{children}</>;
+  return (
+    <div className="min-h-screen bg-gray-50 page-enter page-enter-active">
+      <div className="animate-in fade-in-0 duration-300">
+        {children}
+      </div>
+    </div>
+  );
 }

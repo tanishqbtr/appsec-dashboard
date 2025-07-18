@@ -221,7 +221,7 @@ export default function Dashboards() {
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -236,7 +236,7 @@ export default function Dashboards() {
               </CardContent>
             </Card>
 
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -251,7 +251,7 @@ export default function Dashboards() {
               </CardContent>
             </Card>
 
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -266,7 +266,7 @@ export default function Dashboards() {
               </CardContent>
             </Card>
 
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -285,7 +285,7 @@ export default function Dashboards() {
           {/* Charts Row 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Weekly Findings by Severity */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="chart-enter card-hover">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="h-5 w-5" />
@@ -338,7 +338,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Risk Distribution */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="chart-enter card-hover">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <PieChart className="h-5 w-5" />
@@ -372,7 +372,7 @@ export default function Dashboards() {
           {/* Charts Row 2 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Findings by Engine */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="chart-enter card-hover">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
@@ -397,7 +397,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Compliance Overview */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="chart-enter card-hover">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5" />
