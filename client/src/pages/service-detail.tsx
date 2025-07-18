@@ -905,10 +905,10 @@ export default function ServiceDetail() {
                     {riskAssessmentData ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Data Classification Card */}
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
                           <div className="flex items-center gap-2 mb-3">
-                            <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <Database className="h-4 w-4 text-blue-600" />
+                            <div className="h-8 w-8 bg-cyan-100 rounded-lg flex items-center justify-center">
+                              <Database className="h-4 w-4 text-cyan-600" />
                             </div>
                             <h5 className="font-semibold text-gray-800">Data Classification</h5>
                           </div>
@@ -916,7 +916,7 @@ export default function ServiceDetail() {
                             {riskAssessmentData.dataClassification && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Classification:</span>
-                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
                                   {riskAssessmentData.dataClassification}
                                 </Badge>
                               </div>
@@ -924,7 +924,7 @@ export default function ServiceDetail() {
                             {riskAssessmentData.phi && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">PHI:</span>
-                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
                                   {riskAssessmentData.phi}
                                 </Badge>
                               </div>
@@ -932,7 +932,7 @@ export default function ServiceDetail() {
                             {riskAssessmentData.eligibilityData && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Eligibility Data:</span>
-                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
                                   {riskAssessmentData.eligibilityData}
                                 </Badge>
                               </div>
@@ -941,10 +941,10 @@ export default function ServiceDetail() {
                         </div>
 
                         {/* CIA Triad Card */}
-                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
                           <div className="flex items-center gap-2 mb-3">
-                            <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                              <Lock className="h-4 w-4 text-purple-600" />
+                            <div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                              <Lock className="h-4 w-4 text-indigo-600" />
                             </div>
                             <h5 className="font-semibold text-gray-800">CIA Triad</h5>
                           </div>
@@ -952,7 +952,7 @@ export default function ServiceDetail() {
                             {riskAssessmentData.confidentialityImpact && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Confidentiality Impact:</span>
-                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
                                   {riskAssessmentData.confidentialityImpact}
                                 </Badge>
                               </div>
@@ -960,7 +960,7 @@ export default function ServiceDetail() {
                             {riskAssessmentData.integrityImpact && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Integrity Impact:</span>
-                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
                                   {riskAssessmentData.integrityImpact}
                                 </Badge>
                               </div>
@@ -968,7 +968,7 @@ export default function ServiceDetail() {
                             {riskAssessmentData.availabilityImpact && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Availability Impact:</span>
-                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
                                   {riskAssessmentData.availabilityImpact}
                                 </Badge>
                               </div>
@@ -977,10 +977,10 @@ export default function ServiceDetail() {
                         </div>
 
                         {/* Attack Surface Factors Card */}
-                        <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                        <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
                           <div className="flex items-center gap-2 mb-3">
-                            <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                              <Globe className="h-4 w-4 text-orange-600" />
+                            <div className="h-8 w-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                              <Globe className="h-4 w-4 text-amber-600" />
                             </div>
                             <h5 className="font-semibold text-gray-800">Attack Surface Factors</h5>
                           </div>
@@ -988,7 +988,7 @@ export default function ServiceDetail() {
                             {riskAssessmentData.publicEndpoint && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Public Endpoint:</span>
-                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
                                   {riskAssessmentData.publicEndpoint}
                                 </Badge>
                               </div>
@@ -996,7 +996,7 @@ export default function ServiceDetail() {
                             {riskAssessmentData.discoverability && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Discoverability:</span>
-                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
                                   {riskAssessmentData.discoverability}
                                 </Badge>
                               </div>
@@ -1004,7 +1004,7 @@ export default function ServiceDetail() {
                             {riskAssessmentData.awareness && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Awareness:</span>
-                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
                                   {riskAssessmentData.awareness}
                                 </Badge>
                               </div>
@@ -1042,7 +1042,7 @@ export default function ServiceDetail() {
                             {riskAssessmentData.dataClassificationScore !== null && riskAssessmentData.dataClassificationScore !== undefined && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Data Classification Score:</span>
-                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
                                   {riskAssessmentData.dataClassificationScore}
                                 </Badge>
                               </div>
@@ -1050,7 +1050,7 @@ export default function ServiceDetail() {
                             {riskAssessmentData.ciaTriadScore !== null && riskAssessmentData.ciaTriadScore !== undefined && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">CIA Triad Score:</span>
-                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
                                   {riskAssessmentData.ciaTriadScore}
                                 </Badge>
                               </div>
@@ -1058,15 +1058,15 @@ export default function ServiceDetail() {
                             {riskAssessmentData.attackSurfaceScore !== null && riskAssessmentData.attackSurfaceScore !== undefined && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Attack Surface Score:</span>
-                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
                                   {riskAssessmentData.attackSurfaceScore}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.finalRiskScore !== null && riskAssessmentData.finalRiskScore !== undefined && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Final Risk Score:</span>
-                                <Badge className={`${
+                              <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-3 pt-3">
+                                <span className="text-sm font-medium text-gray-700">Final Risk Score:</span>
+                                <Badge className={`text-sm font-semibold px-3 py-1 ${
                                   riskAssessmentData.finalRiskScore >= 7 
                                     ? 'bg-red-100 text-red-800 border-red-200' 
                                     : riskAssessmentData.finalRiskScore >= 4 
