@@ -272,7 +272,7 @@ export default function Services() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   type="text"
-                  placeholder="Search services by name, engine, labels, or tags..."
+                  placeholder="Search services..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-4 py-2 w-full"
@@ -302,15 +302,6 @@ export default function Services() {
                   </>
                 ) : (
                   <>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleDeleteMode}
-                      className="flex-shrink-0"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Remove Services
-                    </Button>
                     <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
                       <DialogTrigger asChild>
                         <Button 
@@ -400,6 +391,15 @@ export default function Services() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleDeleteMode}
+                      className="flex-shrink-0"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Remove Services
+                    </Button>
                   </>
                 )}
               </div>
