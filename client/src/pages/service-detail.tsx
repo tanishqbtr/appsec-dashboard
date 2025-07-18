@@ -512,8 +512,8 @@ export default function ServiceDetail() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">{application.name}</h1>
-                <p className="mt-2 text-gray-600">
-                  {application.description || "Comprehensive security analysis and vulnerability management"}
+                <p className={`mt-2 ${application.description ? "text-gray-600" : "text-gray-400"}`}>
+                  {application.description || "Description not set"}
                 </p>
               </div>
               
@@ -533,61 +533,97 @@ export default function ServiceDetail() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardContent className="p-4">
-                <a 
-                  href={application.githubRepo || "#"} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                >
-                  <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <Github className="h-5 w-5" />
+                {application.githubRepo ? (
+                  <a 
+                    href={application.githubRepo} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
+                  >
+                    <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Github className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">GitHub Repo</p>
+                      <p className="text-sm text-gray-600">View source code</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 ml-auto" />
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-3 text-gray-400">
+                    <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Github className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">GitHub Repo</p>
+                      <p className="text-sm text-gray-400">Not set</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">GitHub Repo</p>
-                    <p className="text-sm text-gray-600">View source code</p>
-                  </div>
-                  <ExternalLink className="h-4 w-4 ml-auto" />
-                </a>
+                )}
               </CardContent>
             </Card>
             
             <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardContent className="p-4">
-                <a 
-                  href={application.jiraProject || "#"} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                >
-                  <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Target className="h-5 w-5 text-blue-600" />
+                {application.jiraProject ? (
+                  <a 
+                    href={application.jiraProject} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
+                  >
+                    <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Target className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Jira Project</p>
+                      <p className="text-sm text-gray-600">Track issues</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 ml-auto" />
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-3 text-gray-400">
+                    <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Target className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Jira Project</p>
+                      <p className="text-sm text-gray-400">Not set</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">Jira Project</p>
-                    <p className="text-sm text-gray-600">Track issues</p>
-                  </div>
-                  <ExternalLink className="h-4 w-4 ml-auto" />
-                </a>
+                )}
               </CardContent>
             </Card>
             
             <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardContent className="p-4">
-                <a 
-                  href={application.slackChannel || "#"} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                >
-                  <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <MessageSquare className="h-5 w-5 text-purple-600" />
+                {application.slackChannel ? (
+                  <a 
+                    href={application.slackChannel} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
+                  >
+                    <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <MessageSquare className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Slack Channel</p>
+                      <p className="text-sm text-gray-600">Team communication</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 ml-auto" />
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-3 text-gray-400">
+                    <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <MessageSquare className="h-5 w-5 text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Slack Channel</p>
+                      <p className="text-sm text-gray-400">Not set</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">Slack Channel</p>
-                    <p className="text-sm text-gray-600">Team communication</p>
-                  </div>
-                  <ExternalLink className="h-4 w-4 ml-auto" />
-                </a>
+                )}
               </CardContent>
             </Card>
             
@@ -599,8 +635,8 @@ export default function ServiceDetail() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium">Service Owner</p>
-                    <p className="text-sm text-green-600">
-                      {application.serviceOwner || "Engineering Team"}
+                    <p className={`text-sm ${application.serviceOwner ? "text-green-600" : "text-gray-400"}`}>
+                      {application.serviceOwner || "Not set"}
                     </p>
                   </div>
                 </div>
@@ -660,16 +696,22 @@ export default function ServiceDetail() {
                             </div>
                             <h5 className="font-semibold text-gray-800">Mend</h5>
                           </div>
-                          <a 
-                            href={application.mendLink || "#"} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                          >
-                            <Button size="sm" variant="outline" className="bg-white/50 border-blue-300 text-blue-700 hover:bg-blue-50">
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              Take me to Mend
+                          {application.mendLink ? (
+                            <a 
+                              href={application.mendLink} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                            >
+                              <Button size="sm" variant="outline" className="bg-white/50 border-blue-300 text-blue-700 hover:bg-blue-50">
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                Take me to Mend
+                              </Button>
+                            </a>
+                          ) : (
+                            <Button size="sm" variant="outline" disabled className="bg-gray-100 border-gray-300 text-gray-400">
+                              Not configured
                             </Button>
-                          </a>
+                          )}
                         </div>
                         <div className="grid grid-cols-4 gap-2 text-xs">
                           <div className="text-center">
@@ -699,16 +741,22 @@ export default function ServiceDetail() {
                             </div>
                             <h5 className="font-semibold text-gray-800">Crowdstrike</h5>
                           </div>
-                          <a 
-                            href={application.crowdstrikeLink || "#"} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                          >
-                            <Button size="sm" variant="outline" className="bg-white/50 border-slate-300 text-slate-700 hover:bg-slate-50">
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              Take me to Crowdstrike
+                          {application.crowdstrikeLink ? (
+                            <a 
+                              href={application.crowdstrikeLink} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                            >
+                              <Button size="sm" variant="outline" className="bg-white/50 border-slate-300 text-slate-700 hover:bg-slate-50">
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                Take me to Crowdstrike
+                              </Button>
+                            </a>
+                          ) : (
+                            <Button size="sm" variant="outline" disabled className="bg-gray-100 border-gray-300 text-gray-400">
+                              Not configured
                             </Button>
-                          </a>
+                          )}
                         </div>
                         <div className="grid grid-cols-4 gap-2 text-xs">
                           <div className="text-center">
@@ -738,16 +786,22 @@ export default function ServiceDetail() {
                             </div>
                             <h5 className="font-semibold text-gray-800">Escape</h5>
                           </div>
-                          <a 
-                            href={application.escapeLink || "#"} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                          >
-                            <Button size="sm" variant="outline" className="bg-white/50 border-purple-300 text-purple-700 hover:bg-purple-50">
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              Take me to Escape
+                          {application.escapeLink ? (
+                            <a 
+                              href={application.escapeLink} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                            >
+                              <Button size="sm" variant="outline" className="bg-white/50 border-purple-300 text-purple-700 hover:bg-purple-50">
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                Take me to Escape
+                              </Button>
+                            </a>
+                          ) : (
+                            <Button size="sm" variant="outline" disabled className="bg-gray-100 border-gray-300 text-gray-400">
+                              Not configured
                             </Button>
-                          </a>
+                          )}
                         </div>
                         <div className="grid grid-cols-4 gap-2 text-xs">
                           <div className="text-center">
