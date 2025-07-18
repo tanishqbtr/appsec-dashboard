@@ -34,7 +34,11 @@ import {
   Clock,
   Edit3,
   Save,
-  X
+  X,
+  Database,
+  Lock,
+  Globe,
+  BarChart3
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
@@ -689,101 +693,178 @@ export default function ServiceDetail() {
 
                   {/* Risk Assessment Details */}
                   {riskAssessmentData && (
-                    <div className="space-y-4 border-t pt-4">
-                      <h4 className="font-medium text-gray-900">Risk Assessment Details</h4>
+                    <div className="space-y-4 border-t pt-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Shield className="h-5 w-5 text-green-600" />
+                        <h4 className="text-lg font-semibold text-gray-900">Risk Assessment Details</h4>
+                      </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                        {/* Data Classification Factors */}
-                        <div className="space-y-2">
-                          <h5 className="font-medium text-gray-700">Data Classification</h5>
-                          <div className="space-y-1">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Data Classification Card */}
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <Database className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">Data Classification</h5>
+                          </div>
+                          <div className="space-y-2">
                             {riskAssessmentData.dataClassification && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">Classification:</span> {riskAssessmentData.dataClassification}
-                              </p>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Classification:</span>
+                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                  {riskAssessmentData.dataClassification}
+                                </Badge>
+                              </div>
                             )}
                             {riskAssessmentData.phi && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">PHI:</span> {riskAssessmentData.phi}
-                              </p>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">PHI:</span>
+                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                  {riskAssessmentData.phi}
+                                </Badge>
+                              </div>
                             )}
                             {riskAssessmentData.eligibilityData && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">Eligibility Data:</span> {riskAssessmentData.eligibilityData}
-                              </p>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Eligibility Data:</span>
+                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                  {riskAssessmentData.eligibilityData}
+                                </Badge>
+                              </div>
                             )}
                           </div>
                         </div>
 
-                        {/* CIA Triad */}
-                        <div className="space-y-2">
-                          <h5 className="font-medium text-gray-700">CIA Triad Impact</h5>
-                          <div className="space-y-1">
+                        {/* CIA Triad Card */}
+                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                              <Lock className="h-4 w-4 text-purple-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">CIA Triad Impact</h5>
+                          </div>
+                          <div className="space-y-2">
                             {riskAssessmentData.confidentialityImpact && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">Confidentiality:</span> {riskAssessmentData.confidentialityImpact}
-                              </p>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Confidentiality:</span>
+                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                  {riskAssessmentData.confidentialityImpact}
+                                </Badge>
+                              </div>
                             )}
                             {riskAssessmentData.integrityImpact && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">Integrity:</span> {riskAssessmentData.integrityImpact}
-                              </p>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Integrity:</span>
+                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                  {riskAssessmentData.integrityImpact}
+                                </Badge>
+                              </div>
                             )}
                             {riskAssessmentData.availabilityImpact && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">Availability:</span> {riskAssessmentData.availabilityImpact}
-                              </p>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Availability:</span>
+                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                  {riskAssessmentData.availabilityImpact}
+                                </Badge>
+                              </div>
                             )}
                           </div>
                         </div>
 
-                        {/* Attack Surface */}
-                        <div className="space-y-2">
-                          <h5 className="font-medium text-gray-700">Attack Surface</h5>
-                          <div className="space-y-1">
+                        {/* Attack Surface Card */}
+                        <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                              <Globe className="h-4 w-4 text-orange-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">Attack Surface</h5>
+                          </div>
+                          <div className="space-y-2">
                             {riskAssessmentData.publicEndpoint && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">Public Endpoint:</span> {riskAssessmentData.publicEndpoint}
-                              </p>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Public Endpoint:</span>
+                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                  {riskAssessmentData.publicEndpoint}
+                                </Badge>
+                              </div>
                             )}
                             {riskAssessmentData.discoverability && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">Discoverability:</span> {riskAssessmentData.discoverability}
-                              </p>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Discoverability:</span>
+                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                  {riskAssessmentData.discoverability}
+                                </Badge>
+                              </div>
                             )}
                             {riskAssessmentData.awareness && (
-                              <p className="text-gray-600">
-                                <span className="font-medium">Awareness:</span> {riskAssessmentData.awareness}
-                              </p>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Awareness:</span>
+                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                  {riskAssessmentData.awareness}
+                                </Badge>
+                              </div>
                             )}
                           </div>
                         </div>
 
-                        {/* Score Breakdown */}
-                        <div className="space-y-2">
-                          <h5 className="font-medium text-gray-700">Score Breakdown</h5>
-                          <div className="space-y-1">
-                            <p className="text-gray-600">
-                              <span className="font-medium">Data Classification:</span> {riskAssessmentData.dataClassificationScore || 0}
-                            </p>
-                            <p className="text-gray-600">
-                              <span className="font-medium">CIA Triad:</span> {riskAssessmentData.ciaTriadScore || 0}
-                            </p>
-                            <p className="text-gray-600">
-                              <span className="font-medium">Attack Surface:</span> {riskAssessmentData.attackSurfaceScore || 0}
-                            </p>
-                            <p className="text-gray-600 font-medium border-t pt-1">
-                              <span className="font-medium">Final Score:</span> {riskAssessmentData.finalRiskScore || 0} ({riskAssessmentData.riskLevel || 'Low'})
-                            </p>
+                        {/* Score Breakdown Card */}
+                        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+                              <BarChart3 className="h-4 w-4 text-green-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">Score Breakdown</h5>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center py-1">
+                              <span className="text-sm text-gray-600">Data Classification:</span>
+                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                                {riskAssessmentData.dataClassificationScore || 0}
+                              </Badge>
+                            </div>
+                            <div className="flex justify-between items-center py-1">
+                              <span className="text-sm text-gray-600">CIA Triad:</span>
+                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                                {riskAssessmentData.ciaTriadScore || 0}
+                              </Badge>
+                            </div>
+                            <div className="flex justify-between items-center py-1">
+                              <span className="text-sm text-gray-600">Attack Surface:</span>
+                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                                {riskAssessmentData.attackSurfaceScore || 0}
+                              </Badge>
+                            </div>
+                            <div className="border-t border-green-200 pt-2 mt-2">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-semibold text-gray-700">Final Score:</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg font-bold text-green-700">
+                                    {riskAssessmentData.finalRiskScore || 0}
+                                  </span>
+                                  <Badge className={`${
+                                    riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
+                                    riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                    riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                                    'bg-green-100 text-green-800 border-green-200'
+                                  }`}>
+                                    {riskAssessmentData.riskLevel || 'Low'}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
 
                       {riskAssessmentData.lastUpdated && (
-                        <p className="text-xs text-gray-500">
-                          Last updated: {new Date(riskAssessmentData.lastUpdated).toLocaleDateString()}
-                          {riskAssessmentData.updatedBy && ` by ${riskAssessmentData.updatedBy}`}
-                        </p>
+                        <div className="flex items-center gap-2 justify-center pt-4 border-t border-gray-200">
+                          <Clock className="h-4 w-4 text-gray-400" />
+                          <p className="text-sm text-gray-500">
+                            Last updated: {new Date(riskAssessmentData.lastUpdated).toLocaleDateString()}
+                            {riskAssessmentData.updatedBy && ` by ${riskAssessmentData.updatedBy}`}
+                          </p>
+                        </div>
                       )}
                     </div>
                   )}
