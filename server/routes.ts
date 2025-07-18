@@ -217,18 +217,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/services-with-risk-scores", async (req, res) => {
     try {
       const storage = await getStorage();
+      const applications = await storage.getApplications();
       const riskAssessments = await storage.getAllRiskAssessments();
       
-      // Transform risk assessments into service format for Services page
-      const servicesWithRisk = riskAssessments.map(risk => ({
-        id: risk.id,
-        name: risk.serviceName,
-        finalRiskScore: risk.finalRiskScore,
-        riskLevel: risk.riskLevel,
-        scanEngine: "Risk Assessment", // Default scan engine type
-        labels: [],
-        tags: []
-      }));
+      // Create a map of risk assessments by service name
+      const riskMap = new Map();
+      riskAssessments.forEach(risk => {
+        riskMap.set(risk.serviceName, risk);
+      });
+      
+      // Transform applications with their risk data for Services page
+      const servicesWithRisk = applications.map(app => {
+        const riskData = riskMap.get(app.name);
+        return {
+          id: app.id, // Use application ID for proper routing
+          name: app.name,
+          finalRiskScore: riskData?.finalRiskScore || 0,
+          riskLevel: riskData?.riskLevel || "Low",
+          scanEngine: app.scanEngine || "Risk Assessment",
+          labels: app.labels || [],
+          tags: app.tags || []
+        };
+      });
       
       res.json(servicesWithRisk);
     } catch (error) {
