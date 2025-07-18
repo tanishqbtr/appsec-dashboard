@@ -281,6 +281,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all services with total findings across all scan engines
+  app.get("/api/services-total-findings", async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const applications = await storage.getApplications();
+      
+      // Get all findings from all engines
+      const [
+        scaFindings,
+        sastFindings,
+        mendContainersFindings,
+        webAppsFindings,
+        apisFindings,
+        imagesFindings,
+        crowdstrikeContainersFindings
+      ] = await Promise.all([
+        storage.getMendScaFindings(),
+        storage.getMendSastFindings(),
+        storage.getMendContainersFindings(),
+        storage.getEscapeWebAppsFindings(),
+        storage.getEscapeApisFindings(),
+        storage.getCrowdstrikeImagesFindings(),
+        storage.getCrowdstrikeContainersFindings()
+      ]);
+      
+      // Calculate total findings for each service across all engines
+      const servicesWithTotalFindings = applications.map(app => {
+        let totalFindings = 0;
+        const serviceName = app.name;
+        
+        // Helper function to sum findings from an engine
+        const sumFindings = (findings: any[]) => {
+          findings?.forEach((finding: any) => {
+            if (finding.serviceName === serviceName) {
+              totalFindings += finding.critical + finding.high + finding.medium + finding.low;
+            }
+          });
+        };
+        
+        // Sum findings from all engines
+        sumFindings(scaFindings);
+        sumFindings(sastFindings);
+        sumFindings(mendContainersFindings);
+        sumFindings(webAppsFindings);
+        sumFindings(apisFindings);
+        sumFindings(imagesFindings);
+        sumFindings(crowdstrikeContainersFindings);
+        
+        return {
+          id: app.id,
+          name: app.name,
+          totalFindings,
+          riskScore: app.riskScore,
+          tags: app.tags || []
+        };
+      });
+      
+      res.json(servicesWithTotalFindings);
+    } catch (error) {
+      console.error("Error fetching services with total findings:", error);
+      res.status(500).json({ error: "Failed to fetch services with total findings" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

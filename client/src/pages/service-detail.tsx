@@ -239,7 +239,12 @@ export default function ServiceDetail() {
   };
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
-    queryKey: ["/api/applications"],
+    queryKey: ["/api/applications-with-risk"],
+  });
+
+  // Get total findings data for percentile calculation
+  const { data: servicesWithFindings = [] } = useQuery({
+    queryKey: ["/api/services-total-findings"],
   });
 
   const application = applications.find(app => app.id.toString() === serviceId);
@@ -400,34 +405,23 @@ export default function ServiceDetail() {
     return totalFindings;
   };
 
-  const calculatePercentileWithRiskScore = (currentApp: Application, riskData: any): number => {
-    // Use the risk assessment data for accurate percentile calculation
-    const currentRiskScore = parseFloat(riskData?.finalRiskScore?.toString() || "0");
+  const calculatePercentileWithTotalFindings = (currentApp: Application): number => {
+    if (!currentApp || !servicesWithFindings.length) return 0;
     
-    // Get risk scores from the services API which has the correct data
-    const servicesWithRiskScores = [
-      { name: "Hinge Health Web Portal", finalRiskScore: 8 },
-      { name: "Payment Processing API", finalRiskScore: 7.3 },
-      { name: "User Authentication Service", finalRiskScore: 8.7 },
-      { name: "Data Analytics Platform", finalRiskScore: 5.7 },
-      { name: "Mobile Application Backend", finalRiskScore: 7.7 },
-      { name: "Notification Service", finalRiskScore: 3.0 },
-      { name: "File Storage Service", finalRiskScore: 0 },
-      { name: "Exercise Video Platform", finalRiskScore: 0 },
-      { name: "Shipment Tracking Service", finalRiskScore: 0 },
-      { name: "Telemedicine Platform", finalRiskScore: 9.0 }
-    ];
+    // Find this service's total findings
+    const findingsData = servicesWithFindings.find(service => service.name === currentApp.name);
+    const currentTotalFindings = findingsData?.totalFindings || 0;
     
-    // Count applications with higher risk scores (worse security)
-    const appsWithHigherRisk = servicesWithRiskScores.filter(service => {
-      return service.finalRiskScore > currentRiskScore;
+    // Count applications with higher total findings (worse security)
+    const appsWithMoreFindings = servicesWithFindings.filter(service => {
+      return service.totalFindings > currentTotalFindings;
     }).length;
     
-    // Higher percentile = better security (lower risk score)
-    return Math.round((appsWithHigherRisk / servicesWithRiskScores.length) * 100);
+    // Higher percentile = better security (fewer findings)
+    return Math.round((appsWithMoreFindings / servicesWithFindings.length) * 100);
   };
 
-  const percentile = application ? calculatePercentileWithRiskScore(application, riskAssessmentData) : 0;
+  const percentile = application ? calculatePercentileWithTotalFindings(application) : 0;
   
   // Get comprehensive findings data across all engines for this service
   const comprehensiveFindings: FindingsData = application ? getAllServiceFindings(application.name) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
@@ -817,7 +811,7 @@ export default function ServiceDetail() {
                         </p>
                         <ServiceTierBadge percentile={percentile} />
                       </div>
-                      <div className="text-sm text-gray-600 mt-1">Based on risk score</div>
+                      <div className="text-sm text-gray-600 mt-1">Based on total findings</div>
                     </div>
 
                     <div>

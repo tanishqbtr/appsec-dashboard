@@ -27,6 +27,8 @@ Services data integration: Updated to use calculated risk scores from risk asses
 Services API endpoint: Created dedicated `/api/services-with-risk-scores` endpoint that directly fetches services from risk_assessments table with final_risk_score values (updated July 18, 2025)
 Service detail page enhancement: Enhanced Risk Assessment Details and Findings by Scanner sections with beautiful gradient card designs, integrated "Take me to" buttons within scanner cards, and updated risk scores to display actual values from database final_risk_score field (updated July 18, 2025)
 UI cleanup: Removed unnecessary SCA/SAST labels from service detail pages and consolidated scanner navigation into individual card-based buttons (updated July 18, 2025)
+Percentile calculation standardization: Implemented consistent percentile calculation logic based on total findings across all scan engines for both Services page and Service Detail page - higher findings result in lower percentile ranking (updated July 18, 2025)
+Total findings API endpoint: Created /api/services-total-findings endpoint that aggregates findings across all scan engines (Mend SCA/SAST/Containers, Escape WebApps/APIs, Crowdstrike Images/Containers) for accurate percentile calculations (updated July 18, 2025)
 
 
 ## System Architecture
