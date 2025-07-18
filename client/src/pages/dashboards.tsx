@@ -426,48 +426,28 @@ export default function Dashboards() {
 
           {/* Recent Activity & Quick Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Recent Scans */}
+            {/* Findings Trend */}
             <Card className="transition-all duration-200 hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Recent Scan Activity
+                  <Activity className="h-5 w-5" />
+                  Findings Trend (7 Days)
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {applications
-                    .sort((a, b) => new Date(b.lastScan).getTime() - new Date(a.lastScan).getTime())
-                    .slice(0, 4)
-                    .map((app) => {
-                      const findings = app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
-                      return (
-                        <div key={app.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                          <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <Shield className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900">{app.name}</p>
-                              <p className="text-sm text-gray-600">
-                                {app.scanEngine} • {app.lastScan}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            {findings.C > 0 && (
-                              <Badge variant="destructive" className="text-xs">
-                                {findings.C} Critical
-                              </Badge>
-                            )}
-                            <span className="text-sm font-medium text-gray-900">
-                              {app.riskScore}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={weeklyTrend}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Area type="monotone" dataKey="Critical" stackId="1" stroke={COLORS.critical} fill={COLORS.critical} name="Critical" />
+                    <Area type="monotone" dataKey="High" stackId="1" stroke={COLORS.high} fill={COLORS.high} name="High" />
+                    <Area type="monotone" dataKey="Medium" stackId="1" stroke={COLORS.medium} fill={COLORS.medium} name="Medium" />
+                    <Area type="monotone" dataKey="Low" stackId="1" stroke={COLORS.low} fill={COLORS.low} name="Low" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
