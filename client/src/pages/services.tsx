@@ -306,7 +306,7 @@ export default function Services() {
                       <DialogTrigger asChild>
                         <Button 
                           size="sm" 
-                          className="bg-green-600 hover:bg-green-700 text-white flex-shrink-0"
+                          className="bg-green-600 hover:bg-green-700 text-white flex-shrink-0 btn-smooth"
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Add Service
@@ -395,7 +395,7 @@ export default function Services() {
                       size="sm"
                       variant="outline"
                       onClick={handleDeleteMode}
-                      className="flex-shrink-0"
+                      className="flex-shrink-0 btn-smooth"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
                       Remove Services
@@ -481,7 +481,7 @@ export default function Services() {
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("name")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-start"
+                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-start btn-smooth"
                           >
                             Service Name
                             {sortField === "name" && (
@@ -493,7 +493,7 @@ export default function Services() {
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("riskScore")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full"
+                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full btn-smooth"
                           >
                             Risk Score
                             {sortField === "riskScore" && (
@@ -505,7 +505,7 @@ export default function Services() {
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("percentile")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full"
+                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full btn-smooth"
                           >
                             Percentile Ranking
                             {sortField === "percentile" && (
@@ -519,7 +519,7 @@ export default function Services() {
                     <tbody>
                       {sortedApplications.map((app) => {
                         return (
-                          <tr key={app.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                          <tr key={app.id} className="stagger-item border-b border-gray-100 hover:bg-gray-50 card-hover transition-all duration-200">
                             {isDeleteMode && (
                               <td className="py-4 px-4">
                                 <Checkbox
