@@ -9,10 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, RefreshCw, Plus } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import type { Application } from "@shared/schema";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
+  const { logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEngine, setSelectedEngine] = useState("Mend");
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
@@ -20,10 +22,6 @@ export default function Dashboard() {
   const { data: applications, isLoading, refetch } = useQuery<Application[]>({
     queryKey: ["/api/applications"],
   });
-
-  const handleLogout = () => {
-    setLocation("/login");
-  };
 
   const handleEngineSelect = (engine: string) => {
     setSelectedEngine(engine);
@@ -73,7 +71,7 @@ export default function Dashboard() {
   return (
     <PageWrapper loadingMessage="Loading Dashboard...">
       <div className="min-h-screen bg-white">
-        <Navigation onLogout={handleLogout} />
+        <Navigation onLogout={logout} />
       
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         {/* Header */}

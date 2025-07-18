@@ -43,6 +43,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User info endpoint
+  app.get("/api/auth/user", requireAuth, async (req: any, res) => {
+    try {
+      const storage = await getStorage();
+      const user = await storage.getUserById(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ id: user.id, username: user.username });
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Logout endpoint
   app.post("/api/logout", async (req, res) => {
     try {
@@ -119,7 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mend findings endpoints
-  app.get("/api/mend/sca", async (req, res) => {
+  app.get("/api/mend/sca", requireAuth, async (req, res) => {
     try {
       const { serviceName } = req.query;
       const storage = await getStorage();
@@ -130,7 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/mend/sast", async (req, res) => {
+  app.get("/api/mend/sast", requireAuth, async (req, res) => {
     try {
       const { serviceName } = req.query;
       const storage = await getStorage();
@@ -141,7 +156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/mend/containers", async (req, res) => {
+  app.get("/api/mend/containers", requireAuth, async (req, res) => {
     try {
       const { serviceName } = req.query;
       const storage = await getStorage();
@@ -153,7 +168,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Escape findings endpoints
-  app.get("/api/escape/webapps", async (req, res) => {
+  app.get("/api/escape/webapps", requireAuth, async (req, res) => {
     try {
       const { serviceName } = req.query;
       const storage = await getStorage();
@@ -164,7 +179,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/escape/apis", async (req, res) => {
+  app.get("/api/escape/apis", requireAuth, async (req, res) => {
     try {
       const { serviceName } = req.query;
       const storage = await getStorage();
@@ -176,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Crowdstrike findings endpoints
-  app.get("/api/crowdstrike/images", async (req, res) => {
+  app.get("/api/crowdstrike/images", requireAuth, async (req, res) => {
     try {
       const { serviceName } = req.query;
       const storage = await getStorage();
@@ -187,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/crowdstrike/containers", async (req, res) => {
+  app.get("/api/crowdstrike/containers", requireAuth, async (req, res) => {
     try {
       const { serviceName } = req.query;
       const storage = await getStorage();
@@ -199,7 +214,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Risk assessments endpoints
-  app.get("/api/risk-assessments/:serviceName", async (req, res) => {
+  app.get("/api/risk-assessments/:serviceName", requireAuth, async (req, res) => {
     try {
       const { serviceName } = req.params;
       const storage = await getStorage();
@@ -211,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/risk-assessments", async (req, res) => {
+  app.post("/api/risk-assessments", requireAuth, async (req, res) => {
     try {
       const assessmentData = req.body;
       const storage = await getStorage();
@@ -224,7 +239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get services with risk scores for Services page
-  app.get("/api/services-with-risk-scores", async (req, res) => {
+  app.get("/api/services-with-risk-scores", requireAuth, async (req, res) => {
     try {
       const storage = await getStorage();
       const applications = await storage.getApplications();
@@ -258,7 +273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get applications with risk assessment data merged
-  app.get("/api/applications-with-risk", async (req, res) => {
+  app.get("/api/applications-with-risk", requireAuth, async (req, res) => {
     try {
       const storage = await getStorage();
       const applications = await storage.getApplications();
@@ -292,7 +307,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all services with total findings across all scan engines
-  app.get("/api/services-total-findings", async (req, res) => {
+  app.get("/api/services-total-findings", requireAuth, async (req, res) => {
     try {
       const storage = await getStorage();
       const applications = await storage.getApplications();
@@ -356,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Risk score distribution endpoint for charts
-  app.get("/api/dashboard/risk-distribution", async (req, res) => {
+  app.get("/api/dashboard/risk-distribution", requireAuth, async (req, res) => {
     try {
       const storage = await getStorage();
       const riskAssessments = await storage.getAllRiskAssessments();
@@ -388,7 +403,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Scan engine findings endpoint for charts
-  app.get("/api/dashboard/scan-engine-findings", async (req, res) => {
+  app.get("/api/dashboard/scan-engine-findings", requireAuth, async (req, res) => {
     try {
       const storage = await getStorage();
       
@@ -435,7 +450,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Dashboard metrics endpoint
-  app.get("/api/dashboard/metrics", async (req, res) => {
+  app.get("/api/dashboard/metrics", requireAuth, async (req, res) => {
     try {
       const storage = await getStorage();
       
