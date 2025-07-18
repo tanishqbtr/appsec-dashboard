@@ -5,12 +5,18 @@ import PageWrapper from "@/components/page-wrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, ExternalLink, Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Search, ExternalLink, Shield, ChevronUp, ChevronDown } from "lucide-react";
 import { Link } from "wouter";
 import type { Application } from "@shared/schema";
 
+type SortField = "name" | "riskScore" | "percentile";
+type SortDirection = "asc" | "desc";
+
 export default function Services() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["/api/applications"],
@@ -21,12 +27,69 @@ export default function Services() {
     window.location.href = "/login";
   };
 
-  const filteredApplications = applications.filter((app) =>
-    app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    app.scanEngine.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    app.labels?.some(label => label.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    app.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
+
+  // Calculate percentile rankings based on total findings
+  const applicationsWithPercentiles = applications.map((app) => {
+    const findings = app.totalFindings && app.totalFindings !== "undefined" 
+      ? JSON.parse(app.totalFindings) 
+      : { total: 0, C: 0, H: 0, M: 0, L: 0 };
+    
+    const totalFindings = findings.total || 0;
+    const appsWithFewerFindings = applications.filter(otherApp => {
+      const otherFindings = otherApp.totalFindings && otherApp.totalFindings !== "undefined" 
+        ? JSON.parse(otherApp.totalFindings) 
+        : { total: 0, C: 0, H: 0, M: 0, L: 0 };
+      return (otherFindings.total || 0) < totalFindings;
+    }).length;
+    
+    const percentile = Math.round((appsWithFewerFindings / applications.length) * 100);
+    
+    return {
+      ...app,
+      percentile,
+      totalFindings: totalFindings
+    };
+  });
+
+  const filteredApplications = applicationsWithPercentiles.filter((app) =>
+    app.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    app.scanEngine?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Sort applications
+  const sortedApplications = [...filteredApplications].sort((a, b) => {
+    let comparison = 0;
+    
+    switch (sortField) {
+      case "name":
+        comparison = a.name.localeCompare(b.name);
+        break;
+      case "riskScore":
+        comparison = parseFloat(a.riskScore) - parseFloat(b.riskScore);
+        break;
+      case "percentile":
+        comparison = a.percentile - b.percentile;
+        break;
+    }
+    
+    return sortDirection === "asc" ? comparison : -comparison;
+  });
+
+  const getPercentileBadge = (percentile: number) => {
+    if (percentile >= 90) return { color: "bg-green-100 text-green-800", label: "Top 10%" };
+    if (percentile >= 75) return { color: "bg-blue-100 text-blue-800", label: "Top 25%" };
+    if (percentile >= 50) return { color: "bg-yellow-100 text-yellow-800", label: "Top 50%" };
+    if (percentile >= 25) return { color: "bg-orange-100 text-orange-800", label: "Bottom 50%" };
+    return { color: "bg-red-100 text-red-800", label: "Bottom 25%" };
+  };
 
   if (isLoading) {
     return (
@@ -71,98 +134,116 @@ export default function Services() {
             </div>
           </div>
 
-          {/* Services List */}
+          {/* Services Table */}
           <Card>
             <CardHeader>
-              <CardTitle>All Services ({filteredApplications.length})</CardTitle>
+              <CardTitle>All Services ({sortedApplications.length})</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {filteredApplications.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Shield className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">
-                      {searchTerm ? "No services found" : "No services available"}
-                    </h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {searchTerm ? "Try adjusting your search terms." : "Services will appear here once configured."}
-                    </p>
-                  </div>
-                ) : (
-                  filteredApplications.map((app) => {
-                    const findings = app.totalFindings && app.totalFindings !== "undefined" 
-                      ? JSON.parse(app.totalFindings) 
-                      : { total: 0, C: 0, H: 0, M: 0, L: 0 };
-
-                    return (
-                      <Link key={app.id} href={`/service/${app.id}`}>
-                        <div className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 hover:border-green-300 transition-all duration-200 cursor-pointer group">
-                          <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
-                                  <Shield className="h-5 w-5 text-green-600" />
-                                </div>
-                                <div>
-                                  <h3 className="font-medium text-gray-900 group-hover:text-green-600 transition-colors">
-                                    {app.name}
-                                  </h3>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <Badge variant="outline" className="text-xs">
-                                      {app.scanEngine}
-                                    </Badge>
-                                    <span className="text-sm text-gray-500">
-                                      Risk Score: {app.riskScore}
-                                    </span>
+              {sortedApplications.length === 0 ? (
+                <div className="text-center py-8">
+                  <Shield className="mx-auto h-12 w-12 text-gray-400" />
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                    {searchTerm ? "No services found" : "No services available"}
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {searchTerm ? "Try adjusting your search terms." : "Services will appear here once configured."}
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-3 px-4">
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleSort("name")}
+                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900"
+                          >
+                            Service Name
+                            {sortField === "name" && (
+                              sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </th>
+                        <th className="text-left py-3 px-4">
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleSort("riskScore")}
+                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900"
+                          >
+                            Risk Score
+                            {sortField === "riskScore" && (
+                              sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </th>
+                        <th className="text-left py-3 px-4">
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleSort("percentile")}
+                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900"
+                          >
+                            Percentile Ranking
+                            {sortField === "percentile" && (
+                              sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </th>
+                        <th className="text-right py-3 px-4"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedApplications.map((app) => {
+                        const percentileBadge = getPercentileBadge(app.percentile);
+                        
+                        return (
+                          <tr key={app.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            <td className="py-4 px-4">
+                              <Link href={`/service/${app.id}`}>
+                                <div className="flex items-center gap-3 cursor-pointer group">
+                                  <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <Shield className="h-5 w-5 text-green-600" />
+                                  </div>
+                                  <div>
+                                    <h3 className="font-medium text-gray-900 group-hover:text-green-600 transition-colors">
+                                      {app.name}
+                                    </h3>
+                                    <div className="flex items-center gap-2 mt-1">
+                                      <Badge variant="outline" className="text-xs">
+                                        {app.scanEngine}
+                                      </Badge>
+                                      <span className="text-xs text-gray-500">
+                                        {app.totalFindings} findings
+                                      </span>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              
-                              {/* Labels and Tags */}
-                              {(app.labels && app.labels.length > 0) || (app.tags && app.tags.length > 0) ? (
-                                <div className="flex flex-wrap gap-1 mt-3">
-                                  {app.labels?.map((label) => (
-                                    <Badge key={label} variant="secondary" className="text-xs bg-blue-50 text-blue-700">
-                                      {label}
-                                    </Badge>
-                                  ))}
-                                  {app.tags?.map((tag) => (
-                                    <Badge key={tag} variant="secondary" className="text-xs bg-green-50 text-green-700">
-                                      {tag}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              ) : null}
-                            </div>
-
-                            {/* Findings Summary */}
-                            <div className="flex items-center gap-4">
-                              {findings.total > 0 && (
-                                <div className="flex items-center gap-2">
-                                  {findings.C > 0 && (
-                                    <Badge variant="destructive" className="text-xs">
-                                      {findings.C} Critical
-                                    </Badge>
-                                  )}
-                                  {findings.H > 0 && (
-                                    <Badge className="text-xs bg-orange-500">
-                                      {findings.H} High
-                                    </Badge>
-                                  )}
-                                  <span className="text-sm text-gray-500">
-                                    {findings.total} total
-                                  </span>
-                                </div>
-                              )}
-                              <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-green-600 transition-colors" />
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })
-                )}
-              </div>
+                              </Link>
+                            </td>
+                            <td className="py-4 px-4">
+                              <span className="text-lg font-semibold text-gray-900">
+                                {app.riskScore}
+                              </span>
+                            </td>
+                            <td className="py-4 px-4">
+                              <Badge className={`${percentileBadge.color} font-medium`}>
+                                {percentileBadge.label}
+                              </Badge>
+                            </td>
+                            <td className="py-4 px-4 text-right">
+                              <Link href={`/service/${app.id}`}>
+                                <ExternalLink className="h-4 w-4 text-gray-400 hover:text-green-600 transition-colors cursor-pointer" />
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </main>
