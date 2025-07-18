@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import Navigation from "@/components/navigation";
 import PageWrapper from "@/components/page-wrapper";
+import ServicesTutorial from "@/components/services-tutorial";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -10,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, ExternalLink, Shield, ChevronUp, ChevronDown, Plus, Trash2, X } from "lucide-react";
+import { Search, ExternalLink, Shield, ChevronUp, ChevronDown, Plus, Trash2, X, HelpCircle } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -27,6 +28,7 @@ export default function Services() {
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [selectedServices, setSelectedServices] = useState<Set<number>>(new Set());
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [newService, setNewService] = useState({
     name: "",
     description: "",
@@ -51,6 +53,18 @@ export default function Services() {
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
+  };
+
+  const handleStartTutorial = () => {
+    setShowTutorial(true);
+  };
+
+  const handleCompleteTutorial = () => {
+    setShowTutorial(false);
+    toast({
+      title: "Tutorial Complete!",
+      description: "You've learned the basics of services management.",
+    });
   };
 
   // Mutation for creating a new service
@@ -259,16 +273,24 @@ export default function Services() {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">Services</h1>
                 <p className="mt-2 text-sm text-gray-600">
-                  Browse and manage all registered services
+                  Manage and monitor security risk scores for all services
                 </p>
               </div>
+              <Button
+                variant="outline"
+                onClick={handleStartTutorial}
+                className="btn-smooth flex items-center gap-2"
+              >
+                <HelpCircle className="h-4 w-4" />
+                Take Tutorial
+              </Button>
             </div>
           </div>
 
           {/* Search Bar */}
           <div className="mb-6">
             <div className="flex items-center justify-between gap-4">
-              <div className="relative flex-1 max-w-md">
+              <div className="relative flex-1 max-w-md" data-tutorial="search">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
                   type="text"
@@ -286,6 +308,7 @@ export default function Services() {
                       variant="outline"
                       onClick={handleDeleteMode}
                       className="flex-shrink-0"
+                      data-tutorial="remove-services"
                     >
                       <X className="h-4 w-4 mr-1" />
                       Cancel
@@ -307,6 +330,7 @@ export default function Services() {
                         <Button 
                           size="sm" 
                           className="bg-green-600 hover:bg-green-700 text-white flex-shrink-0 btn-smooth"
+                          data-tutorial="add-service"
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Add Service
@@ -396,6 +420,7 @@ export default function Services() {
                       variant="outline"
                       onClick={handleDeleteMode}
                       className="flex-shrink-0 btn-smooth"
+                      data-tutorial="remove-services"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
                       Remove Services
@@ -466,7 +491,7 @@ export default function Services() {
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead>
+                    <thead data-tutorial="table-headers">
                       <tr className="border-b border-gray-200">
                         {isDeleteMode && (
                           <th className="text-left py-3 px-4 w-12">
@@ -489,7 +514,7 @@ export default function Services() {
                             )}
                           </Button>
                         </th>
-                        <th className="text-center py-3 px-4 w-1/4">
+                        <th className="text-center py-3 px-4 w-1/4" data-tutorial="risk-scores">
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("riskScore")}
@@ -501,7 +526,7 @@ export default function Services() {
                             )}
                           </Button>
                         </th>
-                        <th className="text-center py-3 px-4 w-1/4">
+                        <th className="text-center py-3 px-4 w-1/4" data-tutorial="percentile">
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("percentile")}
@@ -517,9 +542,13 @@ export default function Services() {
                       </tr>
                     </thead>
                     <tbody>
-                      {sortedApplications.map((app) => {
+                      {sortedApplications.map((app, index) => {
                         return (
-                          <tr key={app.id} className="stagger-item border-b border-gray-100 hover:bg-gray-50 card-hover transition-all duration-200">
+                          <tr 
+                            key={app.id} 
+                            className="stagger-item border-b border-gray-100 hover:bg-gray-50 card-hover transition-all duration-200"
+                            data-tutorial={index === 0 ? "service-row" : undefined}
+                          >
                             {isDeleteMode && (
                               <td className="py-4 px-4">
                                 <Checkbox
@@ -586,6 +615,13 @@ export default function Services() {
             </CardContent>
           </Card>
         </main>
+        
+        {/* Services Tutorial */}
+        <ServicesTutorial
+          isOpen={showTutorial}
+          onClose={() => setShowTutorial(false)}
+          onComplete={handleCompleteTutorial}
+        />
       </div>
     </PageWrapper>
   );
