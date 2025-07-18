@@ -25,7 +25,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { Application } from "@shared/schema";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -45,6 +46,16 @@ interface ApplicationsTableProps {
   selectedEngine: string;
   selectedLabels: string[];
   selectedTags: string[];
+}
+
+interface MendFindings {
+  id: number;
+  serviceName: string;
+  scanDate: string;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
 }
 
 interface FindingsData {
@@ -135,6 +146,44 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const [pageSize, setPageSize] = useState(20);
   const [, setLocation] = useLocation();
 
+  // Determine which Mend API to query based on selected labels
+  const getMendEndpoint = () => {
+    if (selectedEngine === "Mend" && selectedLabels.length > 0) {
+      if (selectedLabels.includes("SCA")) return "/api/mend/sca";
+      if (selectedLabels.includes("SAST")) return "/api/mend/sast";
+      if (selectedLabels.includes("Containers")) return "/api/mend/containers";
+    }
+    return null;
+  };
+
+  // Fetch Mend findings when appropriate filters are selected
+  const { data: mendFindings = [] } = useQuery<MendFindings[]>({
+    queryKey: [getMendEndpoint()],
+    enabled: getMendEndpoint() !== null,
+  });
+
+  // Create a map of service name to findings for quick lookup
+  const mendFindingsMap = new Map<string, MendFindings>();
+  mendFindings.forEach(finding => {
+    mendFindingsMap.set(finding.serviceName, finding);
+  });
+
+  // Function to get findings data for a service
+  const getServiceFindings = (serviceName: string): FindingsData => {
+    const mendFinding = mendFindingsMap.get(serviceName);
+    if (mendFinding) {
+      return {
+        total: mendFinding.critical + mendFinding.high + mendFinding.medium + mendFinding.low,
+        C: mendFinding.critical,
+        H: mendFinding.high,
+        M: mendFinding.medium,
+        L: mendFinding.low
+      };
+    }
+    // Return zeros if no findings found
+    return { total: 0, C: 0, H: 0, M: 0, L: 0 };
+  };
+
   const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -159,29 +208,34 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         bValue = parseFloat(b.riskScore);
         break;
       case 'totalFindings':
-        // Since totalFindings is removed, default to 0 for now
-        aValue = 0;
-        bValue = 0;
+        const aFindings = getServiceFindings(a.name);
+        const bFindings = getServiceFindings(b.name);
+        aValue = aFindings.total;
+        bValue = bFindings.total;
         break;
       case 'criticalFindings':
-        // Since totalFindings is removed, default to 0 for now
-        aValue = 0;
-        bValue = 0;
+        const aCritical = getServiceFindings(a.name);
+        const bCritical = getServiceFindings(b.name);
+        aValue = aCritical.C;
+        bValue = bCritical.C;
         break;
       case 'highFindings':
-        // Since totalFindings is removed, default to 0 for now
-        aValue = 0;
-        bValue = 0;
+        const aHigh = getServiceFindings(a.name);
+        const bHigh = getServiceFindings(b.name);
+        aValue = aHigh.H;
+        bValue = bHigh.H;
         break;
       case 'mediumFindings':
-        // Since totalFindings is removed, default to 0 for now
-        aValue = 0;
-        bValue = 0;
+        const aMedium = getServiceFindings(a.name);
+        const bMedium = getServiceFindings(b.name);
+        aValue = aMedium.M;
+        bValue = bMedium.M;
         break;
       case 'lowFindings':
-        // Since totalFindings is removed, default to 0 for now
-        aValue = 0;
-        bValue = 0;
+        const aLow = getServiceFindings(a.name);
+        const bLow = getServiceFindings(b.name);
+        aValue = aLow.L;
+        bValue = bLow.L;
         break;
       case 'percentile':
         aValue = calculatePercentile(applications, a);
@@ -235,8 +289,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const exportToCSV = () => {
     const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const csvData = sortedApplications.map(app => {
-      // Since totalFindings is removed, use default values for now
-      const findings = { total: 0, C: 0, H: 0, M: 0, L: 0 };
+      // Get findings from Mend data if available
+      const findings = getServiceFindings(app.name);
       const percentile = calculatePercentile(applications, app);
       return [
         app.name,
@@ -267,8 +321,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const exportToXLSX = () => {
     const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const data = sortedApplications.map(app => {
-      // Since totalFindings is removed, use default values for now
-      const findings = { total: 0, C: 0, H: 0, M: 0, L: 0 };
+      // Get findings from Mend data if available
+      const findings = getServiceFindings(app.name);
       const percentile = calculatePercentile(applications, app);
       return [
         app.name,
@@ -310,8 +364,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
 
     const headers = [['Service Name', 'Risk Score', 'Total', 'Percentile', 'Critical', 'High', 'Medium', 'Low', 'Tags']];
     const data = sortedApplications.map(app => {
-      // Since totalFindings is removed, use default values for now
-      const findings = { total: 0, C: 0, H: 0, M: 0, L: 0 };
+      // Get findings from Mend data if available
+      const findings = getServiceFindings(app.name);
       const percentile = calculatePercentile(applications, app);
       return [
         app.name,
@@ -431,8 +485,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               <LoadingSkeleton />
             ) : (
               paginatedApplications.map((app, index) => {
-                // Since totalFindings is removed, use default values for now
-                const totalFindings: FindingsData = { total: 0, C: 0, H: 0, M: 0, L: 0 };
+                // Get findings from Mend data if available, otherwise use defaults
+                const totalFindings: FindingsData = getServiceFindings(app.name);
                 const percentile = calculatePercentile(applications, app);
                 
                 return (
