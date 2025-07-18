@@ -61,6 +61,7 @@ export interface IStorage {
   // Risk assessment methods
   getRiskAssessment(serviceName: string): Promise<RiskAssessment | undefined>;
   createOrUpdateRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment>;
+  getAllRiskAssessments(): Promise<RiskAssessment[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -426,6 +427,11 @@ export class MemStorage implements IStorage {
     // Not implemented in memory storage - will use database storage for persistence
     throw new Error("Risk assessments not implemented in memory storage");
   }
+
+  async getAllRiskAssessments(): Promise<RiskAssessment[]> {
+    // Not implemented in memory storage - will use database storage for persistence
+    return [];
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -685,6 +691,10 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return created;
     }
+  }
+
+  async getAllRiskAssessments(): Promise<RiskAssessment[]> {
+    return await db.select().from(riskAssessments);
   }
 }
 
