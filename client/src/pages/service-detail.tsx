@@ -939,6 +939,108 @@ export default function ServiceDetail() {
                             )}
                           </div>
                         </div>
+
+                        {/* CIA Triad Impact Card */}
+                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                              <Lock className="h-4 w-4 text-purple-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">CIA Triad Impact</h5>
+                          </div>
+                          <div className="space-y-2">
+                            {riskAssessmentData.confidentialityImpact && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Confidentiality:</span>
+                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                  {riskAssessmentData.confidentialityImpact}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.integrityImpact && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Integrity:</span>
+                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                  {riskAssessmentData.integrityImpact}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.availabilityImpact && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Availability:</span>
+                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                                  {riskAssessmentData.availabilityImpact}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Score Breakdown Card */}
+                        <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                              <BarChart3 className="h-4 w-4 text-orange-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">Score Breakdown</h5>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center py-1">
+                              <span className="text-sm text-gray-600">Base Score:</span>
+                              <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                {riskAssessmentData.baseRiskScore || 'N/A'}
+                              </Badge>
+                            </div>
+                            <div className="flex justify-between items-center py-1">
+                              <span className="text-sm text-gray-600">Final Score:</span>
+                              <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                {riskAssessmentData.finalRiskScore || 'N/A'}
+                              </Badge>
+                            </div>
+                            <div className="flex justify-between items-center py-1">
+                              <span className="text-sm text-gray-600">Risk Level:</span>
+                              <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                {riskAssessmentData.riskLevel || 'N/A'}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* External Factors Card */}
+                        <div className="bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="h-8 w-8 bg-teal-100 rounded-lg flex items-center justify-center">
+                              <Globe className="h-4 w-4 text-teal-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">External Factors</h5>
+                          </div>
+                          <div className="space-y-2">
+                            {riskAssessmentData.internetAccessible && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Internet Accessible:</span>
+                                <Badge className="bg-teal-100 text-teal-800 border-teal-200">
+                                  {riskAssessmentData.internetAccessible}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.regulatoryCompliance && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Compliance:</span>
+                                <Badge className="bg-teal-100 text-teal-800 border-teal-200">
+                                  {riskAssessmentData.regulatoryCompliance}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.businessImpact && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Business Impact:</span>
+                                <Badge className="bg-teal-100 text-teal-800 border-teal-200">
+                                  {riskAssessmentData.businessImpact}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     ) : (
                         /* Placeholder cards for when no risk assessment data exists */
