@@ -99,8 +99,11 @@ function EngineBadge({ engine, findings }: { engine: string; findings: FindingsD
 
 // Calculate percentile ranking based on total findings
 function calculatePercentile(applications: Application[], currentApp: Application): number {
-  const currentFindings = JSON.parse(currentApp.totalFindings).total;
-  const allFindings = applications.map(app => JSON.parse(app.totalFindings).total);
+  const currentFindings = currentApp.totalFindings ? JSON.parse(currentApp.totalFindings).total : 0;
+  const allFindings = applications.map(app => {
+    const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { total: 0 };
+    return findings.total;
+  });
   
   // Count how many applications have more findings than current app
   const higherCount = allFindings.filter(findings => findings > currentFindings).length;
