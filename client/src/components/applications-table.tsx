@@ -657,13 +657,6 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         </div>
         
         <div className="flex gap-2">
-          <Link href="/manage-applications">
-            <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" data-tutorial-target="manage-services-button">
-              <Settings className="h-4 w-4 mr-1" />
-              Manage Services
-            </Button>
-          </Link>
-          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" data-tutorial-target="export-button">
