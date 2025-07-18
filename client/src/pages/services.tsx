@@ -9,7 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Search, ExternalLink, Shield, ChevronUp, ChevronDown, Plus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Search, ExternalLink, Shield, ChevronUp, ChevronDown, Plus, Trash2, X } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -23,6 +24,9 @@ export default function Services() {
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [isAddServiceOpen, setIsAddServiceOpen] = useState(false);
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [selectedServices, setSelectedServices] = useState<Set<number>>(new Set());
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [newService, setNewService] = useState({
     name: "",
     description: "",
@@ -97,6 +101,76 @@ export default function Services() {
       return;
     }
     createServiceMutation.mutate(newService);
+  };
+
+  // Mutation for deleting services
+  const deleteServicesMutation = useMutation({
+    mutationFn: async (serviceIds: number[]) => {
+      const deletePromises = serviceIds.map(id => 
+        apiRequest("DELETE", `/api/applications/${id}`)
+      );
+      return Promise.all(deletePromises);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Services Deleted",
+        description: `${selectedServices.size} service(s) have been successfully deleted.`,
+      });
+      setSelectedServices(new Set());
+      setIsDeleteMode(false);
+      setIsDeleteDialogOpen(false);
+      // Invalidate and refetch services data
+      queryClient.invalidateQueries({ queryKey: ["/api/services-with-risk-scores"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/services-total-findings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete services. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDeleteMode = () => {
+    setIsDeleteMode(!isDeleteMode);
+    setSelectedServices(new Set());
+  };
+
+  const handleServiceSelect = (serviceId: number, isSelected: boolean) => {
+    const newSelected = new Set(selectedServices);
+    if (isSelected) {
+      newSelected.add(serviceId);
+    } else {
+      newSelected.delete(serviceId);
+    }
+    setSelectedServices(newSelected);
+  };
+
+  const handleSelectAll = (isSelected: boolean) => {
+    if (isSelected) {
+      const allIds = new Set(sortedApplications.map(app => app.id));
+      setSelectedServices(allIds);
+    } else {
+      setSelectedServices(new Set());
+    }
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedServices.size === 0) {
+      toast({
+        title: "No Services Selected",
+        description: "Please select at least one service to delete.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = () => {
+    deleteServicesMutation.mutate(Array.from(selectedServices));
   };
 
   const handleInputChange = (field: keyof typeof newService, value: string) => {
@@ -204,16 +278,49 @@ export default function Services() {
                   className="pl-10 pr-4 py-2 w-full"
                 />
               </div>
-              <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
-                <DialogTrigger asChild>
-                  <Button 
-                    size="sm" 
-                    className="bg-green-600 hover:bg-green-700 text-white flex-shrink-0"
-                  >
-                    <Plus className="h-4 w-4 mr-1" />
-                    Add Service
-                  </Button>
-                </DialogTrigger>
+              <div className="flex items-center gap-2">
+                {isDeleteMode ? (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleDeleteMode}
+                      className="flex-shrink-0"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleDeleteSelected}
+                      disabled={selectedServices.size === 0 || deleteServicesMutation.isPending}
+                      className="bg-red-600 hover:bg-red-700 text-white flex-shrink-0"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete Selected ({selectedServices.size})
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleDeleteMode}
+                      className="flex-shrink-0"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Remove Services
+                    </Button>
+                    <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
+                      <DialogTrigger asChild>
+                        <Button 
+                          size="sm" 
+                          className="bg-green-600 hover:bg-green-700 text-white flex-shrink-0"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Service
+                        </Button>
+                      </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>Add New Service</DialogTitle>
@@ -293,8 +400,52 @@ export default function Services() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+                  </>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <p className="text-sm text-gray-600">
+                  Are you sure you want to delete {selectedServices.size} service(s)? This action cannot be undone.
+                </p>
+                {selectedServices.size > 0 && (
+                  <div className="mt-4">
+                    <h4 className="font-medium text-gray-900 mb-2">Services to be deleted:</h4>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      {sortedApplications
+                        .filter(app => selectedServices.has(app.id))
+                        .map(app => (
+                          <li key={app.id} className="flex items-center gap-2">
+                            <Shield className="h-4 w-4 text-red-500" />
+                            {app.name}
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={confirmDelete}
+                  disabled={deleteServicesMutation.isPending}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {deleteServicesMutation.isPending ? "Deleting..." : "Delete Services"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* Services Table */}
           <Card>
@@ -317,7 +468,16 @@ export default function Services() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4 w-1/2">
+                        {isDeleteMode && (
+                          <th className="text-left py-3 px-4 w-12">
+                            <Checkbox
+                              checked={selectedServices.size === sortedApplications.length && sortedApplications.length > 0}
+                              onCheckedChange={handleSelectAll}
+                              aria-label="Select all services"
+                            />
+                          </th>
+                        )}
+                        <th className={`text-left py-3 px-4 ${isDeleteMode ? 'w-2/5' : 'w-1/2'}`}>
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("name")}
@@ -360,20 +520,41 @@ export default function Services() {
                       {sortedApplications.map((app) => {
                         return (
                           <tr key={app.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                            {isDeleteMode && (
+                              <td className="py-4 px-4">
+                                <Checkbox
+                                  checked={selectedServices.has(app.id)}
+                                  onCheckedChange={(checked) => handleServiceSelect(app.id, checked as boolean)}
+                                  aria-label={`Select ${app.name}`}
+                                />
+                              </td>
+                            )}
                             <td className="py-4 px-4">
-                              <Link href={`/service/${app.id}`}>
-                                <div className="flex items-center gap-3 cursor-pointer group">
+                              {isDeleteMode ? (
+                                <div className="flex items-center gap-3">
                                   <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
                                     <Shield className="h-5 w-5 text-green-600" />
                                   </div>
                                   <div>
-                                    <h3 className="font-medium text-gray-900 group-hover:text-green-600 transition-colors">
+                                    <h3 className="font-medium text-gray-900">
                                       {app.name}
                                     </h3>
-
                                   </div>
                                 </div>
-                              </Link>
+                              ) : (
+                                <Link href={`/service/${app.id}`}>
+                                  <div className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                      <Shield className="h-5 w-5 text-green-600" />
+                                    </div>
+                                    <div>
+                                      <h3 className="font-medium text-gray-900 group-hover:text-green-600 transition-colors">
+                                        {app.name}
+                                      </h3>
+                                    </div>
+                                  </div>
+                                </Link>
+                              )}
                             </td>
                             <td className="py-4 px-4 text-center">
                               <span className="text-lg font-semibold text-gray-900">

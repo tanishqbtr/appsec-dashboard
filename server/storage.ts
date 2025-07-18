@@ -41,6 +41,7 @@ export interface IStorage {
   getApplication(id: number): Promise<Application | undefined>;
   createApplication(application: InsertApplication): Promise<Application>;
   updateApplication(id: number, updates: Partial<Application>): Promise<Application | undefined>;
+  deleteApplication(id: number): Promise<boolean>;
   // Mend findings methods
   getMendScaFindings(serviceName?: string): Promise<MendScaFinding[]>;
   getMendSastFindings(serviceName?: string): Promise<MendSastFinding[]>;
@@ -359,6 +360,10 @@ export class MemStorage implements IStorage {
     return updatedApplication;
   }
 
+  async deleteApplication(id: number): Promise<boolean> {
+    return this.applications.delete(id);
+  }
+
   // Mend findings methods (stub implementations for MemStorage)
   async getMendScaFindings(serviceName?: string): Promise<MendScaFinding[]> {
     return [];
@@ -477,6 +482,13 @@ export class DatabaseStorage implements IStorage {
       .where(eq(applications.id, id))
       .returning();
     return updatedApplication || undefined;
+  }
+
+  async deleteApplication(id: number): Promise<boolean> {
+    const result = await db
+      .delete(applications)
+      .where(eq(applications.id, id));
+    return result.rowCount > 0;
   }
 
   // Mend findings methods - simplified since each service has only one record
