@@ -4,6 +4,11 @@ import {
   mendScaFindings, 
   mendSastFindings, 
   mendContainersFindings,
+  escapeWebAppsFindings,
+  escapeApisFindings,
+  crowdstrikeImagesFindings,
+  crowdstrikeContainersFindings,
+  riskAssessments,
   type User, 
   type InsertUser, 
   type Application, 
@@ -13,7 +18,17 @@ import {
   type MendSastFinding,
   type InsertMendSastFinding,
   type MendContainersFinding,
-  type InsertMendContainersFinding
+  type InsertMendContainersFinding,
+  type EscapeWebAppsFinding,
+  type InsertEscapeWebAppsFinding,
+  type EscapeApisFinding,
+  type InsertEscapeApisFinding,
+  type CrowdstrikeImagesFinding,
+  type InsertCrowdstrikeImagesFinding,
+  type CrowdstrikeContainersFinding,
+  type InsertCrowdstrikeContainersFinding,
+  type RiskAssessment,
+  type InsertRiskAssessment
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
@@ -26,6 +41,7 @@ export interface IStorage {
   getApplication(id: number): Promise<Application | undefined>;
   createApplication(application: InsertApplication): Promise<Application>;
   updateApplication(id: number, updates: Partial<Application>): Promise<Application | undefined>;
+  deleteApplication(id: number): Promise<boolean>;
   // Mend findings methods
   getMendScaFindings(serviceName?: string): Promise<MendScaFinding[]>;
   getMendSastFindings(serviceName?: string): Promise<MendSastFinding[]>;
@@ -33,6 +49,20 @@ export interface IStorage {
   createMendScaFinding(finding: InsertMendScaFinding): Promise<MendScaFinding>;
   createMendSastFinding(finding: InsertMendSastFinding): Promise<MendSastFinding>;
   createMendContainersFinding(finding: InsertMendContainersFinding): Promise<MendContainersFinding>;
+  // Escape findings methods
+  getEscapeWebAppsFindings(serviceName?: string): Promise<EscapeWebAppsFinding[]>;
+  getEscapeApisFindings(serviceName?: string): Promise<EscapeApisFinding[]>;
+  createEscapeWebAppsFinding(finding: InsertEscapeWebAppsFinding): Promise<EscapeWebAppsFinding>;
+  createEscapeApisFinding(finding: InsertEscapeApisFinding): Promise<EscapeApisFinding>;
+  // Crowdstrike findings methods
+  getCrowdstrikeImagesFindings(serviceName?: string): Promise<CrowdstrikeImagesFinding[]>;
+  getCrowdstrikeContainersFindings(serviceName?: string): Promise<CrowdstrikeContainersFinding[]>;
+  createCrowdstrikeImagesFinding(finding: InsertCrowdstrikeImagesFinding): Promise<CrowdstrikeImagesFinding>;
+  createCrowdstrikeContainersFinding(finding: InsertCrowdstrikeContainersFinding): Promise<CrowdstrikeContainersFinding>;
+  // Risk assessment methods
+  getRiskAssessment(serviceName: string): Promise<RiskAssessment | undefined>;
+  createOrUpdateRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment>;
+  getAllRiskAssessments(): Promise<RiskAssessment[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -48,7 +78,7 @@ export class MemStorage implements IStorage {
     this.currentApplicationId = 1;
     
     // Initialize with dummy admin user
-    this.createUser({ username: "admin", password: "password@hh" });
+    this.createUser({ username: "admin", password: "password" });
     
     // Initialize with dummy applications data
     this.initializeApplications();
@@ -330,6 +360,10 @@ export class MemStorage implements IStorage {
     return updatedApplication;
   }
 
+  async deleteApplication(id: number): Promise<boolean> {
+    return this.applications.delete(id);
+  }
+
   // Mend findings methods (stub implementations for MemStorage)
   async getMendScaFindings(serviceName?: string): Promise<MendScaFinding[]> {
     return [];
@@ -353,6 +387,55 @@ export class MemStorage implements IStorage {
 
   async createMendContainersFinding(finding: InsertMendContainersFinding): Promise<MendContainersFinding> {
     throw new Error("Mend findings not supported in memory storage");
+  }
+
+  // Escape findings methods (stub implementations for MemStorage)
+  async getEscapeWebAppsFindings(serviceName?: string): Promise<EscapeWebAppsFinding[]> {
+    return [];
+  }
+
+  async getEscapeApisFindings(serviceName?: string): Promise<EscapeApisFinding[]> {
+    return [];
+  }
+
+  async createEscapeWebAppsFinding(finding: InsertEscapeWebAppsFinding): Promise<EscapeWebAppsFinding> {
+    throw new Error("Escape findings not supported in memory storage");
+  }
+
+  async createEscapeApisFinding(finding: InsertEscapeApisFinding): Promise<EscapeApisFinding> {
+    throw new Error("Escape findings not supported in memory storage");
+  }
+
+  // Crowdstrike findings methods (stub implementations for MemStorage)
+  async getCrowdstrikeImagesFindings(serviceName?: string): Promise<CrowdstrikeImagesFinding[]> {
+    return [];
+  }
+
+  async getCrowdstrikeContainersFindings(serviceName?: string): Promise<CrowdstrikeContainersFinding[]> {
+    return [];
+  }
+
+  async createCrowdstrikeImagesFinding(finding: InsertCrowdstrikeImagesFinding): Promise<CrowdstrikeImagesFinding> {
+    throw new Error("Crowdstrike findings not supported in memory storage");
+  }
+
+  async createCrowdstrikeContainersFinding(finding: InsertCrowdstrikeContainersFinding): Promise<CrowdstrikeContainersFinding> {
+    throw new Error("Crowdstrike findings not supported in memory storage");
+  }
+
+  async getRiskAssessment(serviceName: string): Promise<RiskAssessment | undefined> {
+    // Not implemented in memory storage - will use database storage for persistence
+    return undefined;
+  }
+
+  async createOrUpdateRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment> {
+    // Not implemented in memory storage - will use database storage for persistence
+    throw new Error("Risk assessments not implemented in memory storage");
+  }
+
+  async getAllRiskAssessments(): Promise<RiskAssessment[]> {
+    // Not implemented in memory storage - will use database storage for persistence
+    return [];
   }
 }
 
@@ -399,6 +482,13 @@ export class DatabaseStorage implements IStorage {
       .where(eq(applications.id, id))
       .returning();
     return updatedApplication || undefined;
+  }
+
+  async deleteApplication(id: number): Promise<boolean> {
+    const result = await db
+      .delete(applications)
+      .where(eq(applications.id, id));
+    return result.rowCount > 0;
   }
 
   // Mend findings methods - simplified since each service has only one record
@@ -478,6 +568,145 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return created;
+  }
+
+  // Escape findings methods
+  async getEscapeWebAppsFindings(serviceName?: string): Promise<EscapeWebAppsFinding[]> {
+    if (serviceName) {
+      return await db.select().from(escapeWebAppsFindings)
+        .where(eq(escapeWebAppsFindings.serviceName, serviceName));
+    }
+    return await db.select().from(escapeWebAppsFindings);
+  }
+
+  async getEscapeApisFindings(serviceName?: string): Promise<EscapeApisFinding[]> {
+    if (serviceName) {
+      return await db.select().from(escapeApisFindings)
+        .where(eq(escapeApisFindings.serviceName, serviceName));
+    }
+    return await db.select().from(escapeApisFindings);
+  }
+
+  async createEscapeWebAppsFinding(finding: InsertEscapeWebAppsFinding): Promise<EscapeWebAppsFinding> {
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(escapeWebAppsFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: escapeWebAppsFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
+    return created;
+  }
+
+  async createEscapeApisFinding(finding: InsertEscapeApisFinding): Promise<EscapeApisFinding> {
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(escapeApisFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: escapeApisFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
+    return created;
+  }
+
+  // Crowdstrike findings methods
+  async getCrowdstrikeImagesFindings(serviceName?: string): Promise<CrowdstrikeImagesFinding[]> {
+    if (serviceName) {
+      return await db.select().from(crowdstrikeImagesFindings)
+        .where(eq(crowdstrikeImagesFindings.serviceName, serviceName));
+    }
+    return await db.select().from(crowdstrikeImagesFindings);
+  }
+
+  async getCrowdstrikeContainersFindings(serviceName?: string): Promise<CrowdstrikeContainersFinding[]> {
+    if (serviceName) {
+      return await db.select().from(crowdstrikeContainersFindings)
+        .where(eq(crowdstrikeContainersFindings.serviceName, serviceName));
+    }
+    return await db.select().from(crowdstrikeContainersFindings);
+  }
+
+  async createCrowdstrikeImagesFinding(finding: InsertCrowdstrikeImagesFinding): Promise<CrowdstrikeImagesFinding> {
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(crowdstrikeImagesFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: crowdstrikeImagesFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
+    return created;
+  }
+
+  async createCrowdstrikeContainersFinding(finding: InsertCrowdstrikeContainersFinding): Promise<CrowdstrikeContainersFinding> {
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(crowdstrikeContainersFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: crowdstrikeContainersFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
+    return created;
+  }
+
+  async getRiskAssessment(serviceName: string): Promise<RiskAssessment | undefined> {
+    const [assessment] = await db.select().from(riskAssessments).where(eq(riskAssessments.serviceName, serviceName));
+    return assessment || undefined;
+  }
+
+  async createOrUpdateRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment> {
+    const existing = await this.getRiskAssessment(assessment.serviceName);
+    
+    if (existing) {
+      // Update existing assessment
+      const [updated] = await db
+        .update(riskAssessments)
+        .set({
+          ...assessment,
+          lastUpdated: new Date(),
+        })
+        .where(eq(riskAssessments.serviceName, assessment.serviceName))
+        .returning();
+      return updated;
+    } else {
+      // Create new assessment
+      const [created] = await db
+        .insert(riskAssessments)
+        .values(assessment)
+        .returning();
+      return created;
+    }
+  }
+
+  async getAllRiskAssessments(): Promise<RiskAssessment[]> {
+    return await db.select().from(riskAssessments);
   }
 }
 

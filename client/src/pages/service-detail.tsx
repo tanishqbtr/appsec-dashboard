@@ -34,13 +34,18 @@ import {
   Clock,
   Edit3,
   Save,
-  X
+  X,
+  Database,
+  Lock,
+  Globe,
+  BarChart3
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import type { Application } from "@shared/schema";
 
 interface FindingsData {
@@ -97,16 +102,19 @@ function EngineBadge({ engine, findings }: { engine: string; findings: FindingsD
   );
 }
 
-// Calculate percentile ranking based on total findings
-function calculatePercentile(applications: Application[], currentApp: Application): number {
-  const currentFindings = JSON.parse(currentApp.totalFindings).total;
-  const allFindings = applications.map(app => JSON.parse(app.totalFindings).total);
+// Calculate percentile ranking based on total findings across ALL engines
+function calculatePercentileWithAllFindings(applications: Application[], app: Application, getAllServiceFindings: (serviceName: string) => FindingsData): number {
+  // Get total findings for this app across ALL engines
+  const appFindings = getAllServiceFindings(app.name);
+  const appTotal = appFindings.total;
   
-  // Count how many applications have more findings than current app
-  const higherCount = allFindings.filter(findings => findings > currentFindings).length;
+  // Count how many applications have fewer total findings than this one
+  const appsWithFewerFindings = applications.filter(otherApp => {
+    const otherFindings = getAllServiceFindings(otherApp.name);
+    return otherFindings.total < appTotal;
+  }).length;
   
-  // Calculate percentile (fewer findings = higher percentile)
-  return (higherCount / applications.length) * 100;
+  return Math.round((appsWithFewerFindings / applications.length) * 100);
 }
 
 function PercentileBadge({ percentile }: { percentile: number }) {
@@ -218,20 +226,60 @@ export default function ServiceDetail() {
   const params = useParams();
   const serviceId = params.id;
   const { toast } = useToast();
+  const { logout } = useAuth();
   const [editingService, setEditingService] = useState<any>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [newTagInput, setNewTagInput] = useState("");
 
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/login";
+  const handleGoBack = () => {
+    window.history.back();
   };
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
-    queryKey: ["/api/applications"],
+    queryKey: ["/api/applications-with-risk"],
+  });
+
+  // Get total findings data for percentile calculation
+  const { data: servicesWithFindings = [] } = useQuery({
+    queryKey: ["/api/services-total-findings"],
   });
 
   const application = applications.find(app => app.id.toString() === serviceId);
+
+  // Risk assessment data query
+  const { data: riskAssessmentData } = useQuery({
+    queryKey: ['/api/risk-assessments', application?.name],
+    enabled: !!application?.name,
+  });
+
+  // Fetch all findings data for accurate percentile calculation
+  const allScaQuery = useQuery({
+    queryKey: ["/api/mend/sca"],
+  });
+  
+  const allSastQuery = useQuery({
+    queryKey: ["/api/mend/sast"],
+  });
+  
+  const allMendContainersQuery = useQuery({
+    queryKey: ["/api/mend/containers"],
+  });
+
+  const allWebAppsQuery = useQuery({
+    queryKey: ["/api/escape/webapps"],
+  });
+  
+  const allApisQuery = useQuery({
+    queryKey: ["/api/escape/apis"],
+  });
+
+  const allImagesQuery = useQuery({
+    queryKey: ["/api/crowdstrike/images"],
+  });
+  
+  const allCrowdstrikeContainersQuery = useQuery({
+    queryKey: ["/api/crowdstrike/containers"],
+  });
 
   const updateServiceMutation = useMutation({
     mutationFn: async (updatedData: any) => {
@@ -247,6 +295,9 @@ export default function ServiceDetail() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/applications-with-risk"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/services-with-risk-scores"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/risk-assessments"] });
       setIsEditDialogOpen(false);
       setEditingService(null);
       toast({
@@ -265,11 +316,12 @@ export default function ServiceDetail() {
 
   const handleEdit = () => {
     setEditingService({
+      name: application?.name || "",
+      description: application?.description || "",
       githubRepo: application?.githubRepo || "",
       jiraProject: application?.jiraProject || "",
       slackChannel: application?.slackChannel || "",
       serviceOwner: application?.serviceOwner || "",
-      riskScore: application?.riskScore || 0,
       tags: application?.tags || [],
       mendLink: application?.mendLink || "",
       crowdstrikeLink: application?.crowdstrikeLink || "",
@@ -286,7 +338,7 @@ export default function ServiceDetail() {
     return (
       <PageWrapper loadingMessage="Loading Service Details...">
         <div className="min-h-screen bg-gray-50">
-          <Navigation onLogout={handleLogout} currentPage="services" />
+          <Navigation onLogout={logout} currentPage="services" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -306,17 +358,18 @@ export default function ServiceDetail() {
     return (
       <PageWrapper loadingMessage="Service not found">
         <div className="min-h-screen bg-gray-50">
-          <Navigation onLogout={handleLogout} currentPage="services" />
+          <Navigation onLogout={logout} currentPage="services" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-gray-900 mb-4">Service Not Found</h1>
               <p className="text-gray-600 mb-6">The requested service could not be found.</p>
-              <Link href="/services">
-                <Button className="bg-green-600 hover:bg-green-700">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Services
-                </Button>
-              </Link>
+              <Button 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={handleGoBack}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
             </div>
           </div>
         </div>
@@ -324,32 +377,129 @@ export default function ServiceDetail() {
     );
   }
 
-  const findings: FindingsData = JSON.parse(application.totalFindings);
-  const percentile = calculatePercentile(applications, application);
-  
-  // Mock engine findings data
-  const engineFindings = {
-    mend: { total: Math.floor(findings.total * 0.4), C: Math.floor(findings.C * 0.5), H: Math.floor(findings.H * 0.3), M: Math.floor(findings.M * 0.4), L: Math.floor(findings.L * 0.5) },
-    crowdstrike: { total: Math.floor(findings.total * 0.35), C: Math.floor(findings.C * 0.3), H: Math.floor(findings.H * 0.4), M: Math.floor(findings.M * 0.3), L: Math.floor(findings.L * 0.3) },
-    escape: { total: Math.floor(findings.total * 0.25), C: Math.floor(findings.C * 0.2), H: Math.floor(findings.H * 0.3), M: Math.floor(findings.M * 0.3), L: Math.floor(findings.L * 0.2) }
+  // Calculate percentile using all findings data across all engines
+  const getAllServiceFindings = (serviceName: string): FindingsData => {
+    let totalFindings = { total: 0, C: 0, H: 0, M: 0, L: 0 };
+    
+    // Helper function to add findings
+    const addFindings = (findings: any[]) => {
+      findings?.forEach((finding: any) => {
+        if (finding.serviceName === serviceName) {
+          totalFindings.C += finding.critical;
+          totalFindings.H += finding.high;
+          totalFindings.M += finding.medium;
+          totalFindings.L += finding.low;
+          totalFindings.total += finding.critical + finding.high + finding.medium + finding.low;
+        }
+      });
+    };
+
+    // Add findings from all engines
+    addFindings(allScaQuery.data);
+    addFindings(allSastQuery.data);
+    addFindings(allMendContainersQuery.data);
+    addFindings(allWebAppsQuery.data);
+    addFindings(allApisQuery.data);
+    addFindings(allImagesQuery.data);
+    addFindings(allCrowdstrikeContainersQuery.data);
+    
+    return totalFindings;
   };
+
+  const calculatePercentileWithTotalFindings = (currentApp: Application): number => {
+    if (!currentApp || !servicesWithFindings.length) return 0;
+    
+    // Find this service's total findings
+    const findingsData = servicesWithFindings.find(service => service.name === currentApp.name);
+    const currentTotalFindings = findingsData?.totalFindings || 0;
+    
+    // Count applications with higher total findings (worse security)
+    const appsWithMoreFindings = servicesWithFindings.filter(service => {
+      return service.totalFindings > currentTotalFindings;
+    }).length;
+    
+    // Higher percentile = better security (fewer findings)
+    return Math.round((appsWithMoreFindings / servicesWithFindings.length) * 100);
+  };
+
+  const percentile = application ? calculatePercentileWithTotalFindings(application) : 0;
+  
+  // Get comprehensive findings data across all engines for this service
+  const comprehensiveFindings: FindingsData = application ? getAllServiceFindings(application.name) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
+  
+  // Calculate actual engine findings data from real API data
+  const getEngineFindings = () => {
+    if (!application) return { mend: { total: 0, C: 0, H: 0, M: 0, L: 0 }, crowdstrike: { total: 0, C: 0, H: 0, M: 0, L: 0 }, escape: { total: 0, C: 0, H: 0, M: 0, L: 0 } };
+    
+    const serviceName = application.name;
+    const engineFindings = {
+      mend: { total: 0, C: 0, H: 0, M: 0, L: 0 },
+      crowdstrike: { total: 0, C: 0, H: 0, M: 0, L: 0 },
+      escape: { total: 0, C: 0, H: 0, M: 0, L: 0 }
+    };
+
+    // Add Mend findings (SCA, SAST, Containers)
+    [allScaQuery.data, allSastQuery.data, allMendContainersQuery.data].forEach(findings => {
+      findings?.forEach((finding: any) => {
+        if (finding.serviceName === serviceName) {
+          engineFindings.mend.C += finding.critical;
+          engineFindings.mend.H += finding.high;
+          engineFindings.mend.M += finding.medium;
+          engineFindings.mend.L += finding.low;
+          engineFindings.mend.total += finding.critical + finding.high + finding.medium + finding.low;
+        }
+      });
+    });
+
+    // Add Crowdstrike findings (Images, Containers)
+    [allImagesQuery.data, allCrowdstrikeContainersQuery.data].forEach(findings => {
+      findings?.forEach((finding: any) => {
+        if (finding.serviceName === serviceName) {
+          engineFindings.crowdstrike.C += finding.critical;
+          engineFindings.crowdstrike.H += finding.high;
+          engineFindings.crowdstrike.M += finding.medium;
+          engineFindings.crowdstrike.L += finding.low;
+          engineFindings.crowdstrike.total += finding.critical + finding.high + finding.medium + finding.low;
+        }
+      });
+    });
+
+    // Add Escape findings (Web Apps, APIs)
+    [allWebAppsQuery.data, allApisQuery.data].forEach(findings => {
+      findings?.forEach((finding: any) => {
+        if (finding.serviceName === serviceName) {
+          engineFindings.escape.C += finding.critical;
+          engineFindings.escape.H += finding.high;
+          engineFindings.escape.M += finding.medium;
+          engineFindings.escape.L += finding.low;
+          engineFindings.escape.total += finding.critical + finding.high + finding.medium + finding.low;
+        }
+      });
+    });
+
+    return engineFindings;
+  };
+
+  const engineFindings = getEngineFindings();
 
   return (
     <PageWrapper loadingMessage="Loading Service Details...">
       <TooltipProvider>
         <div className="min-h-screen bg-gray-50">
-          <Navigation onLogout={handleLogout} currentPage="services" />
+          <Navigation onLogout={logout} currentPage="services" />
       
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <Link href="/services">
-                <Button variant="outline" className="transition-all duration-200 hover:scale-105">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Services
-                </Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                className="transition-all duration-200 hover:scale-105"
+                onClick={handleGoBack}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
               
               <Button 
                 onClick={handleEdit}
@@ -363,15 +513,19 @@ export default function ServiceDetail() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-gray-900">{application.name}</h1>
-                <p className="mt-2 text-gray-600">
-                  {application.description || "Comprehensive security analysis and vulnerability management"}
+                <p className={`mt-2 ${application.description ? "text-gray-600" : "text-gray-400"}`}>
+                  {application.description || "Description not set"}
                 </p>
               </div>
               
               <div className="text-right">
                 <div className="text-sm text-gray-600">Risk Score</div>
-                <div className="text-3xl font-bold text-orange-600">{application.riskScore}</div>
-                <div className="text-sm text-gray-600">Medium Risk</div>
+                <div className="text-3xl font-bold text-orange-600">
+                  {riskAssessmentData?.finalRiskScore || application.riskScore || "0.0"}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {riskAssessmentData?.riskLevel || "Medium Risk"}
+                </div>
               </div>
             </div>
           </div>
@@ -380,61 +534,97 @@ export default function ServiceDetail() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardContent className="p-4">
-                <a 
-                  href={application.githubRepo || "#"} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                >
-                  <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                    <Github className="h-5 w-5" />
+                {application.githubRepo ? (
+                  <a 
+                    href={application.githubRepo} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
+                  >
+                    <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Github className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">GitHub Repo</p>
+                      <p className="text-sm text-gray-600">View source code</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 ml-auto" />
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-3 text-gray-400">
+                    <div className="h-10 w-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Github className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium">GitHub Repo</p>
+                      <p className="text-sm text-gray-400">Not set</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">GitHub Repo</p>
-                    <p className="text-sm text-gray-600">View source code</p>
-                  </div>
-                  <ExternalLink className="h-4 w-4 ml-auto" />
-                </a>
+                )}
               </CardContent>
             </Card>
             
             <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardContent className="p-4">
-                <a 
-                  href={application.jiraProject || "#"} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                >
-                  <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Target className="h-5 w-5 text-blue-600" />
+                {application.jiraProject ? (
+                  <a 
+                    href={application.jiraProject} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
+                  >
+                    <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Target className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Jira Project</p>
+                      <p className="text-sm text-gray-600">Track issues</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 ml-auto" />
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-3 text-gray-400">
+                    <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <Target className="h-5 w-5 text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Jira Project</p>
+                      <p className="text-sm text-gray-400">Not set</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">Jira Project</p>
-                    <p className="text-sm text-gray-600">Track issues</p>
-                  </div>
-                  <ExternalLink className="h-4 w-4 ml-auto" />
-                </a>
+                )}
               </CardContent>
             </Card>
             
             <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
               <CardContent className="p-4">
-                <a 
-                  href={application.slackChannel || "#"} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
-                >
-                  <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <MessageSquare className="h-5 w-5 text-purple-600" />
+                {application.slackChannel ? (
+                  <a 
+                    href={application.slackChannel} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 text-gray-900 hover:text-green-600 transition-colors"
+                  >
+                    <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <MessageSquare className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Slack Channel</p>
+                      <p className="text-sm text-gray-600">Team communication</p>
+                    </div>
+                    <ExternalLink className="h-4 w-4 ml-auto" />
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-3 text-gray-400">
+                    <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                      <MessageSquare className="h-5 w-5 text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Slack Channel</p>
+                      <p className="text-sm text-gray-400">Not set</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">Slack Channel</p>
-                    <p className="text-sm text-gray-600">Team communication</p>
-                  </div>
-                  <ExternalLink className="h-4 w-4 ml-auto" />
-                </a>
+                )}
               </CardContent>
             </Card>
             
@@ -446,8 +636,8 @@ export default function ServiceDetail() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium">Service Owner</p>
-                    <p className="text-sm text-green-600">
-                      {application.serviceOwner || "Engineering Team"}
+                    <p className={`text-sm ${application.serviceOwner ? "text-green-600" : "text-gray-400"}`}>
+                      {application.serviceOwner || "Not set"}
                     </p>
                   </div>
                 </div>
@@ -468,23 +658,170 @@ export default function ServiceDetail() {
                 <div className="space-y-6">
                   <div>
                     <h4 className="font-medium text-gray-900 mb-3">Total by Severity</h4>
-                    <div className="flex flex-wrap gap-3">
-                      <RiskBadge level="C" count={findings.C} />
-                      <RiskBadge level="H" count={findings.H} />
-                      <RiskBadge level="M" count={findings.M} />
-                      <RiskBadge level="L" count={findings.L} />
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Critical:</span>
+                        <RiskBadge level="C" count={comprehensiveFindings.C} />
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">High:</span>
+                        <RiskBadge level="H" count={comprehensiveFindings.H} />
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Medium:</span>
+                        <RiskBadge level="M" count={comprehensiveFindings.M} />
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Low:</span>
+                        <RiskBadge level="L" count={comprehensiveFindings.L} />
+                      </div>
                     </div>
-                    <div className="mt-3 text-sm text-gray-600">
-                      Total: {findings.total} findings
+                    <div className="mt-3 pt-3 border-t text-sm text-gray-600 font-medium">
+                      Total: {comprehensiveFindings.total} findings
                     </div>
                   </div>
 
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Findings by Scanner</h4>
-                    <div className="grid grid-cols-3 gap-2">
-                      <EngineBadge engine="mend" findings={engineFindings.mend} />
-                      <EngineBadge engine="crowdstrike" findings={engineFindings.crowdstrike} />
-                      <EngineBadge engine="escape" findings={engineFindings.escape} />
+                    <div className="flex items-center gap-2 mb-4">
+                      <Target className="h-5 w-5 text-blue-600" />
+                      <h4 className="text-lg font-semibold text-gray-900">Findings by Scanner</h4>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 gap-4">
+                      {/* Mend Scanner Card */}
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                              <Shield className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">Mend</h5>
+                          </div>
+                          {application.mendLink ? (
+                            <a 
+                              href={application.mendLink} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                            >
+                              <Button size="sm" variant="outline" className="bg-white/50 border-blue-300 text-blue-700 hover:bg-blue-50">
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                Take me to Mend
+                              </Button>
+                            </a>
+                          ) : (
+                            <Button size="sm" variant="outline" disabled className="bg-gray-100 border-gray-300 text-gray-400">
+                              Not configured
+                            </Button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-4 gap-2 text-xs">
+                          <div className="text-center">
+                            <div className="text-red-600 font-bold text-lg">C: {engineFindings.mend.C}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-orange-600 font-bold text-lg">H: {engineFindings.mend.H}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-yellow-600 font-bold text-lg">M: {engineFindings.mend.M}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-green-600 font-bold text-lg">L: {engineFindings.mend.L}</div>
+                          </div>
+                        </div>
+                        <div className="text-center mt-2 text-sm text-gray-600">
+                          Total: {engineFindings.mend.total} findings
+                        </div>
+                      </div>
+
+                      {/* Crowdstrike Scanner Card */}
+                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 bg-slate-100 rounded-lg flex items-center justify-center">
+                              <Shield className="h-4 w-4 text-slate-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">Crowdstrike</h5>
+                          </div>
+                          {application.crowdstrikeLink ? (
+                            <a 
+                              href={application.crowdstrikeLink} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                            >
+                              <Button size="sm" variant="outline" className="bg-white/50 border-slate-300 text-slate-700 hover:bg-slate-50">
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                Take me to Crowdstrike
+                              </Button>
+                            </a>
+                          ) : (
+                            <Button size="sm" variant="outline" disabled className="bg-gray-100 border-gray-300 text-gray-400">
+                              Not configured
+                            </Button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-4 gap-2 text-xs">
+                          <div className="text-center">
+                            <div className="text-red-600 font-bold text-lg">C: {engineFindings.crowdstrike.C}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-orange-600 font-bold text-lg">H: {engineFindings.crowdstrike.H}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-yellow-600 font-bold text-lg">M: {engineFindings.crowdstrike.M}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-green-600 font-bold text-lg">L: {engineFindings.crowdstrike.L}</div>
+                          </div>
+                        </div>
+                        <div className="text-center mt-2 text-sm text-gray-600">
+                          Total: {engineFindings.crowdstrike.total} findings
+                        </div>
+                      </div>
+
+                      {/* Escape Scanner Card */}
+                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                              <Shield className="h-4 w-4 text-purple-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">Escape</h5>
+                          </div>
+                          {application.escapeLink ? (
+                            <a 
+                              href={application.escapeLink} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                            >
+                              <Button size="sm" variant="outline" className="bg-white/50 border-purple-300 text-purple-700 hover:bg-purple-50">
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                Take me to Escape
+                              </Button>
+                            </a>
+                          ) : (
+                            <Button size="sm" variant="outline" disabled className="bg-gray-100 border-gray-300 text-gray-400">
+                              Not configured
+                            </Button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-4 gap-2 text-xs">
+                          <div className="text-center">
+                            <div className="text-red-600 font-bold text-lg">C: {engineFindings.escape.C}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-orange-600 font-bold text-lg">H: {engineFindings.escape.H}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-yellow-600 font-bold text-lg">M: {engineFindings.escape.M}</div>
+                          </div>
+                          <div className="text-center">
+                            <div className="text-green-600 font-bold text-lg">L: {engineFindings.escape.L}</div>
+                          </div>
+                        </div>
+                        <div className="text-center mt-2 text-sm text-gray-600">
+                          Total: {engineFindings.escape.total} findings
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -506,8 +843,18 @@ export default function ServiceDetail() {
                       <p className="text-sm text-gray-600 animate-in fade-in-0 slide-in-from-left-2 duration-500">Risk Score</p>
                       <div className="flex items-center gap-3">
                         <p className="text-2xl font-bold text-orange-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
-                          {application.riskScore}
+                          {riskAssessmentData?.finalRiskScore || application.riskScore || "0.0"}
                         </p>
+                        {riskAssessmentData?.riskLevel && (
+                          <Badge className={`${
+                            riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
+                            riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                            riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                            'bg-green-100 text-green-800 border-green-200'
+                          }`}>
+                            {riskAssessmentData.riskLevel}
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
@@ -533,17 +880,320 @@ export default function ServiceDetail() {
                       </div>
                     </div>
 
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Labels</p>
-                      <div className="flex flex-wrap gap-2">
-                        {application.labels?.map((label, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {label}
-                          </Badge>
-                        )) || <span className="text-sm text-gray-400">No labels assigned</span>}
-                      </div>
-                    </div>
+
                   </div>
+
+                  {/* Risk Assessment Details */}
+                  <div className="space-y-4 border-t pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-green-600" />
+                        <h4 className="text-lg font-semibold text-gray-900">Risk Assessment Details</h4>
+                      </div>
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.location.href = '/risk-scoring'}
+                        className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50"
+                      >
+                        <Edit3 className="h-3 w-3" />
+                        {riskAssessmentData ? "Edit" : "Create"}
+                      </Button>
+                    </div>
+                    
+                    {riskAssessmentData ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Data Classification Card */}
+                        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="h-8 w-8 bg-cyan-100 rounded-lg flex items-center justify-center">
+                              <Database className="h-4 w-4 text-cyan-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">Data Classification</h5>
+                          </div>
+                          <div className="space-y-2">
+                            {riskAssessmentData.dataClassification && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Classification:</span>
+                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
+                                  {riskAssessmentData.dataClassification}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.phi && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">PHI:</span>
+                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
+                                  {riskAssessmentData.phi}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.eligibilityData && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Eligibility Data:</span>
+                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
+                                  {riskAssessmentData.eligibilityData}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* CIA Triad Card */}
+                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+                              <Lock className="h-4 w-4 text-indigo-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">CIA Triad</h5>
+                          </div>
+                          <div className="space-y-2">
+                            {riskAssessmentData.confidentialityImpact && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Confidentiality Impact:</span>
+                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                                  {riskAssessmentData.confidentialityImpact}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.integrityImpact && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Integrity Impact:</span>
+                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                                  {riskAssessmentData.integrityImpact}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.availabilityImpact && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Availability Impact:</span>
+                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                                  {riskAssessmentData.availabilityImpact}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Attack Surface Factors Card */}
+                        <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="h-8 w-8 bg-amber-100 rounded-lg flex items-center justify-center">
+                              <Globe className="h-4 w-4 text-amber-600" />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">Attack Surface Factors</h5>
+                          </div>
+                          <div className="space-y-2">
+                            {riskAssessmentData.publicEndpoint && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Public Endpoint:</span>
+                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                                  {riskAssessmentData.publicEndpoint}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.discoverability && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Discoverability:</span>
+                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                                  {riskAssessmentData.discoverability}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.awareness && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Awareness:</span>
+                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                                  {riskAssessmentData.awareness}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Risk Scores Card */}
+                        <div className={`bg-gradient-to-br border rounded-xl p-4 hover:shadow-md transition-all duration-200 ${
+                          riskAssessmentData.finalRiskScore >= 7 
+                            ? 'from-red-50 to-red-100 border-red-200' 
+                            : riskAssessmentData.finalRiskScore >= 4 
+                            ? 'from-orange-50 to-orange-100 border-orange-200'
+                            : 'from-green-50 to-green-100 border-green-200'
+                        }`}>
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                              riskAssessmentData.finalRiskScore >= 7 
+                                ? 'bg-red-100' 
+                                : riskAssessmentData.finalRiskScore >= 4 
+                                ? 'bg-orange-100'
+                                : 'bg-green-100'
+                            }`}>
+                              <BarChart3 className={`h-4 w-4 ${
+                                riskAssessmentData.finalRiskScore >= 7 
+                                  ? 'text-red-600' 
+                                  : riskAssessmentData.finalRiskScore >= 4 
+                                  ? 'text-orange-600'
+                                  : 'text-green-600'
+                              }`} />
+                            </div>
+                            <h5 className="font-semibold text-gray-800">Risk Scores</h5>
+                          </div>
+                          <div className="space-y-2">
+                            {riskAssessmentData.dataClassificationScore !== null && riskAssessmentData.dataClassificationScore !== undefined && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Data Classification Score:</span>
+                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
+                                  {riskAssessmentData.dataClassificationScore}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.ciaTriadScore !== null && riskAssessmentData.ciaTriadScore !== undefined && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">CIA Triad Score:</span>
+                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                                  {riskAssessmentData.ciaTriadScore}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.attackSurfaceScore !== null && riskAssessmentData.attackSurfaceScore !== undefined && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Attack Surface Score:</span>
+                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                                  {riskAssessmentData.attackSurfaceScore}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.finalRiskScore !== null && riskAssessmentData.finalRiskScore !== undefined && (
+                              <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-3 pt-3">
+                                <span className="text-sm font-medium text-gray-700">Final Risk Score:</span>
+                                <Badge className={`text-sm font-semibold px-3 py-1 ${
+                                  riskAssessmentData.finalRiskScore >= 7 
+                                    ? 'bg-red-100 text-red-800 border-red-200' 
+                                    : riskAssessmentData.finalRiskScore >= 4 
+                                    ? 'bg-orange-100 text-orange-800 border-orange-200'
+                                    : 'bg-green-100 text-green-800 border-green-200'
+                                }`}>
+                                  {riskAssessmentData.finalRiskScore}
+                                </Badge>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                        /* Placeholder cards for when no risk assessment data exists */
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Data Classification Placeholder */}
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 transition-all duration-200">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <Database className="h-4 w-4 text-gray-400" />
+                              </div>
+                              <h5 className="font-semibold text-gray-800">Data Classification</h5>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Classification:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">PHI:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Eligibility Data:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* CIA Triad Placeholder */}
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 transition-all duration-200">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <Lock className="h-4 w-4 text-gray-400" />
+                              </div>
+                              <h5 className="font-semibold text-gray-800">CIA Triad</h5>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Confidentiality Impact:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Integrity Impact:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Availability Impact:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Attack Surface Factors Placeholder */}
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 transition-all duration-200">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <Globe className="h-4 w-4 text-gray-400" />
+                              </div>
+                              <h5 className="font-semibold text-gray-800">Attack Surface Factors</h5>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Public Endpoint:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Discoverability:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Awareness:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Risk Scores Placeholder */}
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 transition-all duration-200">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <BarChart3 className="h-4 w-4 text-gray-400" />
+                              </div>
+                              <h5 className="font-semibold text-gray-800">Risk Scores</h5>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Data Classification Score:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">CIA Triad Score:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Attack Surface Score:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Final Risk Score:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {riskAssessmentData?.lastUpdated && (
+                        <div className="flex items-center gap-2 justify-center pt-4 border-t border-gray-200">
+                          <Clock className="h-4 w-4 text-gray-400" />
+                          <p className="text-sm text-gray-500">
+                            Last updated: {new Date(riskAssessmentData.lastUpdated).toLocaleDateString()}
+                            {riskAssessmentData.updatedBy && ` by ${riskAssessmentData.updatedBy}`}
+                          </p>
+                        </div>
+                      )}
+                    </div>
 
                   {application.hasAlert && (
                     <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
@@ -558,65 +1208,24 @@ export default function ServiceDetail() {
             </Card>
           </div>
 
-          {/* Security Scanner Links */}
-          <div className="flex gap-4 mb-8">
-            <a 
-              href={application.mendLink || "#"} 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              <Button variant="outline" className="transition-all duration-200 hover:scale-105 border-blue-200 hover:bg-blue-50">
-                <Shield className="h-4 w-4 mr-2" />
-                Take me to Mend
-                <ExternalLink className="h-4 w-4 ml-2" />
-              </Button>
-            </a>
-            <a 
-              href={application.crowdstrikeLink || "#"} 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              <Button variant="outline" className="transition-all duration-200 hover:scale-105 border-red-200 hover:bg-red-50">
-                <Shield className="h-4 w-4 mr-2" />
-                Take me to Crowdstrike
-                <ExternalLink className="h-4 w-4 ml-2" />
-              </Button>
-            </a>
-            <a 
-              href={application.escapeLink || "#"} 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              <Button variant="outline" className="transition-all duration-200 hover:scale-105 border-purple-200 hover:bg-purple-50">
-                <Shield className="h-4 w-4 mr-2" />
-                Take me to Escape
-                <ExternalLink className="h-4 w-4 ml-2" />
-              </Button>
-            </a>
-          </div>
-
           {/* Edit Dialog */}
           <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
                 <DialogTitle>Edit Service Information</DialogTitle>
                 <DialogDescription>
-                  Update the service links, risk score, compliance tags, and owner information below.
+                  Update the service name, links, compliance tags, and owner information below.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4 max-h-96 overflow-y-auto">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
-                    <Label htmlFor="riskScore">Risk Score</Label>
+                    <Label htmlFor="serviceName">Service Name</Label>
                     <Input
-                      id="riskScore"
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="10"
-                      placeholder="1.9"
-                      value={editingService?.riskScore || ""}
-                      onChange={(e) => setEditingService({...editingService, riskScore: parseFloat(e.target.value) || 0})}
+                      id="serviceName"
+                      placeholder="Enter service name"
+                      value={editingService?.name || ""}
+                      onChange={(e) => setEditingService({...editingService, name: e.target.value})}
                     />
                   </div>
                   <div>
@@ -626,6 +1235,15 @@ export default function ServiceDetail() {
                       placeholder="John Doe (Team Name)"
                       value={editingService?.serviceOwner || ""}
                       onChange={(e) => setEditingService({...editingService, serviceOwner: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="serviceDescription">Description</Label>
+                    <Input
+                      id="serviceDescription"
+                      placeholder="Brief description of the service"
+                      value={editingService?.description || ""}
+                      onChange={(e) => setEditingService({...editingService, description: e.target.value})}
                     />
                   </div>
                 </div>
@@ -656,7 +1274,6 @@ export default function ServiceDetail() {
                     <Select
                       onValueChange={(value) => {
                         if (value === "custom") {
-                          // Don't add anything, let user type in custom field
                           return;
                         }
                         const currentTags = editingService?.tags || [];
@@ -796,7 +1413,7 @@ export default function ServiceDetail() {
             </DialogContent>
           </Dialog>
         </div>
-        </div>
+      </div>
       </TooltipProvider>
     </PageWrapper>
   );

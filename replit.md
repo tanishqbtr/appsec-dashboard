@@ -17,7 +17,20 @@ Percentile system: Services ranked by total findings with color-coded badges - s
 Interactive onboarding tutorial: Guides new users through key features with step-by-step walkthrough, highlighting elements and providing contextual information (updated July 17, 2025)
 Database schema simplification: Removed unnecessary fields (projects, violating findings, risk factors, last scan) from services table - keeping only essential data (updated July 18, 2025)
 Mend findings separation: Created separate tables for Mend SCA, SAST, and Containers findings with individual critical/high/medium/low counts and scan dates (updated July 18, 2025)
-Authentication disabled: Temporarily removed login/logout requirements from all API endpoints for development purposes (updated July 18, 2025)
+Authentication system fully restored: Successfully implemented session-based authentication with proper login/logout flow, protected API endpoints, and centralized useAuth hook across all pages for consistent authentication state management (updated July 18, 2025)
+Dashboard layout: Moved Findings Trend chart from Reports page to Dashboard, replacing Recent Scan Activity section for better visibility of security trends (updated July 18, 2025)
+Reports page clearing: Completely emptied Reports page content, leaving only basic navigation and empty state message for future development (updated July 18, 2025)
+Page functionality swap: Moved all Services page functionality (security findings table, filters, onboarding) to Reports page, and cleared Services page to empty state (updated July 18, 2025)
+Services page redesign: Created simple services list view with search functionality and clickable rows that navigate to individual service detail pages (updated July 18, 2025)
+Services table enhancement: Added sortable table format with Risk Score and Percentile Ranking columns, removed tags/labels display, implemented three-column sorting functionality (updated July 18, 2025)
+Services data integration: Updated to use calculated risk scores from risk assessments and proper percentile ranking based on risk scores, removed findings count display (updated July 18, 2025)
+Services API endpoint: Created dedicated `/api/services-with-risk-scores` endpoint that directly fetches services from risk_assessments table with final_risk_score values (updated July 18, 2025)
+Service detail page enhancement: Enhanced Risk Assessment Details and Findings by Scanner sections with beautiful gradient card designs, integrated "Take me to" buttons within scanner cards, and updated risk scores to display actual values from database final_risk_score field (updated July 18, 2025)
+UI cleanup: Removed unnecessary SCA/SAST labels from service detail pages and consolidated scanner navigation into individual card-based buttons (updated July 18, 2025)
+Percentile calculation standardization: Implemented consistent percentile calculation logic based on total findings across all scan engines for both Services page and Service Detail page - higher findings result in lower percentile ranking (updated July 18, 2025)
+Total findings API endpoint: Created /api/services-total-findings endpoint that aggregates findings across all scan engines (Mend SCA/SAST/Containers, Escape WebApps/APIs, Crowdstrike Images/Containers) for accurate percentile calculations (updated July 18, 2025)
+Comprehensive animation system: Added smooth page transitions, micro-interactions, and hover animations across all pages with CSS keyframes, staggered list animations, chart entrance effects, and enhanced button interactions (updated July 18, 2025)
+
 
 ## System Architecture
 

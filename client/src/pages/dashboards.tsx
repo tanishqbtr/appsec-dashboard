@@ -1,21 +1,16 @@
 import Navigation from "@/components/navigation";
 import PageWrapper from "@/components/page-wrapper";
+import DashboardTutorial from "@/components/dashboard-tutorial";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import {
   BarChart3,
   TrendingUp,
   Shield,
   AlertTriangle,
-  Download,
+
   Calendar,
   FileText,
   PieChart,
@@ -23,7 +18,8 @@ import {
   Target,
   Clock,
   Users,
-  Zap
+  Zap,
+  HelpCircle
 } from "lucide-react";
 import {
   BarChart,
@@ -44,13 +40,15 @@ import {
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { format, subDays } from "date-fns";
 import type { Application } from "@shared/schema";
 
 // Analytics data processing functions
 const processAnalyticsData = (applications: Application[]) => {
   const findingsByEngine = applications.reduce((acc, app) => {
-    const findings = JSON.parse(app.totalFindings);
+    const findings = app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
     const engine = acc.find(e => e.engine === app.scanEngine);
     if (engine) {
       engine.critical += findings.C;
@@ -105,15 +103,36 @@ const processAnalyticsData = (applications: Application[]) => {
 };
 
 export default function Dashboards() {
-  const [timeRange, setTimeRange] = useState("7d");
+  const [showTutorial, setShowTutorial] = useState(false);
+  const { toast } = useToast();
+  const { logout } = useAuth();
 
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/login";
+  const handleStartTutorial = () => {
+    setShowTutorial(true);
+  };
+
+  const handleCompleteTutorial = () => {
+    setShowTutorial(false);
+    toast({
+      title: "Tutorial Complete!",
+      description: "You've learned how to use the comprehensive security dashboard analytics.",
+    });
   };
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["/api/applications"],
+  });
+
+  const { data: dashboardMetrics, isLoading: isMetricsLoading } = useQuery({
+    queryKey: ["/api/dashboard/metrics"],
+  });
+
+  const { data: scanEngineFindings = [], isLoading: isScanEngineLoading } = useQuery({
+    queryKey: ["/api/dashboard/scan-engine-findings"],
+  });
+
+  const { data: riskDistribution = [], isLoading: isRiskDistributionLoading } = useQuery({
+    queryKey: ["/api/dashboard/risk-distribution"],
   });
 
   const analytics = processAnalyticsData(applications);
@@ -144,31 +163,13 @@ export default function Dashboards() {
 
   const PIE_COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#22c55e'];
 
-  const exportDashboard = async () => {
-    const { default: jsPDF } = await import('jspdf');
-    const { default: autoTable } = await import('jspdf-autotable');
-    
-    const doc = new jsPDF();
-    
-    doc.setFontSize(20);
-    doc.text('Security Dashboard Report', 20, 30);
-    doc.setFontSize(12);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 50);
-    
-    // Key metrics
-    doc.text('Key Metrics', 20, 70);
-    doc.text(`Total Applications: ${applications.length}`, 30, 85);
-    doc.text(`Critical Findings: ${applications.reduce((sum, app) => sum + JSON.parse(app.totalFindings).C, 0)}`, 30, 95);
-    doc.text(`Average Risk Score: ${(applications.reduce((sum, app) => sum + parseFloat(app.riskScore), 0) / applications.length).toFixed(1)}`, 30, 105);
-    
-    doc.save(`Dashboard_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
-  };
 
-  if (isLoading) {
+
+  if (isLoading || isMetricsLoading || isScanEngineLoading || isRiskDistributionLoading) {
     return (
       <PageWrapper loadingMessage="Loading Dashboard...">
         <div className="min-h-screen bg-gray-50">
-          <Navigation onLogout={handleLogout} currentPage="dashboards" />
+          <Navigation onLogout={logout} currentPage="dashboards" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -185,35 +186,49 @@ export default function Dashboards() {
     );
   }
 
-  const totalFindings = applications.reduce((sum, app) => sum + JSON.parse(app.totalFindings).total, 0);
-  const criticalFindings = applications.reduce((sum, app) => sum + JSON.parse(app.totalFindings).C, 0);
-  const highFindings = applications.reduce((sum, app) => sum + JSON.parse(app.totalFindings).H, 0);
-  const averageRiskScore = applications.length > 0 ? (applications.reduce((sum, app) => sum + parseFloat(app.riskScore), 0) / applications.length) : 0;
+  // Use metrics from API or fallback to calculated values
+  const totalApplications = dashboardMetrics?.totalApplications ?? applications.length;
+  const criticalFindings = dashboardMetrics?.criticalFindings ?? 0;
+  const highFindings = dashboardMetrics?.highFindings ?? 0;
+  const averageRiskScore = dashboardMetrics?.averageRiskScore ?? 0;
 
   return (
     <PageWrapper loadingMessage="Loading Dashboard...">
       <div className="min-h-screen bg-gray-50">
-        <Navigation onLogout={handleLogout} currentPage="dashboards" />
+        <Navigation onLogout={logout} currentPage="dashboards" />
       
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
-          <div className="mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Security Dashboard</h1>
-              <p className="mt-2 text-gray-600">
-                Real-time security insights and comprehensive vulnerability management
-              </p>
+          <div className="mb-8" data-tutorial="dashboard-header">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Security Dashboard</h1>
+                <p className="mt-2 text-gray-600">
+                  Real-time security insights and comprehensive vulnerability management
+                </p>
+              </div>
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  onClick={handleStartTutorial}
+                  className="flex items-center gap-2"
+                  data-tutorial="tutorial-button"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                  Take Tutorial
+                </Button>
+              </div>
             </div>
           </div>
 
           {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" data-tutorial="key-metrics">
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Total Applications</p>
-                    <p className="text-3xl font-bold text-gray-900">{applications.length}</p>
+                    <p className="text-3xl font-bold text-gray-900">{totalApplications}</p>
                     <p className="text-sm text-green-600">+2 this week</p>
                   </div>
                   <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -223,7 +238,7 @@ export default function Dashboards() {
               </CardContent>
             </Card>
 
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -238,7 +253,7 @@ export default function Dashboards() {
               </CardContent>
             </Card>
 
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -253,12 +268,12 @@ export default function Dashboards() {
               </CardContent>
             </Card>
 
-            <Card className="transition-all duration-200 hover:shadow-lg hover:scale-105">
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Avg Risk Score</p>
-                    <p className="text-3xl font-bold text-orange-600">{averageRiskScore.toFixed(1)}</p>
+                    <p className="text-3xl font-bold text-orange-600">{averageRiskScore}</p>
                     <p className="text-sm text-orange-600">Medium risk level</p>
                   </div>
                   <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -272,7 +287,7 @@ export default function Dashboards() {
           {/* Charts Row 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Weekly Findings by Severity */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="chart-enter card-hover" data-tutorial="weekly-trends">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Activity className="h-5 w-5" />
@@ -325,7 +340,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Risk Distribution */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="chart-enter card-hover" data-tutorial="risk-distribution">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <PieChart className="h-5 w-5" />
@@ -336,7 +351,7 @@ export default function Dashboards() {
                 <ResponsiveContainer width="100%" height={300}>
                   <RechartsPieChart>
                     <Pie
-                      data={Object.entries(analytics.riskDistribution).map(([name, value]) => ({ name, value }))}
+                      data={riskDistribution}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -345,7 +360,7 @@ export default function Dashboards() {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {Object.entries(analytics.riskDistribution).map((entry, index) => (
+                      {riskDistribution.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
                     </Pie>
@@ -359,7 +374,7 @@ export default function Dashboards() {
           {/* Charts Row 2 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Findings by Engine */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="chart-enter card-hover" data-tutorial="engine-findings">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
@@ -368,7 +383,7 @@ export default function Dashboards() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={analytics.findingsByEngine}>
+                  <BarChart data={scanEngineFindings}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="engine" />
                     <YAxis />
@@ -384,7 +399,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Compliance Overview */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="chart-enter card-hover" data-tutorial="compliance-coverage">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5" />
@@ -426,53 +441,33 @@ export default function Dashboards() {
 
           {/* Recent Activity & Quick Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Recent Scans */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            {/* Findings Trend */}
+            <Card className="transition-all duration-200 hover:shadow-lg" data-tutorial="findings-trend-area">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  Recent Scan Activity
+                  <Activity className="h-5 w-5" />
+                  Findings Trend (7 Days)
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {applications
-                    .sort((a, b) => new Date(b.lastScan).getTime() - new Date(a.lastScan).getTime())
-                    .slice(0, 4)
-                    .map((app) => {
-                      const findings = JSON.parse(app.totalFindings);
-                      return (
-                        <div key={app.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
-                          <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                              <Shield className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900">{app.name}</p>
-                              <p className="text-sm text-gray-600">
-                                {app.scanEngine} • {app.lastScan}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            {findings.C > 0 && (
-                              <Badge variant="destructive" className="text-xs">
-                                {findings.C} Critical
-                              </Badge>
-                            )}
-                            <span className="text-sm font-medium text-gray-900">
-                              {app.riskScore}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <AreaChart data={weeklyTrend}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Area type="monotone" dataKey="Critical" stackId="1" stroke={COLORS.critical} fill={COLORS.critical} name="Critical" />
+                    <Area type="monotone" dataKey="High" stackId="1" stroke={COLORS.high} fill={COLORS.high} name="High" />
+                    <Area type="monotone" dataKey="Medium" stackId="1" stroke={COLORS.medium} fill={COLORS.medium} name="Medium" />
+                    <Area type="monotone" dataKey="Low" stackId="1" stroke={COLORS.low} fill={COLORS.low} name="Low" />
+                  </AreaChart>
+                </ResponsiveContainer>
               </CardContent>
             </Card>
 
             {/* Quick Stats */}
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="transition-all duration-200 hover:shadow-lg" data-tutorial="security-summary">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5" />
@@ -489,7 +484,7 @@ export default function Dashboards() {
                         <p className="text-sm text-gray-600">Across all applications</p>
                       </div>
                     </div>
-                    <span className="text-2xl font-bold text-blue-600">{totalFindings}</span>
+                    <span className="text-2xl font-bold text-blue-600">{criticalFindings + highFindings}</span>
                   </div>
 
                   <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
@@ -517,6 +512,13 @@ export default function Dashboards() {
               </CardContent>
             </Card>
           </div>
+          
+          {/* Dashboard Tutorial */}
+          <DashboardTutorial
+            isOpen={showTutorial}
+            onClose={() => setShowTutorial(false)}
+            onComplete={handleCompleteTutorial}
+          />
         </div>
       </div>
     </PageWrapper>

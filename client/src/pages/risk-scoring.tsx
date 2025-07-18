@@ -1,6 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Navigation from "@/components/navigation";
 import PageWrapper from "@/components/page-wrapper";
+import RiskScoringTutorial from "@/components/risk-scoring-tutorial";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,6 +32,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   TrendingUp, 
   Edit, 
@@ -41,7 +43,8 @@ import {
   Activity,
   Clock,
   Search,
-  ArrowUpDown
+  ArrowUpDown,
+  HelpCircle
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -55,8 +58,10 @@ export default function RiskScoring() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   
   // Risk assessment form state
+  const [selectedService, setSelectedService] = useState<string>("");
   const [riskFactors, setRiskFactors] = useState({
     dataClassification: "",
     phi: "",
@@ -69,15 +74,52 @@ export default function RiskScoring() {
     awareness: ""
   });
   const { toast } = useToast();
+  const { logout } = useAuth();
   const queryClient = useQueryClient();
 
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/login";
+  const handleStartTutorial = () => {
+    setShowTutorial(true);
+  };
+
+  const handleCompleteTutorial = () => {
+    setShowTutorial(false);
+    toast({
+      title: "Tutorial Complete!",
+      description: "You've learned how to conduct comprehensive risk assessments.",
+    });
   };
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
-    queryKey: ["/api/applications"],
+    queryKey: ["/api/applications-with-risk"],
+  });
+
+  // Risk assessment data query
+  const { data: riskAssessmentData } = useQuery({
+    queryKey: ['/api/risk-assessments', selectedService],
+    enabled: !!selectedService && editDialogOpen,
+  });
+
+  const saveRiskAssessmentMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('POST', '/api/risk-assessments', data),
+    onSuccess: () => {
+      // Invalidate all related queries to ensure data consistency
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-assessments'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/applications-with-risk'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/services-with-risk-scores'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/applications'] });
+      toast({
+        title: "Risk Assessment Saved",
+        description: "The risk assessment has been saved successfully.",
+      });
+    },
+    onError: (error) => {
+      console.error('Risk assessment save error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save risk assessment. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 
   const updateRiskScoreMutation = useMutation({
@@ -112,8 +154,9 @@ export default function RiskScoring() {
     setEditingId(app.id!);
     setEditingScore(app.riskScore);
     setEditingReason("");
+    setSelectedService(app.name);
     setEditDialogOpen(true);
-    // Reset form state
+    // Reset form state - will be populated from saved data if available
     setRiskFactors({
       dataClassification: "",
       phi: "",
@@ -126,6 +169,23 @@ export default function RiskScoring() {
       awareness: ""
     });
   };
+
+  // Effect to populate form with saved data when available
+  React.useEffect(() => {
+    if (riskAssessmentData && editDialogOpen) {
+      setRiskFactors({
+        dataClassification: riskAssessmentData.dataClassification || "",
+        phi: riskAssessmentData.phi || "",
+        eligibilityData: riskAssessmentData.eligibilityData || "",
+        confidentialityImpact: riskAssessmentData.confidentialityImpact || "",
+        integrityImpact: riskAssessmentData.integrityImpact || "",
+        availabilityImpact: riskAssessmentData.availabilityImpact || "",
+        publicEndpoint: riskAssessmentData.publicEndpoint || "",
+        discoverability: riskAssessmentData.discoverability || "",
+        awareness: riskAssessmentData.awareness || ""
+      });
+    }
+  }, [riskAssessmentData, editDialogOpen]);
 
   const isFormValid = () => {
     return (
@@ -142,7 +202,7 @@ export default function RiskScoring() {
   };
 
   const handleSave = () => {
-    if (!editingId) return;
+    if (!editingId || !selectedService) return;
     
     if (!isFormValid()) {
       toast({
@@ -154,11 +214,30 @@ export default function RiskScoring() {
     }
 
     const finalScore = calculateFinalRiskScore();
+    const dataClassificationScore = calculateDataClassificationScore();
+    const ciaTriadScore = calculateCIATriadScore();
+    const attackSurfaceScore = calculateAttackSurfaceScore();
+    const riskLevel = getRiskLevel(finalScore).level;
+
+    // Save to risk assessments table
+    const assessmentData = {
+      serviceName: selectedService,
+      ...riskFactors,
+      dataClassificationScore,
+      ciaTriadScore,
+      attackSurfaceScore,
+      finalRiskScore: finalScore,
+      riskLevel,
+      updatedBy: "admin" // TODO: Use actual logged-in user
+    };
+
+    saveRiskAssessmentMutation.mutate(assessmentData);
     
+    // Update application risk score
     updateRiskScoreMutation.mutate({
       id: editingId,
-      riskScore: finalScore,
-      reason: `Risk assessment completed: Data Classification: ${calculateDataClassificationScore()}, CIA Triad: ${calculateCIATriadScore()}, Attack Surface: ${calculateAttackSurfaceScore()}`
+      riskScore: finalScore.toString(),
+      reason: `Risk assessment completed: Data Classification: ${dataClassificationScore}, CIA Triad: ${ciaTriadScore}, Attack Surface: ${attackSurfaceScore}`
     });
   };
 
@@ -313,7 +392,7 @@ export default function RiskScoring() {
     return (
       <PageWrapper loadingMessage="Loading Risk Scoring...">
         <div className="min-h-screen bg-gray-50">
-          <Navigation onLogout={handleLogout} currentPage="risk-scoring" />
+          <Navigation onLogout={logout} currentPage="risk-scoring" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -329,19 +408,32 @@ export default function RiskScoring() {
   return (
     <PageWrapper loadingMessage="Loading Risk Scoring...">
       <div className="min-h-screen bg-gray-50">
-        <Navigation onLogout={handleLogout} currentPage="risk-scoring" />
+        <Navigation onLogout={logout} currentPage="risk-scoring" />
         
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Risk Scoring</h1>
-            <p className="mt-2 text-gray-600">
-              Security risk assessment and scoring management for all services
-            </p>
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 page-enter page-enter-active">
+          <div className="mb-8 stagger-item">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Risk Scoring</h1>
+                <p className="mt-2 text-gray-600">
+                  Security risk assessment and scoring management for all services
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleStartTutorial}
+                className="btn-smooth flex items-center gap-2"
+                data-tutorial="tutorial-button"
+              >
+                <HelpCircle className="h-4 w-4" />
+                Take Tutorial
+              </Button>
+            </div>
           </div>
 
           {/* Risk Level Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" data-tutorial="risk-metrics">
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -357,7 +449,7 @@ export default function RiskScoring() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -376,7 +468,7 @@ export default function RiskScoring() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -395,7 +487,7 @@ export default function RiskScoring() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -413,7 +505,7 @@ export default function RiskScoring() {
           </div>
 
           {/* Risk Scoring Table */}
-          <Card>
+          <Card className="stagger-item card-hover" data-tutorial="risk-table">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -426,7 +518,8 @@ export default function RiskScoring() {
                     placeholder="Search services..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 focus-smooth"
+                    data-tutorial="search-services"
                   />
                 </div>
               </div>
@@ -436,7 +529,7 @@ export default function RiskScoring() {
                 <TableHeader>
                   <TableRow>
                     <TableHead 
-                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      className="cursor-pointer hover:bg-gray-50 select-none btn-smooth"
                       onClick={() => handleSort("name")}
                     >
                       <div className="flex items-center gap-2">
@@ -448,7 +541,7 @@ export default function RiskScoring() {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      className="cursor-pointer hover:bg-gray-50 select-none btn-smooth"
                       onClick={() => handleSort("score")}
                     >
                       <div className="flex items-center gap-2">
@@ -460,7 +553,7 @@ export default function RiskScoring() {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      className="cursor-pointer hover:bg-gray-50 select-none btn-smooth"
                       onClick={() => handleSort("level")}
                     >
                       <div className="flex items-center gap-2">
@@ -478,12 +571,12 @@ export default function RiskScoring() {
                   {filteredAndSortedApplications.map((app) => {
                     const riskScore = parseFloat(app.riskScore);
                     const riskInfo = getRiskLevel(riskScore);
-                    const findings = JSON.parse(app.totalFindings);
+                    const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
                     const RiskIcon = riskInfo.icon;
                     const isEditing = editingId === app.id;
 
                     return (
-                      <TableRow key={app.id}>
+                      <TableRow key={app.id} className="stagger-item card-hover">
                         <TableCell className="font-medium">{app.name}</TableCell>
                         <TableCell>
                           <span className="text-lg font-semibold">{riskScore.toFixed(1)}</span>
@@ -501,6 +594,8 @@ export default function RiskScoring() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleEdit(app)}
+                            className="btn-smooth"
+                            data-tutorial="edit-assessment"
                           >
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
@@ -516,14 +611,14 @@ export default function RiskScoring() {
 
           {/* Risk Assessment Dialog */}
           <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto chart-enter">
               <DialogHeader>
                 <DialogTitle>Risk Assessment - {filteredAndSortedApplications.find(app => app.id === editingId)?.name}</DialogTitle>
               </DialogHeader>
               
               <div className="space-y-8">
                 {/* Data Classification Factors */}
-                <div className="space-y-4">
+                <div className="space-y-4" data-tutorial="data-classification">
                   <h3 className="text-lg font-semibold text-gray-900">Data Classification Factors</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -579,7 +674,7 @@ export default function RiskScoring() {
                 </div>
 
                 {/* CIA Triad */}
-                <div className="space-y-4">
+                <div className="space-y-4" data-tutorial="cia-triad">
                   <h3 className="text-lg font-semibold text-gray-900">CIA Triad</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -636,7 +731,7 @@ export default function RiskScoring() {
                 </div>
 
                 {/* Attack Surface Factors */}
-                <div className="space-y-4">
+                <div className="space-y-4" data-tutorial="attack-surface">
                   <h3 className="text-lg font-semibold text-gray-900">Attack Surface Factors</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -692,7 +787,7 @@ export default function RiskScoring() {
                 </div>
 
                 {/* Risk Scores */}
-                <div className="space-y-4">
+                <div className="space-y-4" data-tutorial="risk-calculation">
                   <h3 className="text-lg font-semibold text-gray-900">Risk Scores</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-blue-50 p-4 rounded-lg">
@@ -755,13 +850,13 @@ export default function RiskScoring() {
                 </div>
               </div>
 
-              <DialogFooter>
-                <Button variant="outline" onClick={handleCancel}>
+              <DialogFooter data-tutorial="save-assessment">
+                <Button variant="outline" onClick={handleCancel} className="btn-smooth">
                   Cancel
                 </Button>
                 <Button 
                   onClick={handleSave} 
-                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed btn-smooth"
                   disabled={!isFormValid() || updateRiskScoreMutation.isPending}
                 >
                   {updateRiskScoreMutation.isPending ? "Saving..." : "Save Assessment"}
@@ -769,6 +864,13 @@ export default function RiskScoring() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          
+          {/* Risk Scoring Tutorial */}
+          <RiskScoringTutorial
+            isOpen={showTutorial}
+            onClose={() => setShowTutorial(false)}
+            onComplete={handleCompleteTutorial}
+          />
         </div>
       </div>
     </PageWrapper>

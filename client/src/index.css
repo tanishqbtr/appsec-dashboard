@@ -70,7 +70,151 @@
   }
 }
 
+/* Smooth page transitions and micro-interactions */
 @layer utilities {
+  /* Page transition animations */
+  .page-enter {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .page-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 300ms ease-out, transform 300ms ease-out;
+  }
+  
+  .page-exit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .page-exit-active {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 200ms ease-in, transform 200ms ease-in;
+  }
+
+  /* Smooth card hover animations */
+  .card-hover {
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Button micro-interactions */
+  .btn-smooth {
+    transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .btn-smooth:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.15);
+  }
+  
+  .btn-smooth:active {
+    transform: translateY(0);
+    transition: transform 50ms;
+  }
+
+  /* Navigation smooth transitions */
+  .nav-item {
+    transition: all 200ms ease-out;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 500ms ease-out;
+  }
+  
+  .nav-item:hover::before {
+    left: 100%;
+  }
+
+  /* Staggered animation for lists */
+  .stagger-item {
+    animation: fadeInUp 400ms ease-out forwards;
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .stagger-item:nth-child(1) { animation-delay: 50ms; }
+  .stagger-item:nth-child(2) { animation-delay: 100ms; }
+  .stagger-item:nth-child(3) { animation-delay: 150ms; }
+  .stagger-item:nth-child(4) { animation-delay: 200ms; }
+  .stagger-item:nth-child(5) { animation-delay: 250ms; }
+  .stagger-item:nth-child(6) { animation-delay: 300ms; }
+  .stagger-item:nth-child(7) { animation-delay: 350ms; }
+  .stagger-item:nth-child(8) { animation-delay: 400ms; }
+
+  /* Smooth focus transitions */
+  .focus-smooth {
+    transition: all 200ms ease-out;
+  }
+  
+  .focus-smooth:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.5);
+    transform: scale(1.02);
+  }
+
+  /* Pulse animation for loading states */
+  .pulse-smooth {
+    animation: pulseSmooth 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Chart animation */
+  .chart-enter {
+    animation: chartFadeIn 600ms ease-out;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes pulseSmooth {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes chartFadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
   .bg-critical {
     background-color: var(--critical);
   }

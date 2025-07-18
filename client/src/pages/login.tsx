@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Shield } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import HingeLogo from "@/components/hinge-logo";
 
 export default function Login() {
@@ -28,6 +28,8 @@ export default function Login() {
       });
 
       if (response.ok) {
+        // Invalidate auth queries to trigger re-fetch
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         setLocation("/dashboards");
       }
     } catch (err) {
@@ -39,12 +41,12 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-primary py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-md w-full space-y-6">
         <div className="text-center">
           <div className="mx-auto flex items-center justify-center">
             <HingeLogo size="lg" />
           </div>
-          <h2 className="mt-1 text-3xl font-bold text-white">
+          <h2 className="mt-3 text-3xl font-bold text-white">
             Security Dashboard
           </h2>
           <p className="mt-2 text-sm text-gray-200">Sign in to your account</p>

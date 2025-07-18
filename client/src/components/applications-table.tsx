@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Application } from "@shared/schema";
 import * as XLSX from 'xlsx';
@@ -49,6 +49,26 @@ interface ApplicationsTableProps {
 }
 
 interface MendFindings {
+  id: number;
+  serviceName: string;
+  scanDate: string;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+}
+
+interface EscapeFindings {
+  id: number;
+  serviceName: string;
+  scanDate: string;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+}
+
+interface CrowdstrikeFindings {
   id: number;
   serviceName: string;
   scanDate: string;
@@ -108,6 +128,21 @@ function PercentileBadge({ percentile }: { percentile: number }) {
   );
 }
 
+// Helper function to calculate percentile based on total findings across all engines
+function calculatePercentileWithAllFindings(applications: Application[], app: Application, getAllServiceFindings: (serviceName: string) => FindingsData): number {
+  // Get total findings for this app across ALL engines
+  const appFindings = getAllServiceFindings(app.name);
+  const appTotal = appFindings.total;
+  
+  // Count how many applications have fewer total findings than this one
+  const appsWithFewerFindings = applications.filter(otherApp => {
+    const otherFindings = getAllServiceFindings(otherApp.name);
+    return otherFindings.total < appTotal;
+  }).length;
+  
+  return Math.round((appsWithFewerFindings / applications.length) * 100);
+}
+
 // Calculate percentile ranking based on risk score (since totalFindings is removed)
 function calculatePercentile(applications: Application[], currentApp: Application): number {
   const currentRiskScore = parseFloat(currentApp.riskScore);
@@ -127,7 +162,6 @@ function LoadingSkeleton() {
         <TableRow key={i}>
           <TableCell><Skeleton className="h-4 w-48" /></TableCell>
           <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
           <TableCell><Skeleton className="h-4 w-12" /></TableCell>
           <TableCell><Skeleton className="h-4 w-12" /></TableCell>
           <TableCell><Skeleton className="h-4 w-12" /></TableCell>
@@ -146,67 +180,213 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const [pageSize, setPageSize] = useState(20);
   const [, setLocation] = useLocation();
 
-  // Determine which Mend APIs to query based on selected labels
-  const getMendEndpoints = () => {
+  // Determine which APIs to query based on selected engine and labels
+  const getActiveEndpoints = () => {
     const endpoints: string[] = [];
+    
+    // Only query APIs if an engine is selected and has labels
     if (selectedEngine === "Mend" && selectedLabels.length > 0) {
       if (selectedLabels.includes("SCA")) endpoints.push("/api/mend/sca");
       if (selectedLabels.includes("SAST")) endpoints.push("/api/mend/sast");
       if (selectedLabels.includes("Containers")) endpoints.push("/api/mend/containers");
     }
+    
+    if (selectedEngine === "Escape" && selectedLabels.length > 0) {
+      if (selectedLabels.includes("Web Applications")) endpoints.push("/api/escape/webapps");
+      if (selectedLabels.includes("APIs")) endpoints.push("/api/escape/apis");
+    }
+    
+    if (selectedEngine === "Crowdstrike" && selectedLabels.length > 0) {
+      if (selectedLabels.includes("Images")) endpoints.push("/api/crowdstrike/images");
+      if (selectedLabels.includes("Containers")) endpoints.push("/api/crowdstrike/containers");
+    }
+    
     return endpoints;
   };
 
-  // Fetch Mend findings from multiple endpoints when multiple labels are selected
-  const mendEndpoints = getMendEndpoints();
+  // Fetch findings from multiple endpoints when multiple labels are selected
+  const activeEndpoints = getActiveEndpoints();
   
+  // Mend queries
   const scaQuery = useQuery<MendFindings[]>({
     queryKey: ["/api/mend/sca"],
-    enabled: mendEndpoints.includes("/api/mend/sca"),
+    enabled: activeEndpoints.includes("/api/mend/sca"),
   });
   
   const sastQuery = useQuery<MendFindings[]>({
     queryKey: ["/api/mend/sast"],
-    enabled: mendEndpoints.includes("/api/mend/sast"),
+    enabled: activeEndpoints.includes("/api/mend/sast"),
   });
   
   const containersQuery = useQuery<MendFindings[]>({
     queryKey: ["/api/mend/containers"],
-    enabled: mendEndpoints.includes("/api/mend/containers"),
+    enabled: activeEndpoints.includes("/api/mend/containers"),
   });
 
-  // Combine findings from all selected scan types
-  const combinedMendFindings = new Map<string, MendFindings>();
+  // Escape queries
+  const webAppsQuery = useQuery<EscapeFindings[]>({
+    queryKey: ["/api/escape/webapps"],
+    enabled: activeEndpoints.includes("/api/escape/webapps"),
+  });
   
-  // Helper function to add findings to the combined map
-  const addFindings = (findings: MendFindings[], scanType: string) => {
-    findings.forEach(finding => {
-      const existing = combinedMendFindings.get(finding.serviceName);
-      if (existing) {
-        // Sum the findings if service already exists
-        combinedMendFindings.set(finding.serviceName, {
-          ...existing,
-          critical: existing.critical + finding.critical,
-          high: existing.high + finding.high,
-          medium: existing.medium + finding.medium,
-          low: existing.low + finding.low,
-          scanDate: finding.scanDate > existing.scanDate ? finding.scanDate : existing.scanDate // Keep most recent date
-        });
-      } else {
-        // Add new service
-        combinedMendFindings.set(finding.serviceName, { ...finding });
-      }
-    });
-  };
+  const apisQuery = useQuery<EscapeFindings[]>({
+    queryKey: ["/api/escape/apis"],
+    enabled: activeEndpoints.includes("/api/escape/apis"),
+  });
 
-  // Add findings from each enabled query
-  if (scaQuery.data) addFindings(scaQuery.data, "SCA");
-  if (sastQuery.data) addFindings(sastQuery.data, "SAST");
-  if (containersQuery.data) addFindings(containersQuery.data, "Containers");
+  // Crowdstrike queries
+  const imagesQuery = useQuery<CrowdstrikeFindings[]>({
+    queryKey: ["/api/crowdstrike/images"],
+    enabled: activeEndpoints.includes("/api/crowdstrike/images"),
+  });
+  
+  const crowdstrikeContainersQuery = useQuery<CrowdstrikeFindings[]>({
+    queryKey: ["/api/crowdstrike/containers"],
+    enabled: activeEndpoints.includes("/api/crowdstrike/containers"),
+  });
 
-  // Function to get findings data for a service (now using combined findings)
-  const getServiceFindings = (serviceName: string): FindingsData => {
-    const combinedFinding = combinedMendFindings.get(serviceName);
+  // Combine findings from all selected scan types - rebuild fresh each time
+  const combinedFindings = useMemo(() => {
+    const findingsMap = new Map<string, MendFindings | EscapeFindings | CrowdstrikeFindings>();
+    
+    // Helper function to add findings to the combined map
+    const addFindings = (findings: (MendFindings | EscapeFindings | CrowdstrikeFindings)[], scanType: string) => {
+      findings.forEach(finding => {
+        const existing = findingsMap.get(finding.serviceName);
+        if (existing) {
+          // Sum the findings if service already exists
+          findingsMap.set(finding.serviceName, {
+            ...existing,
+            critical: existing.critical + finding.critical,
+            high: existing.high + finding.high,
+            medium: existing.medium + finding.medium,
+            low: existing.low + finding.low,
+            scanDate: finding.scanDate > existing.scanDate ? finding.scanDate : existing.scanDate // Keep most recent date
+          });
+        } else {
+          // Add new service
+          findingsMap.set(finding.serviceName, { ...finding });
+        }
+      });
+    };
+
+    // Add findings from each enabled query - only add if query is enabled and has data
+    if (activeEndpoints.includes("/api/mend/sca") && scaQuery.data) {
+      addFindings(scaQuery.data, "SCA");
+    }
+    if (activeEndpoints.includes("/api/mend/sast") && sastQuery.data) {
+      addFindings(sastQuery.data, "SAST");
+    }
+    if (activeEndpoints.includes("/api/mend/containers") && containersQuery.data) {
+      addFindings(containersQuery.data, "Containers");
+    }
+    if (activeEndpoints.includes("/api/escape/webapps") && webAppsQuery.data) {
+      addFindings(webAppsQuery.data, "Web Applications");
+    }
+    if (activeEndpoints.includes("/api/escape/apis") && apisQuery.data) {
+      addFindings(apisQuery.data, "APIs");
+    }
+    if (activeEndpoints.includes("/api/crowdstrike/images") && imagesQuery.data) {
+      addFindings(imagesQuery.data, "Images");
+    }
+    if (activeEndpoints.includes("/api/crowdstrike/containers") && crowdstrikeContainersQuery.data) {
+      addFindings(crowdstrikeContainersQuery.data, "Crowdstrike Containers");
+    }
+    
+    return findingsMap;
+  }, [
+    activeEndpoints, 
+    scaQuery.data, 
+    sastQuery.data, 
+    containersQuery.data, 
+    webAppsQuery.data, 
+    apisQuery.data, 
+    imagesQuery.data, 
+    crowdstrikeContainersQuery.data
+  ]);
+
+  // Always fetch all findings data for percentile calculation (regardless of selection)
+  const allScaQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/sca"],
+  });
+  
+  const allSastQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/sast"],
+  });
+  
+  const allMendContainersQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/containers"],
+  });
+
+  const allWebAppsQuery = useQuery<EscapeFindings[]>({
+    queryKey: ["/api/escape/webapps"],
+  });
+  
+  const allApisQuery = useQuery<EscapeFindings[]>({
+    queryKey: ["/api/escape/apis"],
+  });
+
+  const allImagesQuery = useQuery<CrowdstrikeFindings[]>({
+    queryKey: ["/api/crowdstrike/images"],
+  });
+  
+  const allCrowdstrikeContainersQuery = useQuery<CrowdstrikeFindings[]>({
+    queryKey: ["/api/crowdstrike/containers"],
+  });
+
+  // Check if any queries are loading
+  const isLoadingFindings = scaQuery.isLoading || sastQuery.isLoading || containersQuery.isLoading || 
+                           webAppsQuery.isLoading || apisQuery.isLoading || imagesQuery.isLoading || 
+                           crowdstrikeContainersQuery.isLoading;
+
+  // Create a combined map of ALL findings for percentile calculation (independent of selection)
+  const allCombinedFindings = useMemo(() => {
+    const findingsMap = new Map<string, MendFindings | EscapeFindings | CrowdstrikeFindings>();
+    
+    // Helper function to add findings to the combined map
+    const addFindings = (findings: (MendFindings | EscapeFindings | CrowdstrikeFindings)[], scanType: string) => {
+      findings.forEach(finding => {
+        const existing = findingsMap.get(finding.serviceName);
+        if (existing) {
+          // Sum the findings if service already exists
+          findingsMap.set(finding.serviceName, {
+            ...existing,
+            critical: existing.critical + finding.critical,
+            high: existing.high + finding.high,
+            medium: existing.medium + finding.medium,
+            low: existing.low + finding.low,
+            scanDate: finding.scanDate > existing.scanDate ? finding.scanDate : existing.scanDate
+          });
+        } else {
+          // Add new service
+          findingsMap.set(finding.serviceName, { ...finding });
+        }
+      });
+    };
+
+    // Add findings from ALL engines (for percentile calculation)
+    if (allScaQuery.data) addFindings(allScaQuery.data, "SCA");
+    if (allSastQuery.data) addFindings(allSastQuery.data, "SAST");
+    if (allMendContainersQuery.data) addFindings(allMendContainersQuery.data, "Mend Containers");
+    if (allWebAppsQuery.data) addFindings(allWebAppsQuery.data, "Web Applications");
+    if (allApisQuery.data) addFindings(allApisQuery.data, "APIs");
+    if (allImagesQuery.data) addFindings(allImagesQuery.data, "Images");
+    if (allCrowdstrikeContainersQuery.data) addFindings(allCrowdstrikeContainersQuery.data, "Crowdstrike Containers");
+    
+    return findingsMap;
+  }, [
+    allScaQuery.data, 
+    allSastQuery.data, 
+    allMendContainersQuery.data, 
+    allWebAppsQuery.data, 
+    allApisQuery.data, 
+    allImagesQuery.data, 
+    allCrowdstrikeContainersQuery.data
+  ]);
+
+  // Function to get ALL findings data for a service (for percentile calculation)
+  const getAllServiceFindings = (serviceName: string): FindingsData => {
+    const combinedFinding = allCombinedFindings.get(serviceName);
     if (combinedFinding) {
       return {
         total: combinedFinding.critical + combinedFinding.high + combinedFinding.medium + combinedFinding.low,
@@ -216,7 +396,25 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         L: combinedFinding.low
       };
     }
-    // Return zeros if no findings found
+    return { total: 0, C: 0, H: 0, M: 0, L: 0 };
+  };
+
+  // Function to get findings data for a service (now using combined findings)
+  const getServiceFindings = (serviceName: string): FindingsData => {
+    // Only show findings if we have an active scan engine with selected labels
+    if ((selectedEngine === "Mend" || selectedEngine === "Escape" || selectedEngine === "Crowdstrike") && selectedLabels.length > 0) {
+      const combinedFinding = combinedFindings.get(serviceName);
+      if (combinedFinding) {
+        return {
+          total: combinedFinding.critical + combinedFinding.high + combinedFinding.medium + combinedFinding.low,
+          C: combinedFinding.critical,
+          H: combinedFinding.high,
+          M: combinedFinding.medium,
+          L: combinedFinding.low
+        };
+      }
+    }
+    // Return zeros if no engine/labels selected or no findings found
     return { total: 0, C: 0, H: 0, M: 0, L: 0 };
   };
 
@@ -274,8 +472,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         bValue = bLow.L;
         break;
       case 'percentile':
-        aValue = calculatePercentile(applications, a);
-        bValue = calculatePercentile(applications, b);
+        aValue = calculatePercentileWithAllFindings(applications, a, getAllServiceFindings);
+        bValue = calculatePercentileWithAllFindings(applications, b, getAllServiceFindings);
         break;
       default:
         return 0;
@@ -323,16 +521,14 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   };
 
   const exportToCSV = () => {
-    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
+    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const csvData = sortedApplications.map(app => {
       // Get findings from Mend data if available
       const findings = getServiceFindings(app.name);
-      const percentile = calculatePercentile(applications, app);
       return [
         app.name,
         app.riskScore,
         findings.total,
-        `${Math.round(percentile)}%`,
         findings.C,
         findings.H,
         findings.M,
@@ -355,16 +551,14 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   };
 
   const exportToXLSX = () => {
-    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
+    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const data = sortedApplications.map(app => {
       // Get findings from Mend data if available
       const findings = getServiceFindings(app.name);
-      const percentile = calculatePercentile(applications, app);
       return [
         app.name,
         app.riskScore,
         findings.total,
-        `${Math.round(percentile)}%`,
         findings.C,
         findings.H,
         findings.M,
@@ -398,16 +592,14 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     doc.setFontSize(10);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
 
-    const headers = [['Service Name', 'Risk Score', 'Total', 'Percentile', 'Critical', 'High', 'Medium', 'Low', 'Tags']];
+    const headers = [['Service Name', 'Risk Score', 'Total', 'Critical', 'High', 'Medium', 'Low', 'Tags']];
     const data = sortedApplications.map(app => {
       // Get findings from Mend data if available
       const findings = getServiceFindings(app.name);
-      const percentile = calculatePercentile(applications, app);
       return [
         app.name,
         app.riskScore,
         findings.total.toString(),
-        `${Math.round(percentile)}%`,
         findings.C.toString(),
         findings.H.toString(),
         findings.M.toString(),
@@ -426,12 +618,11 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         0: { cellWidth: 35 },
         1: { cellWidth: 15 },
         2: { cellWidth: 12 },
-        3: { cellWidth: 15 },
+        3: { cellWidth: 12 },
         4: { cellWidth: 12 },
         5: { cellWidth: 12 },
         6: { cellWidth: 12 },
-        7: { cellWidth: 12 },
-        8: { cellWidth: 25 }
+        7: { cellWidth: 25 }
       }
     });
 
@@ -462,20 +653,14 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-10"
+            data-tutorial="search-bar"
           />
         </div>
         
         <div className="flex gap-2">
-          <Link href="/manage-applications">
-            <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" data-tutorial-target="manage-services-button">
-              <Settings className="h-4 w-4 mr-1" />
-              Manage Services
-            </Button>
-          </Link>
-          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" data-tutorial-target="export-button">
+              <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" data-tutorial="export-controls">
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
@@ -501,11 +686,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
             <TableRow className="bg-gray-50">
               <SortableHeader field="name">Service Name</SortableHeader>
               <SortableHeader field="riskScore">Risk Score</SortableHeader>
-              <SortableHeader field="percentile">
-                <div data-tutorial-target="percentile-column">
-                  Percentile
-                </div>
-              </SortableHeader>
+
               <SortableHeader field="totalFindings">Total Findings</SortableHeader>
               <SortableHeader field="criticalFindings">Critical Findings</SortableHeader>
               <SortableHeader field="highFindings">High Findings</SortableHeader>
@@ -519,17 +700,41 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
           <TableBody>
             {isLoading ? (
               <LoadingSkeleton />
+            ) : isLoadingFindings && selectedEngine && selectedLabels.length > 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="h-24 text-center">
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                    <span className="text-gray-600">Loading findings data...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : !selectedEngine || selectedLabels.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="h-24 text-center">
+                  <div className="text-gray-500">
+                    <div className="text-lg font-medium mb-2">Select a scan engine and labels to view data</div>
+                    <div className="text-sm">Choose from Mend, Escape, or Crowdstrike engines and their respective labels</div>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : paginatedApplications.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="h-24 text-center">
+                  No applications found matching your criteria.
+                </TableCell>
+              </TableRow>
             ) : (
               paginatedApplications.map((app, index) => {
                 // Get findings from Mend data if available, otherwise use defaults
                 const totalFindings: FindingsData = getServiceFindings(app.name);
-                const percentile = calculatePercentile(applications, app);
+
                 
                 return (
                   <TableRow 
                     key={app.id} 
                     className="hover:bg-green-50 cursor-pointer transition-all duration-200 hover:shadow-sm"
-                    onClick={() => setLocation(`/services/${app.id}`)}
+                    onClick={() => setLocation(`/service/${app.id}`)}
                     data-tutorial-target={index === 0 ? "service-row" : undefined}
                   >
                     <TableCell>
@@ -543,9 +748,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                     <TableCell>
                       <div className="text-sm font-bold text-orange-600">{app.riskScore}</div>
                     </TableCell>
-                    <TableCell>
-                      <PercentileBadge percentile={percentile} />
-                    </TableCell>
+
                     <TableCell>
                       <div className="text-sm font-medium text-gray-900">{totalFindings.total}</div>
                     </TableCell>

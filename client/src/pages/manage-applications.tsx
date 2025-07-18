@@ -25,6 +25,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import type { Application } from "@shared/schema";
 
 interface NewApplication {
@@ -43,6 +44,7 @@ interface NewApplication {
 
 export default function ManageApplications() {
   const { toast } = useToast();
+  const { logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newApp, setNewApp] = useState<NewApplication>({
@@ -59,11 +61,6 @@ export default function ManageApplications() {
     labels: []
   });
   const [labelInput, setLabelInput] = useState("");
-
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    window.location.href = "/login";
-  };
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["/api/applications"],
@@ -194,7 +191,7 @@ export default function ManageApplications() {
     return (
       <PageWrapper loadingMessage="Loading Applications...">
         <div className="min-h-screen bg-gray-50">
-          <Navigation onLogout={handleLogout} currentPage="services" />
+          <Navigation onLogout={logout} currentPage="services" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
@@ -209,7 +206,7 @@ export default function ManageApplications() {
   return (
     <PageWrapper loadingMessage="Loading Applications...">
       <div className="min-h-screen bg-gray-50">
-        <Navigation onLogout={handleLogout} currentPage="services" />
+        <Navigation onLogout={logout} currentPage="services" />
         
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
