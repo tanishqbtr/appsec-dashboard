@@ -99,11 +99,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete application endpoint (Note: Not implemented for database storage, would need additional method)
+  // Delete application endpoint
   app.delete("/api/applications/:id", async (req, res) => {
     try {
-      res.status(501).json({ message: "Delete operation not implemented for persistent storage" });
+      const { id } = req.params;
+      
+      const storage = await getStorage();
+      const success = await storage.deleteApplication(parseInt(id));
+      
+      if (!success) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+      
+      res.json({ success: true, message: "Application deleted successfully" });
     } catch (error) {
+      console.error("Delete application error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
