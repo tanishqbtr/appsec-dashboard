@@ -116,6 +116,10 @@ export default function Dashboards() {
     queryKey: ["/api/applications"],
   });
 
+  const { data: dashboardMetrics, isLoading: isMetricsLoading } = useQuery({
+    queryKey: ["/api/dashboard/metrics"],
+  });
+
   const analytics = processAnalyticsData(applications);
 
   // Weekly trend data - simulate 7 days of findings by severity
@@ -157,14 +161,14 @@ export default function Dashboards() {
     
     // Key metrics
     doc.text('Key Metrics', 20, 70);
-    doc.text(`Total Applications: ${applications.length}`, 30, 85);
-    doc.text(`Critical Findings: ${applications.reduce((sum, app) => sum + (app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings).C : 0), 0)}`, 30, 95);
-    doc.text(`Average Risk Score: ${(applications.reduce((sum, app) => sum + parseFloat(app.riskScore), 0) / applications.length).toFixed(1)}`, 30, 105);
+    doc.text(`Total Applications: ${totalApplications}`, 30, 85);
+    doc.text(`Critical Findings: ${criticalFindings}`, 30, 95);
+    doc.text(`Average Risk Score: ${averageRiskScore}`, 30, 105);
     
     doc.save(`Dashboard_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
-  if (isLoading) {
+  if (isLoading || isMetricsLoading) {
     return (
       <PageWrapper loadingMessage="Loading Dashboard...">
         <div className="min-h-screen bg-gray-50">
@@ -185,10 +189,11 @@ export default function Dashboards() {
     );
   }
 
-  const totalFindings = applications.reduce((sum, app) => sum + (app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings).total : 0), 0);
-  const criticalFindings = applications.reduce((sum, app) => sum + (app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings).C : 0), 0);
-  const highFindings = applications.reduce((sum, app) => sum + (app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings).H : 0), 0);
-  const averageRiskScore = applications.length > 0 ? (applications.reduce((sum, app) => sum + parseFloat(app.riskScore), 0) / applications.length) : 0;
+  // Use metrics from API or fallback to calculated values
+  const totalApplications = dashboardMetrics?.totalApplications ?? applications.length;
+  const criticalFindings = dashboardMetrics?.criticalFindings ?? 0;
+  const highFindings = dashboardMetrics?.highFindings ?? 0;
+  const averageRiskScore = dashboardMetrics?.averageRiskScore ?? 0;
 
   return (
     <PageWrapper loadingMessage="Loading Dashboard...">
@@ -213,7 +218,7 @@ export default function Dashboards() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Total Applications</p>
-                    <p className="text-3xl font-bold text-gray-900">{applications.length}</p>
+                    <p className="text-3xl font-bold text-gray-900">{totalApplications}</p>
                     <p className="text-sm text-green-600">+2 this week</p>
                   </div>
                   <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -258,7 +263,7 @@ export default function Dashboards() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-gray-600">Avg Risk Score</p>
-                    <p className="text-3xl font-bold text-orange-600">{averageRiskScore.toFixed(1)}</p>
+                    <p className="text-3xl font-bold text-orange-600">{averageRiskScore}</p>
                     <p className="text-sm text-orange-600">Medium risk level</p>
                   </div>
                   <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
@@ -469,7 +474,7 @@ export default function Dashboards() {
                         <p className="text-sm text-gray-600">Across all applications</p>
                       </div>
                     </div>
-                    <span className="text-2xl font-bold text-blue-600">{totalFindings}</span>
+                    <span className="text-2xl font-bold text-blue-600">{criticalFindings + highFindings}</span>
                   </div>
 
                   <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">

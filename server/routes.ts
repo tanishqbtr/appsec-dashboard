@@ -355,6 +355,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Dashboard metrics endpoint
+  app.get("/api/dashboard/metrics", async (req, res) => {
+    try {
+      const storage = await getStorage();
+      
+      // Get all applications
+      const applications = await storage.getApplications();
+      const totalApplications = applications.length;
+      
+      // Get all findings from all scan engines
+      const [
+        mendScaFindings,
+        mendSastFindings, 
+        mendContainersFindings,
+        escapeWebAppsFindings,
+        escapeApisFindings,
+        crowdstrikeImagesFindings,
+        crowdstrikeContainersFindings
+      ] = await Promise.all([
+        storage.getMendScaFindings(),
+        storage.getMendSastFindings(),
+        storage.getMendContainersFindings(),
+        storage.getEscapeWebAppsFindings(),
+        storage.getEscapeApisFindings(),
+        storage.getCrowdstrikeImagesFindings(),
+        storage.getCrowdstrikeContainersFindings()
+      ]);
+      
+      // Calculate total critical and high findings across all engines
+      const allFindings = [
+        ...mendScaFindings,
+        ...mendSastFindings,
+        ...mendContainersFindings,
+        ...escapeWebAppsFindings,
+        ...escapeApisFindings,
+        ...crowdstrikeImagesFindings,
+        ...crowdstrikeContainersFindings
+      ];
+      
+      const criticalFindings = allFindings.reduce((sum, finding) => sum + (finding.critical || 0), 0);
+      const highFindings = allFindings.reduce((sum, finding) => sum + (finding.high || 0), 0);
+      
+      // Get risk assessments for average risk score
+      const riskAssessments = await storage.getAllRiskAssessments();
+      const averageRiskScore = riskAssessments.length > 0 
+        ? riskAssessments.reduce((sum, assessment) => sum + (assessment.finalRiskScore || 0), 0) / riskAssessments.length
+        : 0;
+      
+      const metrics = {
+        totalApplications,
+        criticalFindings,
+        highFindings,
+        averageRiskScore: Number(averageRiskScore.toFixed(1))
+      };
+      
+      res.json(metrics);
+    } catch (error) {
+      console.error("Dashboard metrics error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
