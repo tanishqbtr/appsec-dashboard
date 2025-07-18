@@ -108,6 +108,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Mend findings endpoints
+  app.get("/api/mend/sca", requireAuth, async (req, res) => {
+    try {
+      const { serviceName } = req.query;
+      const storage = await getStorage();
+      const findings = await storage.getMendScaFindings(serviceName as string);
+      res.json(findings);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mend/sast", requireAuth, async (req, res) => {
+    try {
+      const { serviceName } = req.query;
+      const storage = await getStorage();
+      const findings = await storage.getMendSastFindings(serviceName as string);
+      res.json(findings);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mend/containers", requireAuth, async (req, res) => {
+    try {
+      const { serviceName } = req.query;
+      const storage = await getStorage();
+      const findings = await storage.getMendContainersFindings(serviceName as string);
+      res.json(findings);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
