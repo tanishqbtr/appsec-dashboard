@@ -55,7 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get applications endpoint
-  app.get("/api/applications", requireAuth, async (req, res) => {
+  app.get("/api/applications", async (req, res) => {
     try {
       const storage = await getStorage();
       const applications = await storage.getApplications();
@@ -66,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update application endpoint
-  app.patch("/api/applications/:id", requireAuth, async (req, res) => {
+  app.patch("/api/applications/:id", async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -86,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add application endpoint
-  app.post("/api/applications", requireAuth, async (req, res) => {
+  app.post("/api/applications", async (req, res) => {
     try {
       const newApplication = req.body;
       
@@ -100,9 +100,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete application endpoint (Note: Not implemented for database storage, would need additional method)
-  app.delete("/api/applications/:id", requireAuth, async (req, res) => {
+  app.delete("/api/applications/:id", async (req, res) => {
     try {
       res.status(501).json({ message: "Delete operation not implemented for persistent storage" });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Mend findings endpoints
+  app.get("/api/mend/sca", async (req, res) => {
+    try {
+      const { serviceName } = req.query;
+      const storage = await getStorage();
+      const findings = await storage.getMendScaFindings(serviceName as string);
+      res.json(findings);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mend/sast", async (req, res) => {
+    try {
+      const { serviceName } = req.query;
+      const storage = await getStorage();
+      const findings = await storage.getMendSastFindings(serviceName as string);
+      res.json(findings);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/mend/containers", async (req, res) => {
+    try {
+      const { serviceName } = req.query;
+      const storage = await getStorage();
+      const findings = await storage.getMendContainersFindings(serviceName as string);
+      res.json(findings);
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }

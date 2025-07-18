@@ -18,7 +18,6 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboards} />
-      <Route path="/login" component={Login} />
       <Route path="/dashboard" component={Dashboards} />
       <Route path="/services" component={Services} />
       <Route path="/services/:id" component={ServiceDetail} />

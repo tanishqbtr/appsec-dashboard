@@ -1,6 +1,22 @@
-import { users, applications, type User, type InsertUser, type Application, type InsertApplication } from "@shared/schema";
+import { 
+  users, 
+  applications, 
+  mendScaFindings, 
+  mendSastFindings, 
+  mendContainersFindings,
+  type User, 
+  type InsertUser, 
+  type Application, 
+  type InsertApplication,
+  type MendScaFinding,
+  type InsertMendScaFinding,
+  type MendSastFinding,
+  type InsertMendSastFinding,
+  type MendContainersFinding,
+  type InsertMendContainersFinding
+} from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -10,6 +26,13 @@ export interface IStorage {
   getApplication(id: number): Promise<Application | undefined>;
   createApplication(application: InsertApplication): Promise<Application>;
   updateApplication(id: number, updates: Partial<Application>): Promise<Application | undefined>;
+  // Mend findings methods
+  getMendScaFindings(serviceName?: string): Promise<MendScaFinding[]>;
+  getMendSastFindings(serviceName?: string): Promise<MendSastFinding[]>;
+  getMendContainersFindings(serviceName?: string): Promise<MendContainersFinding[]>;
+  createMendScaFinding(finding: InsertMendScaFinding): Promise<MendScaFinding>;
+  createMendSastFinding(finding: InsertMendSastFinding): Promise<MendSastFinding>;
+  createMendContainersFinding(finding: InsertMendContainersFinding): Promise<MendContainersFinding>;
 }
 
 export class MemStorage implements IStorage {
@@ -306,6 +329,31 @@ export class MemStorage implements IStorage {
     this.applications.set(id, updatedApplication);
     return updatedApplication;
   }
+
+  // Mend findings methods (stub implementations for MemStorage)
+  async getMendScaFindings(serviceName?: string): Promise<MendScaFinding[]> {
+    return [];
+  }
+
+  async getMendSastFindings(serviceName?: string): Promise<MendSastFinding[]> {
+    return [];
+  }
+
+  async getMendContainersFindings(serviceName?: string): Promise<MendContainersFinding[]> {
+    return [];
+  }
+
+  async createMendScaFinding(finding: InsertMendScaFinding): Promise<MendScaFinding> {
+    throw new Error("Mend findings not supported in memory storage");
+  }
+
+  async createMendSastFinding(finding: InsertMendSastFinding): Promise<MendSastFinding> {
+    throw new Error("Mend findings not supported in memory storage");
+  }
+
+  async createMendContainersFinding(finding: InsertMendContainersFinding): Promise<MendContainersFinding> {
+    throw new Error("Mend findings not supported in memory storage");
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -352,6 +400,85 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return updatedApplication || undefined;
   }
+
+  // Mend findings methods - simplified since each service has only one record
+  async getMendScaFindings(serviceName?: string): Promise<MendScaFinding[]> {
+    if (serviceName) {
+      return await db.select().from(mendScaFindings)
+        .where(eq(mendScaFindings.serviceName, serviceName));
+    }
+    return await db.select().from(mendScaFindings);
+  }
+
+  async getMendSastFindings(serviceName?: string): Promise<MendSastFinding[]> {
+    if (serviceName) {
+      return await db.select().from(mendSastFindings)
+        .where(eq(mendSastFindings.serviceName, serviceName));
+    }
+    return await db.select().from(mendSastFindings);
+  }
+
+  async getMendContainersFindings(serviceName?: string): Promise<MendContainersFinding[]> {
+    if (serviceName) {
+      return await db.select().from(mendContainersFindings)
+        .where(eq(mendContainersFindings.serviceName, serviceName));
+    }
+    return await db.select().from(mendContainersFindings);
+  }
+
+  async createMendScaFinding(finding: InsertMendScaFinding): Promise<MendScaFinding> {
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(mendScaFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: mendScaFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
+    return created;
+  }
+
+  async createMendSastFinding(finding: InsertMendSastFinding): Promise<MendSastFinding> {
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(mendSastFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: mendSastFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
+    return created;
+  }
+
+  async createMendContainersFinding(finding: InsertMendContainersFinding): Promise<MendContainersFinding> {
+    // Use upsert to overwrite existing data for the same service
+    const [created] = await db.insert(mendContainersFindings)
+      .values(finding)
+      .onConflictDoUpdate({
+        target: mendContainersFindings.serviceName,
+        set: {
+          scanDate: finding.scanDate,
+          critical: finding.critical,
+          high: finding.high,
+          medium: finding.medium,
+          low: finding.low
+        }
+      })
+      .returning();
+    return created;
+  }
 }
 
 // Initialize storage - try database first, fallback to memory if database fails
@@ -388,11 +515,9 @@ async function seedApplications(storage: DatabaseStorage) {
     {
       name: 'Hinge Health Web Portal',
       riskScore: '0.0',
-      totalFindings: JSON.stringify({ total: 372, C: 56, H: 192, M: 95, L: 29 }),
       labels: ['SCA', 'SAST'],
       tags: ['HITRUST', 'SOC 2'],
       hasAlert: false,
-      scanEngine: 'Mend',
       githubRepo: 'https://github.com/hingehealth/web-portal',
       jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/WEB',
       serviceOwner: 'Sarah Chen (Frontend Team Lead)',
@@ -402,11 +527,9 @@ async function seedApplications(storage: DatabaseStorage) {
     {
       name: 'Payment Processing API',
       riskScore: '0.0',
-      totalFindings: JSON.stringify({ total: 23, C: 0, H: 0, M: 12, L: 11 }),
       labels: ['SAST'],
       tags: ['PCI DSS', 'SOC 2'],
       hasAlert: false,
-      scanEngine: 'Checkmarx',
       githubRepo: 'https://github.com/hingehealth/payment-api',
       jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/PAY',
       serviceOwner: 'Michael Rodriguez (Backend Team Lead)',
@@ -416,11 +539,9 @@ async function seedApplications(storage: DatabaseStorage) {
     {
       name: 'User Authentication Service',
       riskScore: '0.0',
-      totalFindings: JSON.stringify({ total: 156, C: 12, H: 34, M: 67, L: 43 }),
       labels: ['SAST', 'DAST'],
       tags: ['HITRUST', 'SOC 2'],
       hasAlert: true,
-      scanEngine: 'Veracode',
       githubRepo: 'https://github.com/hingehealth/auth-service',
       jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/AUTH',
       serviceOwner: 'Jessica Park (Security Team Lead)',
@@ -430,11 +551,9 @@ async function seedApplications(storage: DatabaseStorage) {
     {
       name: 'Data Analytics Platform',
       riskScore: '0.0',
-      totalFindings: JSON.stringify({ total: 284, C: 8, H: 45, M: 156, L: 75 }),
       labels: ['SCA', 'SAST', 'DAST'],
       tags: ['HIPAA', 'SOC 2'],
       hasAlert: false,
-      scanEngine: 'Snyk',
       githubRepo: 'https://github.com/hingehealth/analytics-platform',
       jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/ANLY',
       serviceOwner: 'David Kim (Data Engineering Lead)',
@@ -444,11 +563,9 @@ async function seedApplications(storage: DatabaseStorage) {
     {
       name: 'Mobile Application Backend',
       riskScore: '0.0',
-      totalFindings: JSON.stringify({ total: 198, C: 15, H: 62, M: 89, L: 32 }),
       labels: ['SAST', 'DAST'],
       tags: ['HITRUST', 'HIPAA'],
       hasAlert: true,
-      scanEngine: 'Veracode',
       githubRepo: 'https://github.com/hingehealth/mobile-backend',
       jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/MOB',
       serviceOwner: 'Emily Rodriguez (Mobile Team Lead)',
@@ -458,11 +575,9 @@ async function seedApplications(storage: DatabaseStorage) {
     {
       name: 'Notification Service',
       riskScore: '0.0',
-      totalFindings: JSON.stringify({ total: 89, C: 2, H: 18, M: 45, L: 24 }),
       labels: ['SCA', 'SAST'],
       tags: ['SOC 2'],
       hasAlert: false,
-      scanEngine: 'Checkmarx',
       githubRepo: 'https://github.com/hingehealth/notification-service',
       jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/NOTIF',
       serviceOwner: 'Alex Thompson (Platform Team)',
@@ -472,11 +587,9 @@ async function seedApplications(storage: DatabaseStorage) {
     {
       name: 'File Storage Service',
       riskScore: '0.0',
-      totalFindings: JSON.stringify({ total: 127, C: 5, H: 28, M: 67, L: 27 }),
       labels: ['SCA', 'DAST'],
       tags: ['HIPAA', 'SOC 2'],
       hasAlert: false,
-      scanEngine: 'Mend',
       githubRepo: 'https://github.com/hingehealth/file-storage',
       jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/FILE',
       serviceOwner: 'Marcus Johnson (Infrastructure Team)',
@@ -486,11 +599,9 @@ async function seedApplications(storage: DatabaseStorage) {
     {
       name: 'Exercise Video Platform',
       riskScore: '0.0',
-      totalFindings: JSON.stringify({ total: 312, C: 22, H: 89, M: 134, L: 67 }),
       labels: ['SCA', 'SAST', 'DAST'],
       tags: ['HITRUST', 'SOC 2'],
       hasAlert: true,
-      scanEngine: 'Snyk',
       githubRepo: 'https://github.com/hingehealth/video-platform',
       jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/VID',
       serviceOwner: 'Rachel Green (Content Team Lead)',
@@ -500,11 +611,9 @@ async function seedApplications(storage: DatabaseStorage) {
     {
       name: 'Shipment Tracking Service',
       riskScore: '0.0',
-      totalFindings: JSON.stringify({ total: 76, C: 1, H: 12, M: 38, L: 25 }),
       labels: ['SAST'],
       tags: ['SOC 2'],
       hasAlert: false,
-      scanEngine: 'Checkmarx',
       githubRepo: 'https://github.com/hingehealth/shipment-tracking',
       jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/SHIP',
       serviceOwner: 'Tom Wilson (Logistics Team)',
@@ -514,11 +623,9 @@ async function seedApplications(storage: DatabaseStorage) {
     {
       name: 'Telemedicine Platform',
       riskScore: '0.0',
-      totalFindings: JSON.stringify({ total: 445, C: 34, H: 128, M: 189, L: 94 }),
       labels: ['SCA', 'SAST', 'DAST'],
       tags: ['HIPAA', 'HITRUST', 'SOC 2'],
       hasAlert: true,
-      scanEngine: 'Veracode',
       githubRepo: 'https://github.com/hingehealth/telemedicine',
       jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/TELE',
       serviceOwner: 'Dr. Lisa Anderson (Clinical Technology)',
@@ -529,6 +636,50 @@ async function seedApplications(storage: DatabaseStorage) {
 
   for (const app of mockApplications) {
     await storage.createApplication(app);
+  }
+
+  // Seed Mend findings data
+  await seedMendFindings(storage);
+}
+
+async function seedMendFindings(storage: DatabaseStorage) {
+  // Mend SCA findings
+  const scaFindings = [
+    { serviceName: 'Hinge Health Web Portal', scanDate: '2025-07-16', critical: 56, high: 192, medium: 95, low: 29 },
+    { serviceName: 'Data Analytics Platform', scanDate: '2025-07-16', critical: 8, high: 45, medium: 156, low: 75 },
+    { serviceName: 'Notification Service', scanDate: '2025-07-16', critical: 2, high: 18, medium: 45, low: 24 },
+    { serviceName: 'File Storage Service', scanDate: '2025-07-15', critical: 5, high: 28, medium: 67, low: 27 },
+    { serviceName: 'Exercise Video Platform', scanDate: '2025-07-16', critical: 22, high: 89, medium: 134, low: 67 },
+    { serviceName: 'Telemedicine Platform', scanDate: '2025-07-16', critical: 34, high: 128, medium: 189, low: 94 },
+  ];
+
+  // Mend SAST findings
+  const sastFindings = [
+    { serviceName: 'Hinge Health Web Portal', scanDate: '2025-07-16', critical: 12, high: 45, medium: 67, low: 23 },
+    { serviceName: 'Data Analytics Platform', scanDate: '2025-07-16', critical: 3, high: 15, medium: 42, low: 18 },
+    { serviceName: 'Notification Service', scanDate: '2025-07-16', critical: 1, high: 8, medium: 22, low: 12 },
+    { serviceName: 'Exercise Video Platform', scanDate: '2025-07-16', critical: 8, high: 28, medium: 45, low: 19 },
+    { serviceName: 'Telemedicine Platform', scanDate: '2025-07-16', critical: 15, high: 52, medium: 78, low: 31 },
+  ];
+
+  // Mend Containers findings
+  const containersFindings = [
+    { serviceName: 'Data Analytics Platform', scanDate: '2025-07-16', critical: 2, high: 12, medium: 28, low: 15 },
+    { serviceName: 'Exercise Video Platform', scanDate: '2025-07-16', critical: 4, high: 18, medium: 35, low: 22 },
+    { serviceName: 'Telemedicine Platform', scanDate: '2025-07-16', critical: 6, high: 24, medium: 42, low: 18 },
+  ];
+
+  // Insert findings
+  for (const finding of scaFindings) {
+    await storage.createMendScaFinding(finding);
+  }
+
+  for (const finding of sastFindings) {
+    await storage.createMendSastFinding(finding);
+  }
+
+  for (const finding of containersFindings) {
+    await storage.createMendContainersFinding(finding);
   }
 }
 

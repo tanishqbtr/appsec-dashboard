@@ -25,7 +25,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import type { Application } from "@shared/schema";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -45,6 +46,16 @@ interface ApplicationsTableProps {
   selectedEngine: string;
   selectedLabels: string[];
   selectedTags: string[];
+}
+
+interface MendFindings {
+  id: number;
+  serviceName: string;
+  scanDate: string;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
 }
 
 interface FindingsData {
@@ -97,16 +108,16 @@ function PercentileBadge({ percentile }: { percentile: number }) {
   );
 }
 
-// Calculate percentile ranking based on total findings
+// Calculate percentile ranking based on risk score (since totalFindings is removed)
 function calculatePercentile(applications: Application[], currentApp: Application): number {
-  const currentFindings = JSON.parse(currentApp.totalFindings).total;
-  const allFindings = applications.map(app => JSON.parse(app.totalFindings).total);
+  const currentRiskScore = parseFloat(currentApp.riskScore);
+  const allRiskScores = applications.map(app => parseFloat(app.riskScore));
   
-  // Count how many applications have more findings than current app
-  const higherCount = allFindings.filter(findings => findings > currentFindings).length;
+  // Count how many applications have higher risk scores than current app
+  const higherCount = allRiskScores.filter(score => score > currentRiskScore).length;
   
-  // Calculate percentile (fewer findings = higher percentile)
-  return (higherCount / applications.length) * 100;
+  // Calculate percentile (lower risk = higher percentile)
+  return ((applications.length - higherCount) / applications.length) * 100;
 }
 
 function LoadingSkeleton() {
@@ -135,6 +146,80 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const [pageSize, setPageSize] = useState(20);
   const [, setLocation] = useLocation();
 
+  // Determine which Mend APIs to query based on selected labels
+  const getMendEndpoints = () => {
+    const endpoints: string[] = [];
+    if (selectedEngine === "Mend" && selectedLabels.length > 0) {
+      if (selectedLabels.includes("SCA")) endpoints.push("/api/mend/sca");
+      if (selectedLabels.includes("SAST")) endpoints.push("/api/mend/sast");
+      if (selectedLabels.includes("Containers")) endpoints.push("/api/mend/containers");
+    }
+    return endpoints;
+  };
+
+  // Fetch Mend findings from multiple endpoints when multiple labels are selected
+  const mendEndpoints = getMendEndpoints();
+  
+  const scaQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/sca"],
+    enabled: mendEndpoints.includes("/api/mend/sca"),
+  });
+  
+  const sastQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/sast"],
+    enabled: mendEndpoints.includes("/api/mend/sast"),
+  });
+  
+  const containersQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/containers"],
+    enabled: mendEndpoints.includes("/api/mend/containers"),
+  });
+
+  // Combine findings from all selected scan types
+  const combinedMendFindings = new Map<string, MendFindings>();
+  
+  // Helper function to add findings to the combined map
+  const addFindings = (findings: MendFindings[], scanType: string) => {
+    findings.forEach(finding => {
+      const existing = combinedMendFindings.get(finding.serviceName);
+      if (existing) {
+        // Sum the findings if service already exists
+        combinedMendFindings.set(finding.serviceName, {
+          ...existing,
+          critical: existing.critical + finding.critical,
+          high: existing.high + finding.high,
+          medium: existing.medium + finding.medium,
+          low: existing.low + finding.low,
+          scanDate: finding.scanDate > existing.scanDate ? finding.scanDate : existing.scanDate // Keep most recent date
+        });
+      } else {
+        // Add new service
+        combinedMendFindings.set(finding.serviceName, { ...finding });
+      }
+    });
+  };
+
+  // Add findings from each enabled query
+  if (scaQuery.data) addFindings(scaQuery.data, "SCA");
+  if (sastQuery.data) addFindings(sastQuery.data, "SAST");
+  if (containersQuery.data) addFindings(containersQuery.data, "Containers");
+
+  // Function to get findings data for a service (now using combined findings)
+  const getServiceFindings = (serviceName: string): FindingsData => {
+    const combinedFinding = combinedMendFindings.get(serviceName);
+    if (combinedFinding) {
+      return {
+        total: combinedFinding.critical + combinedFinding.high + combinedFinding.medium + combinedFinding.low,
+        C: combinedFinding.critical,
+        H: combinedFinding.high,
+        M: combinedFinding.medium,
+        L: combinedFinding.low
+      };
+    }
+    // Return zeros if no findings found
+    return { total: 0, C: 0, H: 0, M: 0, L: 0 };
+  };
+
   const handleSort = (field: string) => {
     if (sortField === field) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -159,34 +244,34 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         bValue = parseFloat(b.riskScore);
         break;
       case 'totalFindings':
-        const aTotalFindings = JSON.parse(a.totalFindings);
-        const bTotalFindings = JSON.parse(b.totalFindings);
-        aValue = aTotalFindings.total;
-        bValue = bTotalFindings.total;
+        const aFindings = getServiceFindings(a.name);
+        const bFindings = getServiceFindings(b.name);
+        aValue = aFindings.total;
+        bValue = bFindings.total;
         break;
       case 'criticalFindings':
-        const aCriticalFindings = JSON.parse(a.totalFindings);
-        const bCriticalFindings = JSON.parse(b.totalFindings);
-        aValue = aCriticalFindings.C;
-        bValue = bCriticalFindings.C;
+        const aCritical = getServiceFindings(a.name);
+        const bCritical = getServiceFindings(b.name);
+        aValue = aCritical.C;
+        bValue = bCritical.C;
         break;
       case 'highFindings':
-        const aHighFindings = JSON.parse(a.totalFindings);
-        const bHighFindings = JSON.parse(b.totalFindings);
-        aValue = aHighFindings.H;
-        bValue = bHighFindings.H;
+        const aHigh = getServiceFindings(a.name);
+        const bHigh = getServiceFindings(b.name);
+        aValue = aHigh.H;
+        bValue = bHigh.H;
         break;
       case 'mediumFindings':
-        const aMediumFindings = JSON.parse(a.totalFindings);
-        const bMediumFindings = JSON.parse(b.totalFindings);
-        aValue = aMediumFindings.M;
-        bValue = bMediumFindings.M;
+        const aMedium = getServiceFindings(a.name);
+        const bMedium = getServiceFindings(b.name);
+        aValue = aMedium.M;
+        bValue = bMedium.M;
         break;
       case 'lowFindings':
-        const aLowFindings = JSON.parse(a.totalFindings);
-        const bLowFindings = JSON.parse(b.totalFindings);
-        aValue = aLowFindings.L;
-        bValue = bLowFindings.L;
+        const aLow = getServiceFindings(a.name);
+        const bLow = getServiceFindings(b.name);
+        aValue = aLow.L;
+        bValue = bLow.L;
         break;
       case 'percentile':
         aValue = calculatePercentile(applications, a);
@@ -240,7 +325,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const exportToCSV = () => {
     const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const csvData = sortedApplications.map(app => {
-      const findings = JSON.parse(app.totalFindings);
+      // Get findings from Mend data if available
+      const findings = getServiceFindings(app.name);
       const percentile = calculatePercentile(applications, app);
       return [
         app.name,
@@ -271,7 +357,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const exportToXLSX = () => {
     const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const data = sortedApplications.map(app => {
-      const findings = JSON.parse(app.totalFindings);
+      // Get findings from Mend data if available
+      const findings = getServiceFindings(app.name);
       const percentile = calculatePercentile(applications, app);
       return [
         app.name,
@@ -313,7 +400,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
 
     const headers = [['Service Name', 'Risk Score', 'Total', 'Percentile', 'Critical', 'High', 'Medium', 'Low', 'Tags']];
     const data = sortedApplications.map(app => {
-      const findings = JSON.parse(app.totalFindings);
+      // Get findings from Mend data if available
+      const findings = getServiceFindings(app.name);
       const percentile = calculatePercentile(applications, app);
       return [
         app.name,
@@ -433,7 +521,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               <LoadingSkeleton />
             ) : (
               paginatedApplications.map((app, index) => {
-                const totalFindings: FindingsData = JSON.parse(app.totalFindings);
+                // Get findings from Mend data if available, otherwise use defaults
+                const totalFindings: FindingsData = getServiceFindings(app.name);
                 const percentile = calculatePercentile(applications, app);
                 
                 return (
