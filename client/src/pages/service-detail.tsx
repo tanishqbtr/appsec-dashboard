@@ -356,10 +356,6 @@ export default function ServiceDetail() {
     );
   }
 
-  // Use default values if totalFindings is not available
-  const findings: FindingsData = application.totalFindings ? 
-    JSON.parse(application.totalFindings) : 
-    { total: 0, C: 0, H: 0, M: 0, L: 0 };
   // Calculate percentile using all findings data across all engines
   const getAllServiceFindings = (serviceName: string): FindingsData => {
     let totalFindings = { total: 0, C: 0, H: 0, M: 0, L: 0 };
@@ -404,12 +400,63 @@ export default function ServiceDetail() {
 
   const percentile = application ? calculatePercentileWithAllFindings(applications, application) : 0;
   
-  // Mock engine findings data
-  const engineFindings = {
-    mend: { total: Math.floor(findings.total * 0.4), C: Math.floor(findings.C * 0.5), H: Math.floor(findings.H * 0.3), M: Math.floor(findings.M * 0.4), L: Math.floor(findings.L * 0.5) },
-    crowdstrike: { total: Math.floor(findings.total * 0.35), C: Math.floor(findings.C * 0.3), H: Math.floor(findings.H * 0.4), M: Math.floor(findings.M * 0.3), L: Math.floor(findings.L * 0.3) },
-    escape: { total: Math.floor(findings.total * 0.25), C: Math.floor(findings.C * 0.2), H: Math.floor(findings.H * 0.3), M: Math.floor(findings.M * 0.3), L: Math.floor(findings.L * 0.2) }
+  // Get comprehensive findings data across all engines for this service
+  const comprehensiveFindings: FindingsData = application ? getAllServiceFindings(application.name) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
+  
+  // Calculate actual engine findings data from real API data
+  const getEngineFindings = () => {
+    if (!application) return { mend: { total: 0, C: 0, H: 0, M: 0, L: 0 }, crowdstrike: { total: 0, C: 0, H: 0, M: 0, L: 0 }, escape: { total: 0, C: 0, H: 0, M: 0, L: 0 } };
+    
+    const serviceName = application.name;
+    const engineFindings = {
+      mend: { total: 0, C: 0, H: 0, M: 0, L: 0 },
+      crowdstrike: { total: 0, C: 0, H: 0, M: 0, L: 0 },
+      escape: { total: 0, C: 0, H: 0, M: 0, L: 0 }
+    };
+
+    // Add Mend findings (SCA, SAST, Containers)
+    [allScaQuery.data, allSastQuery.data, allMendContainersQuery.data].forEach(findings => {
+      findings?.forEach((finding: any) => {
+        if (finding.serviceName === serviceName) {
+          engineFindings.mend.C += finding.critical;
+          engineFindings.mend.H += finding.high;
+          engineFindings.mend.M += finding.medium;
+          engineFindings.mend.L += finding.low;
+          engineFindings.mend.total += finding.critical + finding.high + finding.medium + finding.low;
+        }
+      });
+    });
+
+    // Add Crowdstrike findings (Images, Containers)
+    [allImagesQuery.data, allCrowdstrikeContainersQuery.data].forEach(findings => {
+      findings?.forEach((finding: any) => {
+        if (finding.serviceName === serviceName) {
+          engineFindings.crowdstrike.C += finding.critical;
+          engineFindings.crowdstrike.H += finding.high;
+          engineFindings.crowdstrike.M += finding.medium;
+          engineFindings.crowdstrike.L += finding.low;
+          engineFindings.crowdstrike.total += finding.critical + finding.high + finding.medium + finding.low;
+        }
+      });
+    });
+
+    // Add Escape findings (Web Apps, APIs)
+    [allWebAppsQuery.data, allApisQuery.data].forEach(findings => {
+      findings?.forEach((finding: any) => {
+        if (finding.serviceName === serviceName) {
+          engineFindings.escape.C += finding.critical;
+          engineFindings.escape.H += finding.high;
+          engineFindings.escape.M += finding.medium;
+          engineFindings.escape.L += finding.low;
+          engineFindings.escape.total += finding.critical + finding.high + finding.medium + finding.low;
+        }
+      });
+    });
+
+    return engineFindings;
   };
+
+  const engineFindings = getEngineFindings();
 
   return (
     <PageWrapper loadingMessage="Loading Service Details...">
@@ -545,14 +592,26 @@ export default function ServiceDetail() {
                 <div className="space-y-6">
                   <div>
                     <h4 className="font-medium text-gray-900 mb-3">Total by Severity</h4>
-                    <div className="flex flex-wrap gap-3">
-                      <RiskBadge level="C" count={findings.C} />
-                      <RiskBadge level="H" count={findings.H} />
-                      <RiskBadge level="M" count={findings.M} />
-                      <RiskBadge level="L" count={findings.L} />
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Critical:</span>
+                        <RiskBadge level="C" count={comprehensiveFindings.C} />
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">High:</span>
+                        <RiskBadge level="H" count={comprehensiveFindings.H} />
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Medium:</span>
+                        <RiskBadge level="M" count={comprehensiveFindings.M} />
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-gray-600">Low:</span>
+                        <RiskBadge level="L" count={comprehensiveFindings.L} />
+                      </div>
                     </div>
-                    <div className="mt-3 text-sm text-gray-600">
-                      Total: {findings.total} findings
+                    <div className="mt-3 pt-3 border-t text-sm text-gray-600 font-medium">
+                      Total: {comprehensiveFindings.total} findings
                     </div>
                   </div>
 
