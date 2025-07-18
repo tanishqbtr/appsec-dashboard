@@ -27,7 +27,7 @@ export default function Reports() {
   const [filterMode, setFilterMode] = useState<"labels" | "tags">("tags");
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
-    queryKey: ["/api/applications"],
+    queryKey: ["/api/applications-with-risk"],
   });
 
   const { showOnboarding, completeOnboarding, skipOnboarding, resetOnboarding } = useOnboarding();
