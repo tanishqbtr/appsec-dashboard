@@ -752,7 +752,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                   <TableRow 
                     key={app.id} 
                     className="hover:bg-green-50 cursor-pointer transition-all duration-200 hover:shadow-sm"
-                    onClick={() => setLocation(`/services/${app.id}`)}
+                    onClick={() => setLocation(`/service/${app.id}`)}
                     data-tutorial-target={index === 0 ? "service-row" : undefined}
                   >
                     <TableCell>
