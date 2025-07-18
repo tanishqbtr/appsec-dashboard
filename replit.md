@@ -23,6 +23,7 @@ Reports page clearing: Completely emptied Reports page content, leaving only bas
 Page functionality swap: Moved all Services page functionality (security findings table, filters, onboarding) to Reports page, and cleared Services page to empty state (updated July 18, 2025)
 Services page redesign: Created simple services list view with search functionality and clickable rows that navigate to individual service detail pages (updated July 18, 2025)
 Services table enhancement: Added sortable table format with Risk Score and Percentile Ranking columns, removed tags/labels display, implemented three-column sorting functionality (updated July 18, 2025)
+Animated sparklines: Implemented animated risk score sparklines in services table showing 7-day trend history with color-coded lines (red for increasing risk, green for decreasing, gray for stable) and smooth draw-in animations (updated July 18, 2025)
 
 ## System Architecture
 
