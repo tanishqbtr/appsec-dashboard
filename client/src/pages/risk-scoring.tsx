@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Navigation from "@/components/navigation";
 import PageWrapper from "@/components/page-wrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,6 +57,7 @@ export default function RiskScoring() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   
   // Risk assessment form state
+  const [selectedService, setSelectedService] = useState<string>("");
   const [riskFactors, setRiskFactors] = useState({
     dataClassification: "",
     phi: "",
@@ -78,6 +79,35 @@ export default function RiskScoring() {
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["/api/applications"],
+  });
+
+  // Risk assessment data query
+  const { data: riskAssessmentData } = useQuery({
+    queryKey: ['/api/risk-assessments', selectedService],
+    enabled: !!selectedService && editDialogOpen,
+  });
+
+  const saveRiskAssessmentMutation = useMutation({
+    mutationFn: (data: any) => apiRequest('/api/risk-assessments', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' }
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-assessments', selectedService] });
+      toast({
+        title: "Risk Assessment Saved",
+        description: "The risk assessment has been saved successfully.",
+      });
+    },
+    onError: (error) => {
+      console.error('Risk assessment save error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save risk assessment. Please try again.",
+        variant: "destructive",
+      });
+    }
   });
 
   const updateRiskScoreMutation = useMutation({
@@ -112,8 +142,9 @@ export default function RiskScoring() {
     setEditingId(app.id!);
     setEditingScore(app.riskScore);
     setEditingReason("");
+    setSelectedService(app.name);
     setEditDialogOpen(true);
-    // Reset form state
+    // Reset form state - will be populated from saved data if available
     setRiskFactors({
       dataClassification: "",
       phi: "",
@@ -126,6 +157,23 @@ export default function RiskScoring() {
       awareness: ""
     });
   };
+
+  // Effect to populate form with saved data when available
+  React.useEffect(() => {
+    if (riskAssessmentData && editDialogOpen) {
+      setRiskFactors({
+        dataClassification: riskAssessmentData.dataClassification || "",
+        phi: riskAssessmentData.phi || "",
+        eligibilityData: riskAssessmentData.eligibilityData || "",
+        confidentialityImpact: riskAssessmentData.confidentialityImpact || "",
+        integrityImpact: riskAssessmentData.integrityImpact || "",
+        availabilityImpact: riskAssessmentData.availabilityImpact || "",
+        publicEndpoint: riskAssessmentData.publicEndpoint || "",
+        discoverability: riskAssessmentData.discoverability || "",
+        awareness: riskAssessmentData.awareness || ""
+      });
+    }
+  }, [riskAssessmentData, editDialogOpen]);
 
   const isFormValid = () => {
     return (
@@ -142,7 +190,7 @@ export default function RiskScoring() {
   };
 
   const handleSave = () => {
-    if (!editingId) return;
+    if (!editingId || !selectedService) return;
     
     if (!isFormValid()) {
       toast({
@@ -154,11 +202,30 @@ export default function RiskScoring() {
     }
 
     const finalScore = calculateFinalRiskScore();
+    const dataClassificationScore = calculateDataClassificationScore();
+    const ciaTriadScore = calculateCIATriadScore();
+    const attackSurfaceScore = calculateAttackSurfaceScore();
+    const riskLevel = getRiskLevel(finalScore).level;
+
+    // Save to risk assessments table
+    const assessmentData = {
+      serviceName: selectedService,
+      ...riskFactors,
+      dataClassificationScore,
+      ciaTriadScore,
+      attackSurfaceScore,
+      finalRiskScore: finalScore,
+      riskLevel,
+      updatedBy: "admin" // TODO: Use actual logged-in user
+    };
+
+    saveRiskAssessmentMutation.mutate(assessmentData);
     
+    // Update application risk score
     updateRiskScoreMutation.mutate({
       id: editingId,
-      riskScore: finalScore,
-      reason: `Risk assessment completed: Data Classification: ${calculateDataClassificationScore()}, CIA Triad: ${calculateCIATriadScore()}, Attack Surface: ${calculateAttackSurfaceScore()}`
+      riskScore: finalScore.toString(),
+      reason: `Risk assessment completed: Data Classification: ${dataClassificationScore}, CIA Triad: ${ciaTriadScore}, Attack Surface: ${attackSurfaceScore}`
     });
   };
 

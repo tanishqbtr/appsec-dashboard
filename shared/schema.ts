@@ -100,6 +100,33 @@ export const crowdstrikeContainersFindings = pgTable("crowdstrike_containers_fin
   low: integer("low").notNull().default(0),
 });
 
+// Risk assessments table
+export const riskAssessments = pgTable("risk_assessments", {
+  id: serial("id").primaryKey(),
+  serviceName: text("service_name").notNull().unique(),
+  // Data Classification Factors
+  dataClassification: text("data_classification"),
+  phi: text("phi"),
+  eligibilityData: text("eligibility_data"),
+  // CIA Triad
+  confidentialityImpact: text("confidentiality_impact"),
+  integrityImpact: text("integrity_impact"),
+  availabilityImpact: text("availability_impact"),
+  // Attack Surface Factors
+  publicEndpoint: text("public_endpoint"),
+  discoverability: text("discoverability"),
+  awareness: text("awareness"),
+  // Calculated scores
+  dataClassificationScore: integer("data_classification_score").default(0),
+  ciaTriadScore: integer("cia_triad_score").default(0),
+  attackSurfaceScore: integer("attack_surface_score").default(0),
+  finalRiskScore: integer("final_risk_score").default(0),
+  riskLevel: text("risk_level").default("Low"),
+  // Metadata
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  updatedBy: text("updated_by"),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -137,6 +164,11 @@ export const insertCrowdstrikeContainersFindingsSchema = createInsertSchema(crow
   id: true,
 });
 
+export const insertRiskAssessmentSchema = createInsertSchema(riskAssessments).omit({
+  id: true,
+  lastUpdated: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Application = typeof applications.$inferSelect;
@@ -155,6 +187,8 @@ export type CrowdstrikeImagesFinding = typeof crowdstrikeImagesFindings.$inferSe
 export type InsertCrowdstrikeImagesFinding = z.infer<typeof insertCrowdstrikeImagesFindingsSchema>;
 export type CrowdstrikeContainersFinding = typeof crowdstrikeContainersFindings.$inferSelect;
 export type InsertCrowdstrikeContainersFinding = z.infer<typeof insertCrowdstrikeContainersFindingsSchema>;
+export type RiskAssessment = typeof riskAssessments.$inferSelect;
+export type InsertRiskAssessment = z.infer<typeof insertRiskAssessmentSchema>;
 
 // Analytics and reporting types
 export interface SecurityMetrics {
