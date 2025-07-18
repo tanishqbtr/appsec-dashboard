@@ -48,7 +48,7 @@ import type { Application } from "@shared/schema";
 // Analytics data processing functions
 const processAnalyticsData = (applications: Application[]) => {
   const findingsByEngine = applications.reduce((acc, app) => {
-    const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { C: 0, H: 0, M: 0, L: 0, total: 0 };
+    const findings = app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings) : { C: 0, H: 0, M: 0, L: 0, total: 0 };
     const engine = acc.find(e => e.engine === app.scanEngine);
     if (engine) {
       engine.critical += findings.C;
@@ -171,7 +171,7 @@ export default function Reports() {
     doc.text('Applications Overview', 20, 30);
     
     const tableData = applications.map(app => {
-      const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
+      const findings = app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
       return [
         app.name,
         app.scanEngine,
@@ -271,7 +271,7 @@ export default function Reports() {
                   <div>
                     <p className="text-sm font-medium text-gray-600">Critical Findings</p>
                     <p className="text-3xl font-bold text-red-600">
-                      {applications.reduce((sum, app) => sum + JSON.parse(app.totalFindings).C, 0)}
+                      {applications.reduce((sum, app) => sum + (app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings).C : 0), 0)}
                     </p>
                     <p className="text-sm text-red-600">Requires attention</p>
                   </div>
