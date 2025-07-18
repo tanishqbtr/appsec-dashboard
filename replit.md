@@ -22,6 +22,7 @@ Dashboard layout: Moved Findings Trend chart from Reports page to Dashboard, rep
 Reports page clearing: Completely emptied Reports page content, leaving only basic navigation and empty state message for future development (updated July 18, 2025)
 Page functionality swap: Moved all Services page functionality (security findings table, filters, onboarding) to Reports page, and cleared Services page to empty state (updated July 18, 2025)
 Services page redesign: Created simple services list view with search functionality and clickable rows that navigate to individual service detail pages (updated July 18, 2025)
+Services table enhancement: Added sortable table format with Risk Score and Percentile Ranking columns, removed tags/labels display, implemented three-column sorting functionality (updated July 18, 2025)
 
 ## System Architecture
 
