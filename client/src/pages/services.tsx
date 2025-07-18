@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Navigation from "@/components/navigation";
 import PageWrapper from "@/components/page-wrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,65 +12,6 @@ import type { Application } from "@shared/schema";
 
 type SortField = "name" | "riskScore" | "percentile";
 type SortDirection = "asc" | "desc";
-
-// Sparkline component for risk score visualization
-const RiskSparkline = ({ data, currentScore }: { data: number[], currentScore: number }) => {
-  const [animate, setAnimate] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setAnimate(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (!data || data.length === 0) return null;
-
-  const max = Math.max(...data, 10); // Ensure minimum scale
-  const min = Math.min(...data, 0);
-  const range = max - min || 1;
-  
-  // Create SVG path
-  const width = 60;
-  const height = 20;
-  const padding = 2;
-  
-  const points = data.map((value, index) => {
-    const x = padding + (index * (width - 2 * padding)) / (data.length - 1);
-    const y = height - padding - ((value - min) / range) * (height - 2 * padding);
-    return `${x},${y}`;
-  }).join(' ');
-
-  // Determine sparkline color based on trend
-  const trend = data[data.length - 1] - data[0];
-  const strokeColor = trend > 0 ? '#ef4444' : trend < 0 ? '#22c55e' : '#6b7280';
-
-  return (
-    <div className="inline-block">
-      <svg width={width} height={height} className="overflow-visible">
-        <polyline
-          fill="none"
-          stroke={strokeColor}
-          strokeWidth="1.5"
-          points={points}
-          className={`transition-all duration-1000 ${animate ? 'opacity-100' : 'opacity-0'}`}
-          style={{
-            strokeDasharray: animate ? 'none' : '100',
-            strokeDashoffset: animate ? '0' : '100'
-          }}
-        />
-        {/* Current value dot */}
-        {data.length > 0 && (
-          <circle
-            cx={width - padding}
-            cy={height - padding - ((currentScore - min) / range) * (height - 2 * padding)}
-            r="2"
-            fill={strokeColor}
-            className={`transition-all duration-1000 delay-500 ${animate ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`}
-          />
-        )}
-      </svg>
-    </div>
-  );
-};
 
 export default function Services() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -95,24 +36,6 @@ export default function Services() {
     }
   };
 
-  // Generate risk score history for sparklines (simulated data)
-  const generateRiskHistory = (currentScore: number) => {
-    const history = [];
-    let score = currentScore;
-    
-    // Generate 7 data points (week history)
-    for (let i = 6; i >= 0; i--) {
-      // Add some realistic variation
-      const variation = (Math.random() - 0.5) * 2; // ±1 point variation
-      score = Math.max(0, Math.min(10, score + variation));
-      history.unshift(Number(score.toFixed(1)));
-    }
-    
-    // Ensure the last point is the current score
-    history[history.length - 1] = parseFloat(currentScore);
-    return history;
-  };
-
   // Calculate percentile rankings based on total findings
   const applicationsWithPercentiles = applications.map((app) => {
     const findings = app.totalFindings && app.totalFindings !== "undefined" 
@@ -128,13 +51,11 @@ export default function Services() {
     }).length;
     
     const percentile = Math.round((appsWithFewerFindings / applications.length) * 100);
-    const riskHistory = generateRiskHistory(parseFloat(app.riskScore));
     
     return {
       ...app,
       percentile,
-      totalFindings: totalFindings,
-      riskHistory
+      totalFindings: totalFindings
     };
   });
 
@@ -252,7 +173,7 @@ export default function Services() {
                             onClick={() => handleSort("riskScore")}
                             className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900"
                           >
-                            Risk Score & Trend
+                            Risk Score
                             {sortField === "riskScore" && (
                               sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
                             )}
@@ -302,15 +223,9 @@ export default function Services() {
                               </Link>
                             </td>
                             <td className="py-4 px-4">
-                              <div className="flex items-center gap-3">
-                                <span className="text-lg font-semibold text-gray-900">
-                                  {app.riskScore}
-                                </span>
-                                <RiskSparkline 
-                                  data={app.riskHistory} 
-                                  currentScore={parseFloat(app.riskScore)}
-                                />
-                              </div>
+                              <span className="text-lg font-semibold text-gray-900">
+                                {app.riskScore}
+                              </span>
                             </td>
                             <td className="py-4 px-4">
                               <Badge className={`${percentileBadge.color} font-medium`}>
