@@ -24,6 +24,7 @@ Page functionality swap: Moved all Services page functionality (security finding
 Services page redesign: Created simple services list view with search functionality and clickable rows that navigate to individual service detail pages (updated July 18, 2025)
 Services table enhancement: Added sortable table format with Risk Score and Percentile Ranking columns, removed tags/labels display, implemented three-column sorting functionality (updated July 18, 2025)
 Services data integration: Updated to use calculated risk scores from risk assessments and proper percentile ranking based on risk scores, removed findings count display (updated July 18, 2025)
+Services API endpoint: Created dedicated `/api/services-with-risk-scores` endpoint that directly fetches services from risk_assessments table with final_risk_score values (updated July 18, 2025)
 
 
 ## System Architecture

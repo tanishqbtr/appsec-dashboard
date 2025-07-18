@@ -19,7 +19,7 @@ export default function Services() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
-    queryKey: ["/api/applications-with-risk"],
+    queryKey: ["/api/services-with-risk-scores"],
   });
 
   const handleLogout = async () => {
@@ -38,11 +38,11 @@ export default function Services() {
 
   // Calculate percentile rankings based on risk scores (services with lower risk scores get higher percentiles)
   const applicationsWithPercentiles = applications.map((app) => {
-    const currentRiskScore = parseFloat(app.riskAssessment?.finalRiskScore || app.riskScore || "0");
+    const currentRiskScore = parseFloat(app.finalRiskScore?.toString() || "0");
     
     // Count applications with higher risk scores (worse security)
     const appsWithHigherRisk = applications.filter(otherApp => {
-      const otherRiskScore = parseFloat(otherApp.riskAssessment?.finalRiskScore || otherApp.riskScore || "0");
+      const otherRiskScore = parseFloat(otherApp.finalRiskScore?.toString() || "0");
       return otherRiskScore > currentRiskScore;
     }).length;
     
@@ -52,7 +52,7 @@ export default function Services() {
     return {
       ...app,
       percentile,
-      displayRiskScore: app.riskAssessment?.finalRiskScore?.toFixed(1) || app.riskScore
+      displayRiskScore: app.finalRiskScore?.toFixed(1) || "0.0"
     };
   });
 
