@@ -89,13 +89,7 @@ export default function Services() {
     return sortDirection === "asc" ? comparison : -comparison;
   });
 
-  const getPercentileBadge = (percentile: number) => {
-    if (percentile >= 90) return { color: "bg-green-100 text-green-800", label: "Top 10%" };
-    if (percentile >= 75) return { color: "bg-blue-100 text-blue-800", label: "Top 25%" };
-    if (percentile >= 50) return { color: "bg-yellow-100 text-yellow-800", label: "Top 50%" };
-    if (percentile >= 25) return { color: "bg-orange-100 text-orange-800", label: "Bottom 50%" };
-    return { color: "bg-red-100 text-red-800", label: "Bottom 25%" };
-  };
+
 
   if (isLoading) {
     return (
@@ -202,8 +196,6 @@ export default function Services() {
                     </thead>
                     <tbody>
                       {sortedApplications.map((app) => {
-                        const percentileBadge = getPercentileBadge(app.percentile);
-                        
                         return (
                           <tr key={app.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                             <td className="py-4 px-4">
@@ -231,9 +223,9 @@ export default function Services() {
                               </span>
                             </td>
                             <td className="py-4 px-4">
-                              <Badge className={`${percentileBadge.color} font-medium`}>
-                                {percentileBadge.label}
-                              </Badge>
+                              <span className="text-lg font-semibold text-blue-600">
+                                {Math.round(app.percentile)}%
+                              </span>
                             </td>
                             <td className="py-4 px-4 text-right">
                               <Link href={`/service/${app.id}`}>
