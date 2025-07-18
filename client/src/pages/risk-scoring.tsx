@@ -398,8 +398,8 @@ export default function RiskScoring() {
       <div className="min-h-screen bg-gray-50">
         <Navigation onLogout={handleLogout} currentPage="risk-scoring" />
         
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 page-enter page-enter-active">
+          <div className="mb-8 stagger-item">
             <h1 className="text-3xl font-bold text-gray-900">Risk Scoring</h1>
             <p className="mt-2 text-gray-600">
               Security risk assessment and scoring management for all services
@@ -408,7 +408,7 @@ export default function RiskScoring() {
 
           {/* Risk Level Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card>
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -424,7 +424,7 @@ export default function RiskScoring() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -443,7 +443,7 @@ export default function RiskScoring() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -462,7 +462,7 @@ export default function RiskScoring() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -480,7 +480,7 @@ export default function RiskScoring() {
           </div>
 
           {/* Risk Scoring Table */}
-          <Card>
+          <Card className="stagger-item card-hover">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -493,7 +493,7 @@ export default function RiskScoring() {
                     placeholder="Search services..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 focus-smooth"
                   />
                 </div>
               </div>
@@ -503,7 +503,7 @@ export default function RiskScoring() {
                 <TableHeader>
                   <TableRow>
                     <TableHead 
-                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      className="cursor-pointer hover:bg-gray-50 select-none btn-smooth"
                       onClick={() => handleSort("name")}
                     >
                       <div className="flex items-center gap-2">
@@ -515,7 +515,7 @@ export default function RiskScoring() {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      className="cursor-pointer hover:bg-gray-50 select-none btn-smooth"
                       onClick={() => handleSort("score")}
                     >
                       <div className="flex items-center gap-2">
@@ -527,7 +527,7 @@ export default function RiskScoring() {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-gray-50 select-none"
+                      className="cursor-pointer hover:bg-gray-50 select-none btn-smooth"
                       onClick={() => handleSort("level")}
                     >
                       <div className="flex items-center gap-2">
@@ -550,7 +550,7 @@ export default function RiskScoring() {
                     const isEditing = editingId === app.id;
 
                     return (
-                      <TableRow key={app.id}>
+                      <TableRow key={app.id} className="stagger-item card-hover">
                         <TableCell className="font-medium">{app.name}</TableCell>
                         <TableCell>
                           <span className="text-lg font-semibold">{riskScore.toFixed(1)}</span>
@@ -568,6 +568,7 @@ export default function RiskScoring() {
                             size="sm"
                             variant="outline"
                             onClick={() => handleEdit(app)}
+                            className="btn-smooth"
                           >
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
@@ -583,7 +584,7 @@ export default function RiskScoring() {
 
           {/* Risk Assessment Dialog */}
           <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto chart-enter">
               <DialogHeader>
                 <DialogTitle>Risk Assessment - {filteredAndSortedApplications.find(app => app.id === editingId)?.name}</DialogTitle>
               </DialogHeader>
@@ -823,12 +824,12 @@ export default function RiskScoring() {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={handleCancel}>
+                <Button variant="outline" onClick={handleCancel} className="btn-smooth">
                   Cancel
                 </Button>
                 <Button 
                   onClick={handleSave} 
-                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed btn-smooth"
                   disabled={!isFormValid() || updateRiskScoreMutation.isPending}
                 >
                   {updateRiskScoreMutation.isPending ? "Saving..." : "Save Assessment"}
