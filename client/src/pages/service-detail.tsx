@@ -1013,42 +1013,66 @@ export default function ServiceDetail() {
                         </div>
 
                         {/* Risk Scores Card */}
-                        <div className="bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                        <div className={`bg-gradient-to-br border rounded-xl p-4 hover:shadow-md transition-all duration-200 ${
+                          riskAssessmentData.finalRiskScore >= 7 
+                            ? 'from-red-50 to-red-100 border-red-200' 
+                            : riskAssessmentData.finalRiskScore >= 4 
+                            ? 'from-orange-50 to-orange-100 border-orange-200'
+                            : 'from-green-50 to-green-100 border-green-200'
+                        }`}>
                           <div className="flex items-center gap-2 mb-3">
-                            <div className="h-8 w-8 bg-teal-100 rounded-lg flex items-center justify-center">
-                              <BarChart3 className="h-4 w-4 text-teal-600" />
+                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                              riskAssessmentData.finalRiskScore >= 7 
+                                ? 'bg-red-100' 
+                                : riskAssessmentData.finalRiskScore >= 4 
+                                ? 'bg-orange-100'
+                                : 'bg-green-100'
+                            }`}>
+                              <BarChart3 className={`h-4 w-4 ${
+                                riskAssessmentData.finalRiskScore >= 7 
+                                  ? 'text-red-600' 
+                                  : riskAssessmentData.finalRiskScore >= 4 
+                                  ? 'text-orange-600'
+                                  : 'text-green-600'
+                              }`} />
                             </div>
                             <h5 className="font-semibold text-gray-800">Risk Scores</h5>
                           </div>
                           <div className="space-y-2">
-                            {riskAssessmentData.dataClassificationScore && (
+                            {riskAssessmentData.dataClassificationScore !== null && riskAssessmentData.dataClassificationScore !== undefined && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Data Classification Score:</span>
-                                <Badge className="bg-teal-100 text-teal-800 border-teal-200">
+                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
                                   {riskAssessmentData.dataClassificationScore}
                                 </Badge>
                               </div>
                             )}
-                            {riskAssessmentData.ciaTriadScore && (
+                            {riskAssessmentData.ciaTriadScore !== null && riskAssessmentData.ciaTriadScore !== undefined && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">CIA Triad Score:</span>
-                                <Badge className="bg-teal-100 text-teal-800 border-teal-200">
+                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
                                   {riskAssessmentData.ciaTriadScore}
                                 </Badge>
                               </div>
                             )}
-                            {riskAssessmentData.attackSurfaceScore && (
+                            {riskAssessmentData.attackSurfaceScore !== null && riskAssessmentData.attackSurfaceScore !== undefined && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Attack Surface Score:</span>
-                                <Badge className="bg-teal-100 text-teal-800 border-teal-200">
+                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
                                   {riskAssessmentData.attackSurfaceScore}
                                 </Badge>
                               </div>
                             )}
-                            {riskAssessmentData.finalRiskScore && (
+                            {riskAssessmentData.finalRiskScore !== null && riskAssessmentData.finalRiskScore !== undefined && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Final Risk Score:</span>
-                                <Badge className="bg-red-100 text-red-800 border-red-200">
+                                <Badge className={`${
+                                  riskAssessmentData.finalRiskScore >= 7 
+                                    ? 'bg-red-100 text-red-800 border-red-200' 
+                                    : riskAssessmentData.finalRiskScore >= 4 
+                                    ? 'bg-orange-100 text-orange-800 border-orange-200'
+                                    : 'bg-green-100 text-green-800 border-green-200'
+                                }`}>
                                   {riskAssessmentData.finalRiskScore}
                                 </Badge>
                               </div>
