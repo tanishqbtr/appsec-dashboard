@@ -188,6 +188,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Risk assessments endpoints
+  app.get("/api/risk-assessments/:serviceName", async (req, res) => {
+    try {
+      const { serviceName } = req.params;
+      const storage = await getStorage();
+      const assessment = await storage.getRiskAssessment(serviceName);
+      res.json(assessment || null);
+    } catch (error) {
+      console.error("Error fetching risk assessment:", error);
+      res.status(500).json({ error: "Failed to fetch risk assessment" });
+    }
+  });
+
+  app.post("/api/risk-assessments", async (req, res) => {
+    try {
+      const assessmentData = req.body;
+      const storage = await getStorage();
+      const assessment = await storage.createOrUpdateRiskAssessment(assessmentData);
+      res.json(assessment);
+    } catch (error) {
+      console.error("Error saving risk assessment:", error);
+      res.status(500).json({ error: "Failed to save risk assessment" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

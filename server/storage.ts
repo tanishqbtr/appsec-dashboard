@@ -8,6 +8,7 @@ import {
   escapeApisFindings,
   crowdstrikeImagesFindings,
   crowdstrikeContainersFindings,
+  riskAssessments,
   type User, 
   type InsertUser, 
   type Application, 
@@ -25,7 +26,9 @@ import {
   type CrowdstrikeImagesFinding,
   type InsertCrowdstrikeImagesFinding,
   type CrowdstrikeContainersFinding,
-  type InsertCrowdstrikeContainersFinding
+  type InsertCrowdstrikeContainersFinding,
+  type RiskAssessment,
+  type InsertRiskAssessment
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
@@ -55,6 +58,9 @@ export interface IStorage {
   getCrowdstrikeContainersFindings(serviceName?: string): Promise<CrowdstrikeContainersFinding[]>;
   createCrowdstrikeImagesFinding(finding: InsertCrowdstrikeImagesFinding): Promise<CrowdstrikeImagesFinding>;
   createCrowdstrikeContainersFinding(finding: InsertCrowdstrikeContainersFinding): Promise<CrowdstrikeContainersFinding>;
+  // Risk assessment methods
+  getRiskAssessment(serviceName: string): Promise<RiskAssessment | undefined>;
+  createOrUpdateRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment>;
 }
 
 export class MemStorage implements IStorage {
@@ -410,6 +416,16 @@ export class MemStorage implements IStorage {
   async createCrowdstrikeContainersFinding(finding: InsertCrowdstrikeContainersFinding): Promise<CrowdstrikeContainersFinding> {
     throw new Error("Crowdstrike findings not supported in memory storage");
   }
+
+  async getRiskAssessment(serviceName: string): Promise<RiskAssessment | undefined> {
+    // Not implemented in memory storage - will use database storage for persistence
+    return undefined;
+  }
+
+  async createOrUpdateRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment> {
+    // Not implemented in memory storage - will use database storage for persistence
+    throw new Error("Risk assessments not implemented in memory storage");
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -640,6 +656,35 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return created;
+  }
+
+  async getRiskAssessment(serviceName: string): Promise<RiskAssessment | undefined> {
+    const [assessment] = await db.select().from(riskAssessments).where(eq(riskAssessments.serviceName, serviceName));
+    return assessment || undefined;
+  }
+
+  async createOrUpdateRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment> {
+    const existing = await this.getRiskAssessment(assessment.serviceName);
+    
+    if (existing) {
+      // Update existing assessment
+      const [updated] = await db
+        .update(riskAssessments)
+        .set({
+          ...assessment,
+          lastUpdated: new Date(),
+        })
+        .where(eq(riskAssessments.serviceName, assessment.serviceName))
+        .returning();
+      return updated;
+    } else {
+      // Create new assessment
+      const [created] = await db
+        .insert(riskAssessments)
+        .values(assessment)
+        .returning();
+      return created;
+    }
   }
 }
 

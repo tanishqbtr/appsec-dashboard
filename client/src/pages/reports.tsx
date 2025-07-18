@@ -133,7 +133,7 @@ export default function Reports() {
       summary: {
         totalApplications: applications.length,
         criticalFindings: applications.reduce((sum, app) => {
-          const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { C: 0 };
+          const findings = app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings) : { C: 0 };
           return sum + findings.C;
         }, 0),
         averageRiskScore: (applications.reduce((sum, app) => sum + parseFloat(app.riskScore), 0) / applications.length).toFixed(1),
@@ -143,7 +143,7 @@ export default function Reports() {
       analytics,
       applications: applications.map(app => ({
         ...app,
-        findings: app.totalFindings ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 }
+        findings: app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 }
       }))
     };
 
@@ -448,7 +448,7 @@ export default function Reports() {
                   .sort((a, b) => new Date(b.lastScan).getTime() - new Date(a.lastScan).getTime())
                   .slice(0, 5)
                   .map((app) => {
-                    const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
+                    const findings = app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
                     return (
                       <div key={app.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
                         <div className="flex items-center gap-4">

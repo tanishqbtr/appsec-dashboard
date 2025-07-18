@@ -234,6 +234,12 @@ export default function ServiceDetail() {
     queryKey: ["/api/applications"],
   });
 
+  // Risk assessment data query
+  const { data: riskAssessmentData } = useQuery({
+    queryKey: ['/api/risk-assessments', application?.name],
+    enabled: !!application?.name,
+  });
+
   // Fetch all findings data for accurate percentile calculation
   const allScaQuery = useQuery({
     queryKey: ["/api/mend/sca"],
@@ -680,6 +686,107 @@ export default function ServiceDetail() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Risk Assessment Details */}
+                  {riskAssessmentData && (
+                    <div className="space-y-4 border-t pt-4">
+                      <h4 className="font-medium text-gray-900">Risk Assessment Details</h4>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        {/* Data Classification Factors */}
+                        <div className="space-y-2">
+                          <h5 className="font-medium text-gray-700">Data Classification</h5>
+                          <div className="space-y-1">
+                            {riskAssessmentData.dataClassification && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Classification:</span> {riskAssessmentData.dataClassification}
+                              </p>
+                            )}
+                            {riskAssessmentData.phi && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">PHI:</span> {riskAssessmentData.phi}
+                              </p>
+                            )}
+                            {riskAssessmentData.eligibilityData && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Eligibility Data:</span> {riskAssessmentData.eligibilityData}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* CIA Triad */}
+                        <div className="space-y-2">
+                          <h5 className="font-medium text-gray-700">CIA Triad Impact</h5>
+                          <div className="space-y-1">
+                            {riskAssessmentData.confidentialityImpact && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Confidentiality:</span> {riskAssessmentData.confidentialityImpact}
+                              </p>
+                            )}
+                            {riskAssessmentData.integrityImpact && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Integrity:</span> {riskAssessmentData.integrityImpact}
+                              </p>
+                            )}
+                            {riskAssessmentData.availabilityImpact && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Availability:</span> {riskAssessmentData.availabilityImpact}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Attack Surface */}
+                        <div className="space-y-2">
+                          <h5 className="font-medium text-gray-700">Attack Surface</h5>
+                          <div className="space-y-1">
+                            {riskAssessmentData.publicEndpoint && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Public Endpoint:</span> {riskAssessmentData.publicEndpoint}
+                              </p>
+                            )}
+                            {riskAssessmentData.discoverability && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Discoverability:</span> {riskAssessmentData.discoverability}
+                              </p>
+                            )}
+                            {riskAssessmentData.awareness && (
+                              <p className="text-gray-600">
+                                <span className="font-medium">Awareness:</span> {riskAssessmentData.awareness}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Score Breakdown */}
+                        <div className="space-y-2">
+                          <h5 className="font-medium text-gray-700">Score Breakdown</h5>
+                          <div className="space-y-1">
+                            <p className="text-gray-600">
+                              <span className="font-medium">Data Classification:</span> {riskAssessmentData.dataClassificationScore || 0}
+                            </p>
+                            <p className="text-gray-600">
+                              <span className="font-medium">CIA Triad:</span> {riskAssessmentData.ciaTriadScore || 0}
+                            </p>
+                            <p className="text-gray-600">
+                              <span className="font-medium">Attack Surface:</span> {riskAssessmentData.attackSurfaceScore || 0}
+                            </p>
+                            <p className="text-gray-600 font-medium border-t pt-1">
+                              <span className="font-medium">Final Score:</span> {riskAssessmentData.finalRiskScore || 0} ({riskAssessmentData.riskLevel || 'Low'})
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {riskAssessmentData.lastUpdated && (
+                        <p className="text-xs text-gray-500">
+                          Last updated: {new Date(riskAssessmentData.lastUpdated).toLocaleDateString()}
+                          {riskAssessmentData.updatedBy && ` by ${riskAssessmentData.updatedBy}`}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   {application.hasAlert && (
                     <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
