@@ -55,7 +55,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get applications endpoint
-  app.get("/api/applications", async (req, res) => {
+  app.get("/api/applications", requireAuth, async (req, res) => {
     try {
       const storage = await getStorage();
       const applications = await storage.getApplications();
@@ -66,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update application endpoint
-  app.patch("/api/applications/:id", async (req, res) => {
+  app.patch("/api/applications/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -86,7 +86,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add application endpoint
-  app.post("/api/applications", async (req, res) => {
+  app.post("/api/applications", requireAuth, async (req, res) => {
     try {
       const newApplication = req.body;
       
@@ -100,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete application endpoint
-  app.delete("/api/applications/:id", async (req, res) => {
+  app.delete("/api/applications/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       
