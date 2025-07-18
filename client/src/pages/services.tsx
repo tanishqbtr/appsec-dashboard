@@ -22,6 +22,11 @@ export default function Services() {
     queryKey: ["/api/services-with-risk-scores"],
   });
 
+  // Get total findings data for percentile calculation
+  const { data: servicesWithFindings = [] } = useQuery({
+    queryKey: ["/api/services-total-findings"],
+  });
+
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
@@ -36,22 +41,26 @@ export default function Services() {
     }
   };
 
-  // Calculate percentile rankings based on risk scores (services with lower risk scores get higher percentiles)
+  // Calculate percentile rankings based on total findings (services with fewer findings get higher percentiles)
   const applicationsWithPercentiles = applications.map((app) => {
-    const currentRiskScore = parseFloat(app.finalRiskScore?.toString() || "0");
+    // Find corresponding service in findings data
+    const findingsData = servicesWithFindings.find(service => service.name === app.name);
+    const currentTotalFindings = findingsData?.totalFindings || 0;
     
-    // Count applications with higher risk scores (worse security)
-    const appsWithHigherRisk = applications.filter(otherApp => {
-      const otherRiskScore = parseFloat(otherApp.finalRiskScore?.toString() || "0");
-      return otherRiskScore > currentRiskScore;
+    // Count applications with higher total findings (worse security)
+    const appsWithMoreFindings = servicesWithFindings.filter(service => {
+      return service.totalFindings > currentTotalFindings;
     }).length;
     
-    // Higher percentile = better security (fewer findings/lower risk)
-    const percentile = Math.round((appsWithHigherRisk / applications.length) * 100);
+    // Higher percentile = better security (fewer findings)
+    const percentile = servicesWithFindings.length > 0 
+      ? Math.round((appsWithMoreFindings / servicesWithFindings.length) * 100)
+      : 0;
     
     return {
       ...app,
       percentile,
+      totalFindings: currentTotalFindings,
       displayRiskScore: app.finalRiskScore?.toFixed(1) || "0.0"
     };
   });
