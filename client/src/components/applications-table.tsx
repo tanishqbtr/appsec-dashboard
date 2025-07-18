@@ -68,6 +68,16 @@ interface EscapeFindings {
   low: number;
 }
 
+interface CrowdstrikeFindings {
+  id: number;
+  serviceName: string;
+  scanDate: string;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+}
+
 interface FindingsData {
   total: number;
   C: number;
@@ -172,6 +182,11 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
       if (selectedLabels.includes("APIs")) endpoints.push("/api/escape/apis");
     }
     
+    if (selectedEngine === "Crowdstrike" && selectedLabels.length > 0) {
+      if (selectedLabels.includes("Images")) endpoints.push("/api/crowdstrike/images");
+      if (selectedLabels.includes("Containers")) endpoints.push("/api/crowdstrike/containers");
+    }
+    
     return endpoints;
   };
 
@@ -205,11 +220,22 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     enabled: activeEndpoints.includes("/api/escape/apis"),
   });
 
+  // Crowdstrike queries
+  const imagesQuery = useQuery<CrowdstrikeFindings[]>({
+    queryKey: ["/api/crowdstrike/images"],
+    enabled: activeEndpoints.includes("/api/crowdstrike/images"),
+  });
+  
+  const crowdstrikeContainersQuery = useQuery<CrowdstrikeFindings[]>({
+    queryKey: ["/api/crowdstrike/containers"],
+    enabled: activeEndpoints.includes("/api/crowdstrike/containers"),
+  });
+
   // Combine findings from all selected scan types
-  const combinedFindings = new Map<string, MendFindings | EscapeFindings>();
+  const combinedFindings = new Map<string, MendFindings | EscapeFindings | CrowdstrikeFindings>();
   
   // Helper function to add findings to the combined map
-  const addFindings = (findings: (MendFindings | EscapeFindings)[], scanType: string) => {
+  const addFindings = (findings: (MendFindings | EscapeFindings | CrowdstrikeFindings)[], scanType: string) => {
     findings.forEach(finding => {
       const existing = combinedFindings.get(finding.serviceName);
       if (existing) {
@@ -235,11 +261,13 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   if (containersQuery.data) addFindings(containersQuery.data, "Containers");
   if (webAppsQuery.data) addFindings(webAppsQuery.data, "Web Applications");
   if (apisQuery.data) addFindings(apisQuery.data, "APIs");
+  if (imagesQuery.data) addFindings(imagesQuery.data, "Images");
+  if (crowdstrikeContainersQuery.data) addFindings(crowdstrikeContainersQuery.data, "Crowdstrike Containers");
 
   // Function to get findings data for a service (now using combined findings)
   const getServiceFindings = (serviceName: string): FindingsData => {
     // Only show findings if we have an active scan engine with selected labels
-    if ((selectedEngine === "Mend" || selectedEngine === "Escape") && selectedLabels.length > 0) {
+    if ((selectedEngine === "Mend" || selectedEngine === "Escape" || selectedEngine === "Crowdstrike") && selectedLabels.length > 0) {
       const combinedFinding = combinedFindings.get(serviceName);
       if (combinedFinding) {
         return {

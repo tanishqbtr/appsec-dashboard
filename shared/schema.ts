@@ -78,6 +78,28 @@ export const escapeApisFindings = pgTable("escape_apis_findings", {
   low: integer("low").notNull().default(0),
 });
 
+// Crowdstrike Images findings table
+export const crowdstrikeImagesFindings = pgTable("crowdstrike_images_findings", {
+  id: serial("id").primaryKey(),
+  serviceName: text("service_name").notNull(),
+  scanDate: text("scan_date").notNull(),
+  critical: integer("critical").notNull().default(0),
+  high: integer("high").notNull().default(0),
+  medium: integer("medium").notNull().default(0),
+  low: integer("low").notNull().default(0),
+});
+
+// Crowdstrike Containers findings table
+export const crowdstrikeContainersFindings = pgTable("crowdstrike_containers_findings", {
+  id: serial("id").primaryKey(),
+  serviceName: text("service_name").notNull(),
+  scanDate: text("scan_date").notNull(),
+  critical: integer("critical").notNull().default(0),
+  high: integer("high").notNull().default(0),
+  medium: integer("medium").notNull().default(0),
+  low: integer("low").notNull().default(0),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -107,6 +129,14 @@ export const insertEscapeApisFindingsSchema = createInsertSchema(escapeApisFindi
   id: true,
 });
 
+export const insertCrowdstrikeImagesFindingsSchema = createInsertSchema(crowdstrikeImagesFindings).omit({
+  id: true,
+});
+
+export const insertCrowdstrikeContainersFindingsSchema = createInsertSchema(crowdstrikeContainersFindings).omit({
+  id: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Application = typeof applications.$inferSelect;
@@ -121,6 +151,10 @@ export type EscapeWebAppsFinding = typeof escapeWebAppsFindings.$inferSelect;
 export type InsertEscapeWebAppsFinding = z.infer<typeof insertEscapeWebAppsFindingsSchema>;
 export type EscapeApisFinding = typeof escapeApisFindings.$inferSelect;
 export type InsertEscapeApisFinding = z.infer<typeof insertEscapeApisFindingsSchema>;
+export type CrowdstrikeImagesFinding = typeof crowdstrikeImagesFindings.$inferSelect;
+export type InsertCrowdstrikeImagesFinding = z.infer<typeof insertCrowdstrikeImagesFindingsSchema>;
+export type CrowdstrikeContainersFinding = typeof crowdstrikeContainersFindings.$inferSelect;
+export type InsertCrowdstrikeContainersFinding = z.infer<typeof insertCrowdstrikeContainersFindingsSchema>;
 
 // Analytics and reporting types
 export interface SecurityMetrics {
