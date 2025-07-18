@@ -43,7 +43,7 @@ import {
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import type { Application } from "@shared/schema";
 
@@ -229,6 +229,10 @@ export default function ServiceDetail() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [newTagInput, setNewTagInput] = useState("");
 
+  const handleGoBack = () => {
+    window.history.back();
+  };
+
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
@@ -353,12 +357,13 @@ export default function ServiceDetail() {
             <div className="text-center">
               <h1 className="text-2xl font-bold text-gray-900 mb-4">Service Not Found</h1>
               <p className="text-gray-600 mb-6">The requested service could not be found.</p>
-              <Link href="/services">
-                <Button className="bg-green-600 hover:bg-green-700">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Services
-                </Button>
-              </Link>
+              <Button 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={handleGoBack}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
             </div>
           </div>
         </div>
@@ -478,12 +483,14 @@ export default function ServiceDetail() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <Link href="/services">
-                <Button variant="outline" className="transition-all duration-200 hover:scale-105">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Services
-                </Button>
-              </Link>
+              <Button 
+                variant="outline" 
+                className="transition-all duration-200 hover:scale-105"
+                onClick={handleGoBack}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back
+              </Button>
               
               <Button 
                 onClick={handleEdit}
