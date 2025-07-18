@@ -128,6 +128,21 @@ function PercentileBadge({ percentile }: { percentile: number }) {
   );
 }
 
+// Helper function to calculate percentile based on total findings across all engines
+function calculatePercentileWithAllFindings(applications: Application[], app: Application, getAllServiceFindings: (serviceName: string) => FindingsData): number {
+  // Get total findings for this app across ALL engines
+  const appFindings = getAllServiceFindings(app.name);
+  const appTotal = appFindings.total;
+  
+  // Count how many applications have fewer total findings than this one
+  const appsWithFewerFindings = applications.filter(otherApp => {
+    const otherFindings = getAllServiceFindings(otherApp.name);
+    return otherFindings.total < appTotal;
+  }).length;
+  
+  return Math.round((appsWithFewerFindings / applications.length) * 100);
+}
+
 // Calculate percentile ranking based on risk score (since totalFindings is removed)
 function calculatePercentile(applications: Application[], currentApp: Application): number {
   const currentRiskScore = parseFloat(currentApp.riskScore);
@@ -291,10 +306,99 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     crowdstrikeContainersQuery.data
   ]);
 
+  // Always fetch all findings data for percentile calculation (regardless of selection)
+  const allScaQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/sca"],
+  });
+  
+  const allSastQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/sast"],
+  });
+  
+  const allMendContainersQuery = useQuery<MendFindings[]>({
+    queryKey: ["/api/mend/containers"],
+  });
+
+  const allWebAppsQuery = useQuery<EscapeFindings[]>({
+    queryKey: ["/api/escape/webapps"],
+  });
+  
+  const allApisQuery = useQuery<EscapeFindings[]>({
+    queryKey: ["/api/escape/apis"],
+  });
+
+  const allImagesQuery = useQuery<CrowdstrikeFindings[]>({
+    queryKey: ["/api/crowdstrike/images"],
+  });
+  
+  const allCrowdstrikeContainersQuery = useQuery<CrowdstrikeFindings[]>({
+    queryKey: ["/api/crowdstrike/containers"],
+  });
+
   // Check if any queries are loading
   const isLoadingFindings = scaQuery.isLoading || sastQuery.isLoading || containersQuery.isLoading || 
                            webAppsQuery.isLoading || apisQuery.isLoading || imagesQuery.isLoading || 
                            crowdstrikeContainersQuery.isLoading;
+
+  // Create a combined map of ALL findings for percentile calculation (independent of selection)
+  const allCombinedFindings = useMemo(() => {
+    const findingsMap = new Map<string, MendFindings | EscapeFindings | CrowdstrikeFindings>();
+    
+    // Helper function to add findings to the combined map
+    const addFindings = (findings: (MendFindings | EscapeFindings | CrowdstrikeFindings)[], scanType: string) => {
+      findings.forEach(finding => {
+        const existing = findingsMap.get(finding.serviceName);
+        if (existing) {
+          // Sum the findings if service already exists
+          findingsMap.set(finding.serviceName, {
+            ...existing,
+            critical: existing.critical + finding.critical,
+            high: existing.high + finding.high,
+            medium: existing.medium + finding.medium,
+            low: existing.low + finding.low,
+            scanDate: finding.scanDate > existing.scanDate ? finding.scanDate : existing.scanDate
+          });
+        } else {
+          // Add new service
+          findingsMap.set(finding.serviceName, { ...finding });
+        }
+      });
+    };
+
+    // Add findings from ALL engines (for percentile calculation)
+    if (allScaQuery.data) addFindings(allScaQuery.data, "SCA");
+    if (allSastQuery.data) addFindings(allSastQuery.data, "SAST");
+    if (allMendContainersQuery.data) addFindings(allMendContainersQuery.data, "Mend Containers");
+    if (allWebAppsQuery.data) addFindings(allWebAppsQuery.data, "Web Applications");
+    if (allApisQuery.data) addFindings(allApisQuery.data, "APIs");
+    if (allImagesQuery.data) addFindings(allImagesQuery.data, "Images");
+    if (allCrowdstrikeContainersQuery.data) addFindings(allCrowdstrikeContainersQuery.data, "Crowdstrike Containers");
+    
+    return findingsMap;
+  }, [
+    allScaQuery.data, 
+    allSastQuery.data, 
+    allMendContainersQuery.data, 
+    allWebAppsQuery.data, 
+    allApisQuery.data, 
+    allImagesQuery.data, 
+    allCrowdstrikeContainersQuery.data
+  ]);
+
+  // Function to get ALL findings data for a service (for percentile calculation)
+  const getAllServiceFindings = (serviceName: string): FindingsData => {
+    const combinedFinding = allCombinedFindings.get(serviceName);
+    if (combinedFinding) {
+      return {
+        total: combinedFinding.critical + combinedFinding.high + combinedFinding.medium + combinedFinding.low,
+        C: combinedFinding.critical,
+        H: combinedFinding.high,
+        M: combinedFinding.medium,
+        L: combinedFinding.low
+      };
+    }
+    return { total: 0, C: 0, H: 0, M: 0, L: 0 };
+  };
 
   // Function to get findings data for a service (now using combined findings)
   const getServiceFindings = (serviceName: string): FindingsData => {
@@ -369,8 +473,8 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         bValue = bLow.L;
         break;
       case 'percentile':
-        aValue = calculatePercentile(applications, a);
-        bValue = calculatePercentile(applications, b);
+        aValue = calculatePercentileWithAllFindings(applications, a, getAllServiceFindings);
+        bValue = calculatePercentileWithAllFindings(applications, b, getAllServiceFindings);
         break;
       default:
         return 0;
@@ -422,7 +526,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     const csvData = sortedApplications.map(app => {
       // Get findings from Mend data if available
       const findings = getServiceFindings(app.name);
-      const percentile = calculatePercentile(applications, app);
+      const percentile = calculatePercentileWithAllFindings(applications, app, getAllServiceFindings);
       return [
         app.name,
         app.riskScore,
@@ -454,7 +558,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     const data = sortedApplications.map(app => {
       // Get findings from Mend data if available
       const findings = getServiceFindings(app.name);
-      const percentile = calculatePercentile(applications, app);
+      const percentile = calculatePercentileWithAllFindings(applications, app, getAllServiceFindings);
       return [
         app.name,
         app.riskScore,
@@ -497,7 +601,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     const data = sortedApplications.map(app => {
       // Get findings from Mend data if available
       const findings = getServiceFindings(app.name);
-      const percentile = calculatePercentile(applications, app);
+      const percentile = calculatePercentileWithAllFindings(applications, app, getAllServiceFindings);
       return [
         app.name,
         app.riskScore,
@@ -642,7 +746,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               paginatedApplications.map((app, index) => {
                 // Get findings from Mend data if available, otherwise use defaults
                 const totalFindings: FindingsData = getServiceFindings(app.name);
-                const percentile = calculatePercentile(applications, app);
+                const percentile = calculatePercentileWithAllFindings(applications, app, getAllServiceFindings);
                 
                 return (
                   <TableRow 
