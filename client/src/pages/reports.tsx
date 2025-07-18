@@ -3,6 +3,7 @@ import { useState } from "react";
 import Navigation from "@/components/navigation";
 import ApplicationsTable from "@/components/applications-table";
 import OnboardingTutorial from "@/components/onboarding-tutorial";
+import PageWrapper from "@/components/page-wrapper";
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -118,9 +119,21 @@ export default function Reports() {
     }
   });
 
+  if (isLoading) {
+    return (
+      <PageWrapper loadingMessage="Loading Reports...">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-300 rounded w-1/4"></div>
+          <div className="h-64 bg-gray-300 rounded"></div>
+        </div>
+      </PageWrapper>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation onLogout={handleLogout} currentPage="reports" onRestartTutorial={resetOnboarding} />
+    <PageWrapper loadingMessage="Loading Reports...">
+      <div className="min-h-screen bg-gray-50">
+        <Navigation onLogout={handleLogout} currentPage="reports" onRestartTutorial={resetOnboarding} />
       <OnboardingTutorial 
         isVisible={showOnboarding}
         onComplete={completeOnboarding}
@@ -266,5 +279,6 @@ export default function Reports() {
         </Card>
       </div>
     </div>
+    </PageWrapper>
   );
 }
