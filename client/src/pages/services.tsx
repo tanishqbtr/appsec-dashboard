@@ -19,7 +19,7 @@ export default function Services() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
-    queryKey: ["/api/applications"],
+    queryKey: ["/api/applications-with-risk-assessments"],
   });
 
   const handleLogout = async () => {
@@ -36,26 +36,23 @@ export default function Services() {
     }
   };
 
-  // Calculate percentile rankings based on total findings
+  // Calculate percentile rankings based on risk scores (services with lower risk scores get higher percentiles)
   const applicationsWithPercentiles = applications.map((app) => {
-    const findings = app.totalFindings && app.totalFindings !== "undefined" 
-      ? JSON.parse(app.totalFindings) 
-      : { total: 0, C: 0, H: 0, M: 0, L: 0 };
+    const currentRiskScore = parseFloat(app.finalRiskScore || app.riskScore || "0");
     
-    const totalFindings = findings.total || 0;
-    const appsWithFewerFindings = applications.filter(otherApp => {
-      const otherFindings = otherApp.totalFindings && otherApp.totalFindings !== "undefined" 
-        ? JSON.parse(otherApp.totalFindings) 
-        : { total: 0, C: 0, H: 0, M: 0, L: 0 };
-      return (otherFindings.total || 0) < totalFindings;
+    // Count applications with higher risk scores (worse security)
+    const appsWithHigherRisk = applications.filter(otherApp => {
+      const otherRiskScore = parseFloat(otherApp.finalRiskScore || otherApp.riskScore || "0");
+      return otherRiskScore > currentRiskScore;
     }).length;
     
-    const percentile = Math.round((appsWithFewerFindings / applications.length) * 100);
+    // Higher percentile = better security (fewer findings/lower risk)
+    const percentile = Math.round((appsWithHigherRisk / applications.length) * 100);
     
     return {
       ...app,
       percentile,
-      totalFindings: totalFindings
+      displayRiskScore: app.finalRiskScore || app.riskScore
     };
   });
 
@@ -73,7 +70,7 @@ export default function Services() {
         comparison = a.name.localeCompare(b.name);
         break;
       case "riskScore":
-        comparison = parseFloat(a.riskScore) - parseFloat(b.riskScore);
+        comparison = parseFloat(a.displayRiskScore) - parseFloat(b.displayRiskScore);
         break;
       case "percentile":
         comparison = a.percentile - b.percentile;
@@ -214,9 +211,6 @@ export default function Services() {
                                       <Badge variant="outline" className="text-xs">
                                         {app.scanEngine}
                                       </Badge>
-                                      <span className="text-xs text-gray-500">
-                                        {app.totalFindings} findings
-                                      </span>
                                     </div>
                                   </div>
                                 </div>
@@ -224,7 +218,7 @@ export default function Services() {
                             </td>
                             <td className="py-4 px-4">
                               <span className="text-lg font-semibold text-gray-900">
-                                {app.riskScore}
+                                {app.displayRiskScore}
                               </span>
                             </td>
                             <td className="py-4 px-4">
