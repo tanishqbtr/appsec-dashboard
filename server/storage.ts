@@ -16,7 +16,7 @@ import {
   type InsertMendContainersFinding
 } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -401,26 +401,62 @@ export class DatabaseStorage implements IStorage {
     return updatedApplication || undefined;
   }
 
-  // Mend findings methods
+  // Mend findings methods - always return the most recent findings
   async getMendScaFindings(serviceName?: string): Promise<MendScaFinding[]> {
     if (serviceName) {
-      return await db.select().from(mendScaFindings).where(eq(mendScaFindings.serviceName, serviceName));
+      // Get the most recent finding for the specific service
+      return await db.select().from(mendScaFindings)
+        .where(eq(mendScaFindings.serviceName, serviceName))
+        .orderBy(desc(mendScaFindings.scanDate))
+        .limit(1);
     }
-    return await db.select().from(mendScaFindings);
+    
+    // Get the most recent finding for each service (subquery approach)
+    const result = await db.execute(sql`
+      SELECT DISTINCT ON (service_name) *
+      FROM mend_sca_findings
+      ORDER BY service_name, scan_date DESC
+    `);
+    
+    return result.rows as MendScaFinding[];
   }
 
   async getMendSastFindings(serviceName?: string): Promise<MendSastFinding[]> {
     if (serviceName) {
-      return await db.select().from(mendSastFindings).where(eq(mendSastFindings.serviceName, serviceName));
+      // Get the most recent finding for the specific service
+      return await db.select().from(mendSastFindings)
+        .where(eq(mendSastFindings.serviceName, serviceName))
+        .orderBy(desc(mendSastFindings.scanDate))
+        .limit(1);
     }
-    return await db.select().from(mendSastFindings);
+    
+    // Get the most recent finding for each service (subquery approach)
+    const result = await db.execute(sql`
+      SELECT DISTINCT ON (service_name) *
+      FROM mend_sast_findings
+      ORDER BY service_name, scan_date DESC
+    `);
+    
+    return result.rows as MendSastFinding[];
   }
 
   async getMendContainersFindings(serviceName?: string): Promise<MendContainersFinding[]> {
     if (serviceName) {
-      return await db.select().from(mendContainersFindings).where(eq(mendContainersFindings.serviceName, serviceName));
+      // Get the most recent finding for the specific service
+      return await db.select().from(mendContainersFindings)
+        .where(eq(mendContainersFindings.serviceName, serviceName))
+        .orderBy(desc(mendContainersFindings.scanDate))
+        .limit(1);
     }
-    return await db.select().from(mendContainersFindings);
+    
+    // Get the most recent finding for each service (subquery approach)
+    const result = await db.execute(sql`
+      SELECT DISTINCT ON (service_name) *
+      FROM mend_containers_findings
+      ORDER BY service_name, scan_date DESC
+    `);
+    
+    return result.rows as MendContainersFinding[];
   }
 
   async createMendScaFinding(finding: InsertMendScaFinding): Promise<MendScaFinding> {
