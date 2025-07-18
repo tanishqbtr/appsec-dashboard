@@ -11,14 +11,10 @@ export const users = pgTable("users", {
 export const applications = pgTable("applications", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
-  projects: integer("projects").notNull(),
-  violatingFindings: text("violating_findings").notNull(), // JSON string
-  riskFactors: text("risk_factors").notNull(),
   riskScore: text("risk_score").notNull(),
   totalFindings: text("total_findings").notNull(), // JSON string
   labels: text("labels").array(),
   tags: text("tags").array(),
-  lastScan: text("last_scan").notNull(),
   hasAlert: boolean("has_alert").default(false),
   scanEngine: text("scan_engine").notNull(),
   // Service details
