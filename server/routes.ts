@@ -213,6 +213,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get services with risk scores for Services page
+  app.get("/api/services-with-risk-scores", async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const riskAssessments = await storage.getAllRiskAssessments();
+      
+      // Transform risk assessments into service format for Services page
+      const servicesWithRisk = riskAssessments.map(risk => ({
+        id: risk.id,
+        name: risk.serviceName,
+        finalRiskScore: risk.finalRiskScore,
+        riskLevel: risk.riskLevel,
+        scanEngine: "Risk Assessment", // Default scan engine type
+        labels: [],
+        tags: []
+      }));
+      
+      res.json(servicesWithRisk);
+    } catch (error) {
+      console.error("Error fetching services with risk scores:", error);
+      res.status(500).json({ error: "Failed to fetch services" });
+    }
+  });
+
   // Get applications with risk assessment data merged
   app.get("/api/applications-with-risk", async (req, res) => {
     try {
