@@ -25,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Application } from "@shared/schema";
 import * as XLSX from 'xlsx';
@@ -231,38 +231,65 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     enabled: activeEndpoints.includes("/api/crowdstrike/containers"),
   });
 
-  // Combine findings from all selected scan types
-  const combinedFindings = new Map<string, MendFindings | EscapeFindings | CrowdstrikeFindings>();
-  
-  // Helper function to add findings to the combined map
-  const addFindings = (findings: (MendFindings | EscapeFindings | CrowdstrikeFindings)[], scanType: string) => {
-    findings.forEach(finding => {
-      const existing = combinedFindings.get(finding.serviceName);
-      if (existing) {
-        // Sum the findings if service already exists
-        combinedFindings.set(finding.serviceName, {
-          ...existing,
-          critical: existing.critical + finding.critical,
-          high: existing.high + finding.high,
-          medium: existing.medium + finding.medium,
-          low: existing.low + finding.low,
-          scanDate: finding.scanDate > existing.scanDate ? finding.scanDate : existing.scanDate // Keep most recent date
-        });
-      } else {
-        // Add new service
-        combinedFindings.set(finding.serviceName, { ...finding });
-      }
-    });
-  };
+  // Combine findings from all selected scan types - rebuild fresh each time
+  const combinedFindings = useMemo(() => {
+    const findingsMap = new Map<string, MendFindings | EscapeFindings | CrowdstrikeFindings>();
+    
+    // Helper function to add findings to the combined map
+    const addFindings = (findings: (MendFindings | EscapeFindings | CrowdstrikeFindings)[], scanType: string) => {
+      findings.forEach(finding => {
+        const existing = findingsMap.get(finding.serviceName);
+        if (existing) {
+          // Sum the findings if service already exists
+          findingsMap.set(finding.serviceName, {
+            ...existing,
+            critical: existing.critical + finding.critical,
+            high: existing.high + finding.high,
+            medium: existing.medium + finding.medium,
+            low: existing.low + finding.low,
+            scanDate: finding.scanDate > existing.scanDate ? finding.scanDate : existing.scanDate // Keep most recent date
+          });
+        } else {
+          // Add new service
+          findingsMap.set(finding.serviceName, { ...finding });
+        }
+      });
+    };
 
-  // Add findings from each enabled query
-  if (scaQuery.data) addFindings(scaQuery.data, "SCA");
-  if (sastQuery.data) addFindings(sastQuery.data, "SAST");
-  if (containersQuery.data) addFindings(containersQuery.data, "Containers");
-  if (webAppsQuery.data) addFindings(webAppsQuery.data, "Web Applications");
-  if (apisQuery.data) addFindings(apisQuery.data, "APIs");
-  if (imagesQuery.data) addFindings(imagesQuery.data, "Images");
-  if (crowdstrikeContainersQuery.data) addFindings(crowdstrikeContainersQuery.data, "Crowdstrike Containers");
+    // Add findings from each enabled query - only add if query is enabled and has data
+    if (activeEndpoints.includes("/api/mend/sca") && scaQuery.data) {
+      addFindings(scaQuery.data, "SCA");
+    }
+    if (activeEndpoints.includes("/api/mend/sast") && sastQuery.data) {
+      addFindings(sastQuery.data, "SAST");
+    }
+    if (activeEndpoints.includes("/api/mend/containers") && containersQuery.data) {
+      addFindings(containersQuery.data, "Containers");
+    }
+    if (activeEndpoints.includes("/api/escape/webapps") && webAppsQuery.data) {
+      addFindings(webAppsQuery.data, "Web Applications");
+    }
+    if (activeEndpoints.includes("/api/escape/apis") && apisQuery.data) {
+      addFindings(apisQuery.data, "APIs");
+    }
+    if (activeEndpoints.includes("/api/crowdstrike/images") && imagesQuery.data) {
+      addFindings(imagesQuery.data, "Images");
+    }
+    if (activeEndpoints.includes("/api/crowdstrike/containers") && crowdstrikeContainersQuery.data) {
+      addFindings(crowdstrikeContainersQuery.data, "Crowdstrike Containers");
+    }
+    
+    return findingsMap;
+  }, [
+    activeEndpoints, 
+    scaQuery.data, 
+    sastQuery.data, 
+    containersQuery.data, 
+    webAppsQuery.data, 
+    apisQuery.data, 
+    imagesQuery.data, 
+    crowdstrikeContainersQuery.data
+  ]);
 
   // Function to get findings data for a service (now using combined findings)
   const getServiceFindings = (serviceName: string): FindingsData => {
