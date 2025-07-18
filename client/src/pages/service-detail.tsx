@@ -298,6 +298,7 @@ export default function ServiceDetail() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/applications-with-risk"] });
       setIsEditDialogOpen(false);
       setEditingService(null);
       toast({
@@ -317,6 +318,7 @@ export default function ServiceDetail() {
   const handleEdit = () => {
     setEditingService({
       name: application?.name || "",
+      description: application?.description || "",
       githubRepo: application?.githubRepo || "",
       jiraProject: application?.jiraProject || "",
       slackChannel: application?.slackChannel || "",
@@ -1062,6 +1064,211 @@ export default function ServiceDetail() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Edit Dialog */}
+          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle>Edit Service Information</DialogTitle>
+                <DialogDescription>
+                  Update the service name, links, compliance tags, and owner information below.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4 max-h-96 overflow-y-auto">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="serviceName">Service Name</Label>
+                    <Input
+                      id="serviceName"
+                      placeholder="Enter service name"
+                      value={editingService?.name || ""}
+                      onChange={(e) => setEditingService({...editingService, name: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="serviceOwner">Service Owner</Label>
+                    <Input
+                      id="serviceOwner"
+                      placeholder="John Doe (Team Name)"
+                      value={editingService?.serviceOwner || ""}
+                      onChange={(e) => setEditingService({...editingService, serviceOwner: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="serviceDescription">Description</Label>
+                    <Input
+                      id="serviceDescription"
+                      placeholder="Brief description of the service"
+                      value={editingService?.description || ""}
+                      onChange={(e) => setEditingService({...editingService, description: e.target.value})}
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label>Compliance Tags</Label>
+                  <div className="space-y-3 mt-2">
+                    {/* Display selected tags */}
+                    <div className="flex flex-wrap gap-2">
+                      {(editingService?.tags || []).map((tag: string, index: number) => (
+                        <Badge key={index} variant="outline" className="bg-green-50 border-green-200 text-green-700 flex items-center gap-1">
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newTags = editingService.tags.filter((_: string, i: number) => i !== index);
+                              setEditingService({...editingService, tags: newTags});
+                            }}
+                            className="ml-1 hover:text-red-500 text-green-500"
+                          >
+                            ×
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    
+                    {/* Dropdown for adding tags */}
+                    <Select
+                      onValueChange={(value) => {
+                        if (value === "custom") {
+                          return;
+                        }
+                        const currentTags = editingService?.tags || [];
+                        if (!currentTags.includes(value)) {
+                          setEditingService({...editingService, tags: [...currentTags, value]});
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select or add compliance tags" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {["HITRUST", "ISO 27001", "SOC 2", "HIPAA", "PCI DSS"].map((tag) => (
+                          <SelectItem key={tag} value={tag}>
+                            {tag}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="custom">+ Add custom tag</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
+                    {/* Custom tag input */}
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Enter custom compliance tag"
+                        value={newTagInput}
+                        onChange={(e) => setNewTagInput(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && newTagInput.trim()) {
+                            e.preventDefault();
+                            const currentTags = editingService?.tags || [];
+                            if (!currentTags.includes(newTagInput.trim())) {
+                              setEditingService({...editingService, tags: [...currentTags, newTagInput.trim()]});
+                            }
+                            setNewTagInput("");
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (newTagInput.trim()) {
+                            const currentTags = editingService?.tags || [];
+                            if (!currentTags.includes(newTagInput.trim())) {
+                              setEditingService({...editingService, tags: [...currentTags, newTagInput.trim()]});
+                            }
+                            setNewTagInput("");
+                          }
+                        }}
+                        disabled={!newTagInput.trim()}
+                      >
+                        Add
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Select from dropdown or add custom compliance tags
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="githubRepo">GitHub Repository</Label>
+                  <Input
+                    id="githubRepo"
+                    placeholder="https://github.com/company/repo"
+                    value={editingService?.githubRepo || ""}
+                    onChange={(e) => setEditingService({...editingService, githubRepo: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="jiraProject">Jira Project</Label>
+                  <Input
+                    id="jiraProject"
+                    placeholder="https://company.atlassian.net/browse/PROJECT"
+                    value={editingService?.jiraProject || ""}
+                    onChange={(e) => setEditingService({...editingService, jiraProject: e.target.value})}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="slackChannel">Slack Channel</Label>
+                  <Input
+                    id="slackChannel"
+                    placeholder="https://company.slack.com/channels/team"
+                    value={editingService?.slackChannel || ""}
+                    onChange={(e) => setEditingService({...editingService, slackChannel: e.target.value})}
+                  />
+                </div>
+                
+                {/* Security Scanner Links */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h4 className="font-medium text-gray-900">Security Scanner Links</h4>
+                  <div>
+                    <Label htmlFor="mendLink">Mend Scanner Link</Label>
+                    <Input
+                      id="mendLink"
+                      placeholder="https://mend.company.com/project/..."
+                      value={editingService?.mendLink || ""}
+                      onChange={(e) => setEditingService({...editingService, mendLink: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="crowdstrikeLink">Crowdstrike Scanner Link</Label>
+                    <Input
+                      id="crowdstrikeLink"
+                      placeholder="https://falcon.crowdstrike.com/investigate/..."
+                      value={editingService?.crowdstrikeLink || ""}
+                      onChange={(e) => setEditingService({...editingService, crowdstrikeLink: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="escapeLink">Escape Scanner Link</Label>
+                    <Input
+                      id="escapeLink"
+                      placeholder="https://escape.company.com/dashboard/..."
+                      value={editingService?.escapeLink || ""}
+                      onChange={(e) => setEditingService({...editingService, escapeLink: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSave}
+                  disabled={updateServiceMutation.isPending}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {updateServiceMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
       </TooltipProvider>
