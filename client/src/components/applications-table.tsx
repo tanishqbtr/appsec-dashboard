@@ -162,7 +162,6 @@ function LoadingSkeleton() {
         <TableRow key={i}>
           <TableCell><Skeleton className="h-4 w-48" /></TableCell>
           <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-16" /></TableCell>
           <TableCell><Skeleton className="h-4 w-12" /></TableCell>
           <TableCell><Skeleton className="h-4 w-12" /></TableCell>
           <TableCell><Skeleton className="h-4 w-12" /></TableCell>
@@ -522,16 +521,14 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   };
 
   const exportToCSV = () => {
-    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
+    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const csvData = sortedApplications.map(app => {
       // Get findings from Mend data if available
       const findings = getServiceFindings(app.name);
-      const percentile = calculatePercentileWithAllFindings(applications, app, getAllServiceFindings);
       return [
         app.name,
         app.riskScore,
         findings.total,
-        `${Math.round(percentile)}%`,
         findings.C,
         findings.H,
         findings.M,
@@ -554,16 +551,14 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   };
 
   const exportToXLSX = () => {
-    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Percentile', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
+    const headers = ['Service Name', 'Risk Score', 'Total Findings', 'Critical Findings', 'High Findings', 'Medium Findings', 'Low Findings', 'Tags'];
     const data = sortedApplications.map(app => {
       // Get findings from Mend data if available
       const findings = getServiceFindings(app.name);
-      const percentile = calculatePercentileWithAllFindings(applications, app, getAllServiceFindings);
       return [
         app.name,
         app.riskScore,
         findings.total,
-        `${Math.round(percentile)}%`,
         findings.C,
         findings.H,
         findings.M,
@@ -597,16 +592,14 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
     doc.setFontSize(10);
     doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
 
-    const headers = [['Service Name', 'Risk Score', 'Total', 'Percentile', 'Critical', 'High', 'Medium', 'Low', 'Tags']];
+    const headers = [['Service Name', 'Risk Score', 'Total', 'Critical', 'High', 'Medium', 'Low', 'Tags']];
     const data = sortedApplications.map(app => {
       // Get findings from Mend data if available
       const findings = getServiceFindings(app.name);
-      const percentile = calculatePercentileWithAllFindings(applications, app, getAllServiceFindings);
       return [
         app.name,
         app.riskScore,
         findings.total.toString(),
-        `${Math.round(percentile)}%`,
         findings.C.toString(),
         findings.H.toString(),
         findings.M.toString(),
@@ -625,12 +618,11 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         0: { cellWidth: 35 },
         1: { cellWidth: 15 },
         2: { cellWidth: 12 },
-        3: { cellWidth: 15 },
+        3: { cellWidth: 12 },
         4: { cellWidth: 12 },
         5: { cellWidth: 12 },
         6: { cellWidth: 12 },
-        7: { cellWidth: 12 },
-        8: { cellWidth: 25 }
+        7: { cellWidth: 25 }
       }
     });
 
@@ -700,11 +692,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
             <TableRow className="bg-gray-50">
               <SortableHeader field="name">Service Name</SortableHeader>
               <SortableHeader field="riskScore">Risk Score</SortableHeader>
-              <SortableHeader field="percentile">
-                <div data-tutorial-target="percentile-column">
-                  Percentile
-                </div>
-              </SortableHeader>
+
               <SortableHeader field="totalFindings">Total Findings</SortableHeader>
               <SortableHeader field="criticalFindings">Critical Findings</SortableHeader>
               <SortableHeader field="highFindings">High Findings</SortableHeader>
@@ -720,7 +708,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               <LoadingSkeleton />
             ) : isLoadingFindings && selectedEngine && selectedLabels.length > 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center">
+                <TableCell colSpan={8} className="h-24 text-center">
                   <div className="flex items-center justify-center space-x-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
                     <span className="text-gray-600">Loading findings data...</span>
@@ -729,7 +717,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               </TableRow>
             ) : !selectedEngine || selectedLabels.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center">
+                <TableCell colSpan={8} className="h-24 text-center">
                   <div className="text-gray-500">
                     <div className="text-lg font-medium mb-2">Select a scan engine and labels to view data</div>
                     <div className="text-sm">Choose from Mend, Escape, or Crowdstrike engines and their respective labels</div>
@@ -738,7 +726,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               </TableRow>
             ) : paginatedApplications.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-24 text-center">
+                <TableCell colSpan={8} className="h-24 text-center">
                   No applications found matching your criteria.
                 </TableCell>
               </TableRow>
@@ -746,7 +734,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               paginatedApplications.map((app, index) => {
                 // Get findings from Mend data if available, otherwise use defaults
                 const totalFindings: FindingsData = getServiceFindings(app.name);
-                const percentile = calculatePercentileWithAllFindings(applications, app, getAllServiceFindings);
+
                 
                 return (
                   <TableRow 
@@ -766,9 +754,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                     <TableCell>
                       <div className="text-sm font-bold text-orange-600">{app.riskScore}</div>
                     </TableCell>
-                    <TableCell>
-                      <PercentileBadge percentile={percentile} />
-                    </TableCell>
+
                     <TableCell>
                       <div className="text-sm font-medium text-gray-900">{totalFindings.total}</div>
                     </TableCell>
