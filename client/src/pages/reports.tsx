@@ -2,9 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import Navigation from "@/components/navigation";
 import ApplicationsTable from "@/components/applications-table";
-import OnboardingTutorial from "@/components/onboarding-tutorial";
+import ReportsTutorial from "@/components/reports-tutorial";
 import PageWrapper from "@/components/page-wrapper";
-import { useOnboarding } from "@/hooks/use-onboarding";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Filter, Search, Settings } from "lucide-react";
+import { Filter, Search, Settings, HelpCircle } from "lucide-react";
 import { Link } from "wouter";
 import type { Application } from "@shared/schema";
 
@@ -26,16 +26,29 @@ export default function Reports() {
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [filterMode, setFilterMode] = useState<"labels" | "tags">("tags");
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["/api/applications-with-risk"],
   });
 
-  const { showOnboarding, completeOnboarding, skipOnboarding, resetOnboarding } = useOnboarding();
+  const { toast } = useToast();
 
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
+  };
+
+  const handleStartTutorial = () => {
+    setShowTutorial(true);
+  };
+
+  const handleCompleteTutorial = () => {
+    setShowTutorial(false);
+    toast({
+      title: "Tutorial Complete!",
+      description: "You've learned how to filter and analyze security findings.",
+    });
   };
 
   const handleEngineSelect = (engine: string) => {
@@ -133,28 +146,35 @@ export default function Reports() {
   return (
     <PageWrapper loadingMessage="Loading Reports...">
       <div className="min-h-screen bg-gray-50">
-        <Navigation onLogout={handleLogout} currentPage="reports" onRestartTutorial={resetOnboarding} />
-      <OnboardingTutorial 
-        isVisible={showOnboarding}
-        onComplete={completeOnboarding}
-        onSkip={skipOnboarding}
-      />
+        <Navigation onLogout={handleLogout} currentPage="reports" />
       
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Security Findings</h1>
-          <p className="mt-2 text-gray-600">
-            Manage and monitor your services across different security tools.
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Security Findings</h1>
+              <p className="mt-2 text-gray-600">
+                Manage and monitor your services across different security tools.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleStartTutorial}
+              className="btn-smooth flex items-center gap-2"
+            >
+              <HelpCircle className="h-4 w-4" />
+              Take Tutorial
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
-        <div className="mb-6 bg-white border border-gray-200 rounded-lg p-6" data-tutorial-target="filter-section">
+        <div className="mb-6 bg-white border border-gray-200 rounded-lg p-6" data-tutorial="filter-section">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Side - Scan Engine and Labels */}
             <div>
               {/* Scan Engine Selection */}
-              <div>
+              <div data-tutorial="scan-engines">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">Scan Engine</h3>
                 <div className="flex gap-2">
                   {["Mend", "Escape", "Crowdstrike"].map((engine) => (
@@ -177,7 +197,7 @@ export default function Reports() {
 
               {/* Labels Selection - Only show when engine is selected */}
               {selectedEngine && (
-                <div className="mt-4">
+                <div className="mt-4" data-tutorial="engine-labels">
                   <h3 className="text-sm font-medium text-gray-700 mb-2">
                     {selectedEngine} Labels
                   </h3>
@@ -203,7 +223,7 @@ export default function Reports() {
             </div>
 
             {/* Right Side - Tags Selection */}
-            <div>
+            <div data-tutorial="compliance-tags">
               <h3 className="text-sm font-medium text-gray-700 mb-2">Compliance Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {["HITRUST", "ISO 27001", "SOC 2", "HIPAA", "PCI DSS"].map((tag) => (
@@ -227,7 +247,7 @@ export default function Reports() {
 
           {/* Active Filters */}
           {(searchTerm || selectedLabels.length > 0 || selectedTags.length > 0) && (
-            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200">
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200" data-tutorial="active-filters">
               {searchTerm && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   Search: {searchTerm}
@@ -261,7 +281,7 @@ export default function Reports() {
         </div>
 
         {/* Applications Table */}
-        <Card data-tutorial-target="services-table">
+        <Card data-tutorial="services-table">
           <CardHeader>
             <CardTitle>Services ({filteredApplications.length})</CardTitle>
           </CardHeader>
@@ -278,6 +298,13 @@ export default function Reports() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Reports Tutorial */}
+      <ReportsTutorial
+        isOpen={showTutorial}
+        onClose={() => setShowTutorial(false)}
+        onComplete={handleCompleteTutorial}
+      />
     </div>
     </PageWrapper>
   );

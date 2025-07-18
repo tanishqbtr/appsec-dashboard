@@ -653,13 +653,14 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-10"
+            data-tutorial="search-bar"
           />
         </div>
         
         <div className="flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" data-tutorial-target="export-button">
+              <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" data-tutorial="export-controls">
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
