@@ -15,6 +15,7 @@ Animations: Smooth hover effects with 200ms transitions and subtle scaling
 Other pages: Empty placeholder pages for future development
 Percentile system: Services ranked by total findings with color-coded badges - services with fewer findings get higher percentiles (Top 10% = Green, Top 25% = Blue, Top 50% = Yellow, Bottom 50% = Orange, Bottom 25% = Red) (updated July 17, 2025)
 Interactive onboarding tutorial: Guides new users through key features with step-by-step walkthrough, highlighting elements and providing contextual information (updated July 17, 2025)
+Database schema simplification: Removed unnecessary fields (projects, violating findings, risk factors, last scan) from services table - keeping only essential data (updated July 18, 2025)
 
 ## System Architecture
 
