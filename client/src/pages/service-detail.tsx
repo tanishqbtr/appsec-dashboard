@@ -883,24 +883,24 @@ export default function ServiceDetail() {
                   </div>
 
                   {/* Risk Assessment Details */}
-                  {riskAssessmentData && (
-                    <div className="space-y-4 border-t pt-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-2">
-                          <Shield className="h-5 w-5 text-green-600" />
-                          <h4 className="text-lg font-semibold text-gray-900">Risk Assessment Details</h4>
-                        </div>
-                        <Button 
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.location.href = '/risk-scoring'}
-                          className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50"
-                        >
-                          <Edit3 className="h-3 w-3" />
-                          Edit
-                        </Button>
+                  <div className="space-y-4 border-t pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-green-600" />
+                        <h4 className="text-lg font-semibold text-gray-900">Risk Assessment Details</h4>
                       </div>
-                      
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        onClick={() => window.location.href = '/risk-scoring'}
+                        className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50"
+                      >
+                        <Edit3 className="h-3 w-3" />
+                        {riskAssessmentData ? "Edit" : "Create"}
+                      </Button>
+                    </div>
+                    
+                    {riskAssessmentData ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Data Classification Card */}
                         <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
@@ -937,169 +937,109 @@ export default function ServiceDetail() {
                             )}
                           </div>
                         </div>
-
-                        {/* CIA Triad Card */}
-                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                              <Lock className="h-4 w-4 text-purple-600" />
+                      </div>
+                    ) : (
+                        /* Placeholder cards for when no risk assessment data exists */
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Data Classification Placeholder */}
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 transition-all duration-200">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <Database className="h-4 w-4 text-gray-400" />
+                              </div>
+                              <h5 className="font-semibold text-gray-800">Data Classification</h5>
                             </div>
-                            <h5 className="font-semibold text-gray-800">CIA Triad Impact</h5>
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Classification:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">PHI:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Eligibility Data:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="space-y-2">
-                            {riskAssessmentData.confidentialityImpact && (
+
+                          {/* CIA Triad Placeholder */}
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 transition-all duration-200">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <Lock className="h-4 w-4 text-gray-400" />
+                              </div>
+                              <h5 className="font-semibold text-gray-800">CIA Triad Impact</h5>
+                            </div>
+                            <div className="space-y-2">
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Confidentiality:</span>
-                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-                                  {riskAssessmentData.confidentialityImpact}
-                                </Badge>
+                                <span className="text-sm text-gray-400">Not assessed</span>
                               </div>
-                            )}
-                            {riskAssessmentData.integrityImpact && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Integrity:</span>
-                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-                                  {riskAssessmentData.integrityImpact}
-                                </Badge>
+                                <span className="text-sm text-gray-400">Not assessed</span>
                               </div>
-                            )}
-                            {riskAssessmentData.availabilityImpact && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Availability:</span>
-                                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
-                                  {riskAssessmentData.availabilityImpact}
-                                </Badge>
+                                <span className="text-sm text-gray-400">Not assessed</span>
                               </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Attack Surface Card */}
-                        <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                              <Globe className="h-4 w-4 text-orange-600" />
                             </div>
-                            <h5 className="font-semibold text-gray-800">Attack Surface</h5>
                           </div>
-                          <div className="space-y-2">
-                            {riskAssessmentData.publicEndpoint && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Public Endpoint:</span>
-                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
-                                  {riskAssessmentData.publicEndpoint}
-                                </Badge>
+
+                          {/* Score Breakdown Placeholder */}
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 transition-all duration-200">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <BarChart3 className="h-4 w-4 text-gray-400" />
                               </div>
-                            )}
-                            {riskAssessmentData.discoverability && (
+                              <h5 className="font-semibold text-gray-800">Score Breakdown</h5>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Data Classification:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">CIA Triad:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">OWASP ASVS:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* External Factors Placeholder */}
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 transition-all duration-200">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <Globe className="h-4 w-4 text-gray-400" />
+                              </div>
+                              <h5 className="font-semibold text-gray-800">External Factors</h5>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Internet Facing:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Discoverability:</span>
-                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
-                                  {riskAssessmentData.discoverability}
-                                </Badge>
+                                <span className="text-sm text-gray-400">Not assessed</span>
                               </div>
-                            )}
-                            {riskAssessmentData.awareness && (
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Awareness:</span>
-                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
-                                  {riskAssessmentData.awareness}
-                                </Badge>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Score Breakdown Card */}
-                        <div className={`${
-                          riskAssessmentData.riskLevel === 'Critical' ? 'bg-gradient-to-br from-red-50 to-red-100 border border-red-200' :
-                          riskAssessmentData.riskLevel === 'High' ? 'bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200' :
-                          riskAssessmentData.riskLevel === 'Medium' ? 'bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200' :
-                          'bg-gradient-to-br from-green-50 to-green-100 border border-green-200'
-                        } rounded-xl p-4 hover:shadow-md transition-all duration-200`}>
-                          <div className="flex items-center gap-2 mb-3">
-                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
-                              riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100' :
-                              riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100' :
-                              riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100' :
-                              'bg-green-100'
-                            }`}>
-                              <BarChart3 className={`h-4 w-4 ${
-                                riskAssessmentData.riskLevel === 'Critical' ? 'text-red-600' :
-                                riskAssessmentData.riskLevel === 'High' ? 'text-orange-600' :
-                                riskAssessmentData.riskLevel === 'Medium' ? 'text-yellow-600' :
-                                'text-green-600'
-                              }`} />
-                            </div>
-                            <h5 className="font-semibold text-gray-800">Score Breakdown</h5>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center py-1">
-                              <span className="text-sm text-gray-600">Data Classification:</span>
-                              <Badge className={`${
-                                riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
-                                riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                                riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                                'bg-green-100 text-green-800 border-green-200'
-                              }`}>
-                                {riskAssessmentData.dataClassificationScore || 0}
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between items-center py-1">
-                              <span className="text-sm text-gray-600">CIA Triad:</span>
-                              <Badge className={`${
-                                riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
-                                riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                                riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                                'bg-green-100 text-green-800 border-green-200'
-                              }`}>
-                                {riskAssessmentData.ciaTriadScore || 0}
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between items-center py-1">
-                              <span className="text-sm text-gray-600">Attack Surface:</span>
-                              <Badge className={`${
-                                riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
-                                riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                                riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                                'bg-green-100 text-green-800 border-green-200'
-                              }`}>
-                                {riskAssessmentData.attackSurfaceScore || 0}
-                              </Badge>
-                            </div>
-                            <div className={`border-t pt-2 mt-2 ${
-                              riskAssessmentData.riskLevel === 'Critical' ? 'border-red-200' :
-                              riskAssessmentData.riskLevel === 'High' ? 'border-orange-200' :
-                              riskAssessmentData.riskLevel === 'Medium' ? 'border-yellow-200' :
-                              'border-green-200'
-                            }`}>
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm font-semibold text-gray-700">Final Score:</span>
-                                <div className="flex items-center gap-2">
-                                  <span className={`text-lg font-bold ${
-                                    riskAssessmentData.riskLevel === 'Critical' ? 'text-red-700' :
-                                    riskAssessmentData.riskLevel === 'High' ? 'text-orange-700' :
-                                    riskAssessmentData.riskLevel === 'Medium' ? 'text-yellow-700' :
-                                    'text-green-700'
-                                  }`}>
-                                    {riskAssessmentData.finalRiskScore || 0}
-                                  </span>
-                                  <Badge className={`${
-                                    riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
-                                    riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
-                                    riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                                    'bg-green-100 text-green-800 border-green-200'
-                                  }`}>
-                                    {riskAssessmentData.riskLevel || 'Low'}
-                                  </Badge>
-                                </div>
+                                <span className="text-sm text-gray-400">Not assessed</span>
                               </div>
                             </div>
                           </div>
                         </div>
-                      </div>
+                      )}
 
-                      {riskAssessmentData.lastUpdated && (
+                      {riskAssessmentData?.lastUpdated && (
                         <div className="flex items-center gap-2 justify-center pt-4 border-t border-gray-200">
                           <Clock className="h-4 w-4 text-gray-400" />
                           <p className="text-sm text-gray-500">
@@ -1109,7 +1049,6 @@ export default function ServiceDetail() {
                         </div>
                       )}
                     </div>
-                  )}
 
                   {application.hasAlert && (
                     <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
@@ -1123,207 +1062,8 @@ export default function ServiceDetail() {
               </CardContent>
             </Card>
           </div>
-
-
-
-          {/* Edit Dialog */}
-          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Edit Service Information</DialogTitle>
-                <DialogDescription>
-                  Update the service name, links, compliance tags, and owner information below.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4 max-h-96 overflow-y-auto">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="serviceName">Service Name</Label>
-                    <Input
-                      id="serviceName"
-                      placeholder="Enter service name"
-                      value={editingService?.name || ""}
-                      onChange={(e) => setEditingService({...editingService, name: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="serviceOwner">Service Owner</Label>
-                    <Input
-                      id="serviceOwner"
-                      placeholder="John Doe (Team Name)"
-                      value={editingService?.serviceOwner || ""}
-                      onChange={(e) => setEditingService({...editingService, serviceOwner: e.target.value})}
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <Label>Compliance Tags</Label>
-                  <div className="space-y-3 mt-2">
-                    {/* Display selected tags */}
-                    <div className="flex flex-wrap gap-2">
-                      {(editingService?.tags || []).map((tag: string, index: number) => (
-                        <Badge key={index} variant="outline" className="bg-green-50 border-green-200 text-green-700 flex items-center gap-1">
-                          {tag}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newTags = editingService.tags.filter((_: string, i: number) => i !== index);
-                              setEditingService({...editingService, tags: newTags});
-                            }}
-                            className="ml-1 hover:text-red-500 text-green-500"
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                    
-                    {/* Dropdown for adding tags */}
-                    <Select
-                      onValueChange={(value) => {
-                        if (value === "custom") {
-                          // Don't add anything, let user type in custom field
-                          return;
-                        }
-                        const currentTags = editingService?.tags || [];
-                        if (!currentTags.includes(value)) {
-                          setEditingService({...editingService, tags: [...currentTags, value]});
-                        }
-                      }}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select or add compliance tags" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {["HITRUST", "ISO 27001", "SOC 2", "HIPAA", "PCI DSS"].map((tag) => (
-                          <SelectItem key={tag} value={tag}>
-                            {tag}
-                          </SelectItem>
-                        ))}
-                        <SelectItem value="custom">+ Add custom tag</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    
-                    {/* Custom tag input */}
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="Enter custom compliance tag"
-                        value={newTagInput}
-                        onChange={(e) => setNewTagInput(e.target.value)}
-                        onKeyPress={(e) => {
-                          if (e.key === 'Enter' && newTagInput.trim()) {
-                            e.preventDefault();
-                            const currentTags = editingService?.tags || [];
-                            if (!currentTags.includes(newTagInput.trim())) {
-                              setEditingService({...editingService, tags: [...currentTags, newTagInput.trim()]});
-                            }
-                            setNewTagInput("");
-                          }
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          if (newTagInput.trim()) {
-                            const currentTags = editingService?.tags || [];
-                            if (!currentTags.includes(newTagInput.trim())) {
-                              setEditingService({...editingService, tags: [...currentTags, newTagInput.trim()]});
-                            }
-                            setNewTagInput("");
-                          }
-                        }}
-                        disabled={!newTagInput.trim()}
-                      >
-                        Add
-                      </Button>
-                    </div>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    Select from dropdown or add custom compliance tags
-                  </p>
-                </div>
-
-                <div>
-                  <Label htmlFor="githubRepo">GitHub Repository</Label>
-                  <Input
-                    id="githubRepo"
-                    placeholder="https://github.com/company/repo"
-                    value={editingService?.githubRepo || ""}
-                    onChange={(e) => setEditingService({...editingService, githubRepo: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="jiraProject">Jira Project</Label>
-                  <Input
-                    id="jiraProject"
-                    placeholder="https://company.atlassian.net/browse/PROJECT"
-                    value={editingService?.jiraProject || ""}
-                    onChange={(e) => setEditingService({...editingService, jiraProject: e.target.value})}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="slackChannel">Slack Channel</Label>
-                  <Input
-                    id="slackChannel"
-                    placeholder="https://company.slack.com/channels/team"
-                    value={editingService?.slackChannel || ""}
-                    onChange={(e) => setEditingService({...editingService, slackChannel: e.target.value})}
-                  />
-                </div>
-                
-                {/* Security Scanner Links */}
-                <div className="space-y-4 pt-4 border-t">
-                  <h4 className="font-medium text-gray-900">Security Scanner Links</h4>
-                  <div>
-                    <Label htmlFor="mendLink">Mend Scanner Link</Label>
-                    <Input
-                      id="mendLink"
-                      placeholder="https://mend.company.com/project/..."
-                      value={editingService?.mendLink || ""}
-                      onChange={(e) => setEditingService({...editingService, mendLink: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="crowdstrikeLink">Crowdstrike Scanner Link</Label>
-                    <Input
-                      id="crowdstrikeLink"
-                      placeholder="https://falcon.crowdstrike.com/investigate/..."
-                      value={editingService?.crowdstrikeLink || ""}
-                      onChange={(e) => setEditingService({...editingService, crowdstrikeLink: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="escapeLink">Escape Scanner Link</Label>
-                    <Input
-                      id="escapeLink"
-                      placeholder="https://escape.company.com/dashboard/..."
-                      value={editingService?.escapeLink || ""}
-                      onChange={(e) => setEditingService({...editingService, escapeLink: e.target.value})}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                  <X className="h-4 w-4 mr-2" />
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleSave}
-                  disabled={updateServiceMutation.isPending}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {updateServiceMutation.isPending ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
         </div>
-        </div>
+      </div>
       </TooltipProvider>
     </PageWrapper>
   );
