@@ -676,11 +676,11 @@ export default function ServiceDetail() {
                       </div>
 
                       {/* Crowdstrike Scanner Card */}
-                      <div className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
+                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 bg-red-100 rounded-lg flex items-center justify-center">
-                              <Shield className="h-4 w-4 text-red-600" />
+                            <div className="h-8 w-8 bg-slate-100 rounded-lg flex items-center justify-center">
+                              <Shield className="h-4 w-4 text-slate-600" />
                             </div>
                             <h5 className="font-semibold text-gray-800">Crowdstrike</h5>
                           </div>
@@ -689,7 +689,7 @@ export default function ServiceDetail() {
                             target="_blank" 
                             rel="noopener noreferrer"
                           >
-                            <Button size="sm" variant="outline" className="bg-white/50 border-red-300 text-red-700 hover:bg-red-50">
+                            <Button size="sm" variant="outline" className="bg-white/50 border-slate-300 text-slate-700 hover:bg-slate-50">
                               <ExternalLink className="h-3 w-3 mr-1" />
                               Take me to Crowdstrike
                             </Button>
