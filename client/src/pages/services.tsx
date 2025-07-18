@@ -52,15 +52,12 @@ export default function Services() {
   // Mutation for creating a new service
   const createServiceMutation = useMutation({
     mutationFn: async (serviceData: typeof newService) => {
-      return apiRequest("/api/applications", {
-        method: "POST",
-        body: JSON.stringify({
-          ...serviceData,
-          riskScore: "0.0", // Default risk score as requested
-          labels: [],
-          tags: [],
-          hasAlert: false,
-        }),
+      return apiRequest("POST", "/api/applications", {
+        ...serviceData,
+        riskScore: "0.0", // Default risk score as requested
+        labels: [],
+        tags: [],
+        hasAlert: false,
       });
     },
     onSuccess: () => {
