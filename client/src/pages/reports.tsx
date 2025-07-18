@@ -171,7 +171,7 @@ export default function Reports() {
     doc.text('Applications Overview', 20, 30);
     
     const tableData = applications.map(app => {
-      const findings = JSON.parse(app.totalFindings);
+      const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
       return [
         app.name,
         app.scanEngine,
@@ -448,7 +448,7 @@ export default function Reports() {
                   .sort((a, b) => new Date(b.lastScan).getTime() - new Date(a.lastScan).getTime())
                   .slice(0, 5)
                   .map((app) => {
-                    const findings = JSON.parse(app.totalFindings);
+                    const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
                     return (
                       <div key={app.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
                         <div className="flex items-center gap-4">

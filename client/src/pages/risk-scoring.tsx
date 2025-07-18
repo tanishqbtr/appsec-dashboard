@@ -478,7 +478,7 @@ export default function RiskScoring() {
                   {filteredAndSortedApplications.map((app) => {
                     const riskScore = parseFloat(app.riskScore);
                     const riskInfo = getRiskLevel(riskScore);
-                    const findings = JSON.parse(app.totalFindings);
+                    const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
                     const RiskIcon = riskInfo.icon;
                     const isEditing = editingId === app.id;
 
