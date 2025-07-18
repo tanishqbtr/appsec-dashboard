@@ -71,24 +71,11 @@ const tutorialSteps = [
     target: '[data-tutorial="security-summary"]',
     position: 'left'
   },
-  {
-    id: 'export-functionality',
-    title: 'Export Dashboard Reports',
-    content: 'Generate comprehensive PDF reports of your security dashboard data for executive reporting, compliance documentation, and stakeholder communication.',
-    target: '[data-tutorial="export-button"]',
-    position: 'bottom'
-  },
-  {
-    id: 'time-range-filter',
-    title: 'Time Range Selection',
-    content: 'Adjust the time range for your analytics to focus on specific periods. Choose from predefined ranges or set custom date ranges for detailed analysis.',
-    target: '[data-tutorial="time-range"]',
-    position: 'bottom'
-  },
+
   {
     id: 'completion',
     title: 'Tutorial Complete!',
-    content: 'You now understand how to use the Security Dashboard to monitor security metrics, analyze trends, track compliance, and generate reports. Start exploring your security insights!',
+    content: 'You now understand how to use the Security Dashboard to monitor security metrics, analyze trends, and track compliance. Start exploring your security insights!',
     target: null,
     position: 'center'
   }
