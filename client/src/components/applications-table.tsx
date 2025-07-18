@@ -238,17 +238,20 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
 
   // Function to get findings data for a service (now using combined findings)
   const getServiceFindings = (serviceName: string): FindingsData => {
-    const combinedFinding = combinedFindings.get(serviceName);
-    if (combinedFinding) {
-      return {
-        total: combinedFinding.critical + combinedFinding.high + combinedFinding.medium + combinedFinding.low,
-        C: combinedFinding.critical,
-        H: combinedFinding.high,
-        M: combinedFinding.medium,
-        L: combinedFinding.low
-      };
+    // Only show findings if we have an active scan engine with selected labels
+    if ((selectedEngine === "Mend" || selectedEngine === "Escape") && selectedLabels.length > 0) {
+      const combinedFinding = combinedFindings.get(serviceName);
+      if (combinedFinding) {
+        return {
+          total: combinedFinding.critical + combinedFinding.high + combinedFinding.medium + combinedFinding.low,
+          C: combinedFinding.critical,
+          H: combinedFinding.high,
+          M: combinedFinding.medium,
+          L: combinedFinding.low
+        };
+      }
     }
-    // Return zeros if no findings found
+    // Return zeros if no engine/labels selected or no findings found
     return { total: 0, C: 0, H: 0, M: 0, L: 0 };
   };
 
