@@ -21,10 +21,10 @@ import type { Application } from "@shared/schema";
 
 export default function Services() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedEngine, setSelectedEngine] = useState("Mend");
+  const [selectedEngine, setSelectedEngine] = useState("");
   const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [filterMode, setFilterMode] = useState<"labels" | "tags">("labels");
+  const [filterMode, setFilterMode] = useState<"labels" | "tags">("tags");
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
     queryKey: ["/api/applications"],
@@ -38,10 +38,18 @@ export default function Services() {
   };
 
   const handleEngineSelect = (engine: string) => {
-    setSelectedEngine(engine);
-    setSelectedLabels([]); // Clear labels when switching engines
-    setFilterMode("labels"); // Switch to labels mode
-    setSelectedTags([]); // Clear tags when switching to labels mode
+    // If clicking the same engine that's already selected, deselect it
+    if (selectedEngine === engine && filterMode === "labels") {
+      setSelectedEngine("");
+      setSelectedLabels([]);
+      setFilterMode("tags"); // Switch back to tags mode when no engine selected
+    } else {
+      // Switch to new engine - clear all previous selections
+      setSelectedEngine(engine);
+      setSelectedLabels([]); // Clear labels when switching engines
+      setFilterMode("labels"); // Switch to labels mode
+      setSelectedTags([]); // Clear tags when switching to labels mode
+    }
   };
 
   const handleLabelSelect = (label: string) => {

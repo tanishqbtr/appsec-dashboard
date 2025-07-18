@@ -160,6 +160,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   const getActiveEndpoints = () => {
     const endpoints: string[] = [];
     
+    // Only query APIs if an engine is selected and has labels
     if (selectedEngine === "Mend" && selectedLabels.length > 0) {
       if (selectedLabels.includes("SCA")) endpoints.push("/api/mend/sca");
       if (selectedLabels.includes("SAST")) endpoints.push("/api/mend/sast");
