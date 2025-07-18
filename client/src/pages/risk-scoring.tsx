@@ -90,7 +90,11 @@ export default function RiskScoring() {
   const saveRiskAssessmentMutation = useMutation({
     mutationFn: (data: any) => apiRequest('POST', '/api/risk-assessments', data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/risk-assessments', selectedService] });
+      // Invalidate all related queries to ensure data consistency
+      queryClient.invalidateQueries({ queryKey: ['/api/risk-assessments'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/applications-with-risk'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/services-with-risk-scores'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/applications'] });
       toast({
         title: "Risk Assessment Saved",
         description: "The risk assessment has been saved successfully.",

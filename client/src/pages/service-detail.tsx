@@ -299,6 +299,8 @@ export default function ServiceDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/applications"] });
       queryClient.invalidateQueries({ queryKey: ["/api/applications-with-risk"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/services-with-risk-scores"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/risk-assessments"] });
       setIsEditDialogOpen(false);
       setEditingService(null);
       toast({
