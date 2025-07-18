@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Navigation from "@/components/navigation";
 import PageWrapper from "@/components/page-wrapper";
+import RiskScoringTutorial from "@/components/risk-scoring-tutorial";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +42,8 @@ import {
   Activity,
   Clock,
   Search,
-  ArrowUpDown
+  ArrowUpDown,
+  HelpCircle
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -55,6 +57,7 @@ export default function RiskScoring() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [searchTerm, setSearchTerm] = useState("");
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   
   // Risk assessment form state
   const [selectedService, setSelectedService] = useState<string>("");
@@ -75,6 +78,18 @@ export default function RiskScoring() {
   const handleLogout = async () => {
     await fetch("/api/logout", { method: "POST" });
     window.location.href = "/login";
+  };
+
+  const handleStartTutorial = () => {
+    setShowTutorial(true);
+  };
+
+  const handleCompleteTutorial = () => {
+    setShowTutorial(false);
+    toast({
+      title: "Tutorial Complete!",
+      description: "You've learned how to conduct comprehensive risk assessments.",
+    });
   };
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
@@ -400,14 +415,27 @@ export default function RiskScoring() {
         
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 page-enter page-enter-active">
           <div className="mb-8 stagger-item">
-            <h1 className="text-3xl font-bold text-gray-900">Risk Scoring</h1>
-            <p className="mt-2 text-gray-600">
-              Security risk assessment and scoring management for all services
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Risk Scoring</h1>
+                <p className="mt-2 text-gray-600">
+                  Security risk assessment and scoring management for all services
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleStartTutorial}
+                className="btn-smooth flex items-center gap-2"
+                data-tutorial="tutorial-button"
+              >
+                <HelpCircle className="h-4 w-4" />
+                Take Tutorial
+              </Button>
+            </div>
           </div>
 
           {/* Risk Level Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" data-tutorial="risk-metrics">
             <Card className="stagger-item card-hover">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -480,7 +508,7 @@ export default function RiskScoring() {
           </div>
 
           {/* Risk Scoring Table */}
-          <Card className="stagger-item card-hover">
+          <Card className="stagger-item card-hover" data-tutorial="risk-table">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
@@ -494,6 +522,7 @@ export default function RiskScoring() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 focus-smooth"
+                    data-tutorial="search-services"
                   />
                 </div>
               </div>
@@ -569,6 +598,7 @@ export default function RiskScoring() {
                             variant="outline"
                             onClick={() => handleEdit(app)}
                             className="btn-smooth"
+                            data-tutorial="edit-assessment"
                           >
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
@@ -591,7 +621,7 @@ export default function RiskScoring() {
               
               <div className="space-y-8">
                 {/* Data Classification Factors */}
-                <div className="space-y-4">
+                <div className="space-y-4" data-tutorial="data-classification">
                   <h3 className="text-lg font-semibold text-gray-900">Data Classification Factors</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -647,7 +677,7 @@ export default function RiskScoring() {
                 </div>
 
                 {/* CIA Triad */}
-                <div className="space-y-4">
+                <div className="space-y-4" data-tutorial="cia-triad">
                   <h3 className="text-lg font-semibold text-gray-900">CIA Triad</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -704,7 +734,7 @@ export default function RiskScoring() {
                 </div>
 
                 {/* Attack Surface Factors */}
-                <div className="space-y-4">
+                <div className="space-y-4" data-tutorial="attack-surface">
                   <h3 className="text-lg font-semibold text-gray-900">Attack Surface Factors</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
@@ -760,7 +790,7 @@ export default function RiskScoring() {
                 </div>
 
                 {/* Risk Scores */}
-                <div className="space-y-4">
+                <div className="space-y-4" data-tutorial="risk-calculation">
                   <h3 className="text-lg font-semibold text-gray-900">Risk Scores</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-blue-50 p-4 rounded-lg">
@@ -823,7 +853,7 @@ export default function RiskScoring() {
                 </div>
               </div>
 
-              <DialogFooter>
+              <DialogFooter data-tutorial="save-assessment">
                 <Button variant="outline" onClick={handleCancel} className="btn-smooth">
                   Cancel
                 </Button>
@@ -837,6 +867,13 @@ export default function RiskScoring() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
+          
+          {/* Risk Scoring Tutorial */}
+          <RiskScoringTutorial
+            isOpen={showTutorial}
+            onClose={() => setShowTutorial(false)}
+            onComplete={handleCompleteTutorial}
+          />
         </div>
       </div>
     </PageWrapper>
