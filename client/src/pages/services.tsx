@@ -155,11 +155,11 @@ export default function Services() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-gray-200">
-                        <th className="text-left py-3 px-4">
+                        <th className="text-left py-3 px-4 w-1/2">
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("name")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900"
+                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-start"
                           >
                             Service Name
                             {sortField === "name" && (
@@ -167,11 +167,11 @@ export default function Services() {
                             )}
                           </Button>
                         </th>
-                        <th className="text-left py-3 px-4">
+                        <th className="text-center py-3 px-4 w-1/4">
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("riskScore")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900"
+                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full"
                           >
                             Risk Score
                             {sortField === "riskScore" && (
@@ -179,11 +179,11 @@ export default function Services() {
                             )}
                           </Button>
                         </th>
-                        <th className="text-left py-3 px-4">
+                        <th className="text-center py-3 px-4 w-1/4">
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("percentile")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900"
+                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full"
                           >
                             Percentile Ranking
                             {sortField === "percentile" && (
@@ -191,7 +191,7 @@ export default function Services() {
                             )}
                           </Button>
                         </th>
-                        <th className="text-right py-3 px-4"></th>
+                        <th className="text-right py-3 px-4 w-12"></th>
                       </tr>
                     </thead>
                     <tbody>
@@ -208,22 +208,23 @@ export default function Services() {
                                     <h3 className="font-medium text-gray-900 group-hover:text-green-600 transition-colors">
                                       {app.name}
                                     </h3>
-                                    <div className="flex items-center gap-2 mt-1">
-                                      <Badge variant="outline" className="text-xs">
-                                        {app.scanEngine}
-                                      </Badge>
-                                    </div>
+
                                   </div>
                                 </div>
                               </Link>
                             </td>
-                            <td className="py-4 px-4">
+                            <td className="py-4 px-4 text-center">
                               <span className="text-lg font-semibold text-gray-900">
                                 {app.displayRiskScore}
                               </span>
                             </td>
-                            <td className="py-4 px-4">
-                              <span className="text-lg font-semibold text-blue-600">
+                            <td className="py-4 px-4 text-center">
+                              <span className={`text-lg font-semibold ${
+                                app.percentile >= 75 ? 'text-green-600' :
+                                app.percentile >= 50 ? 'text-yellow-600' :
+                                app.percentile >= 25 ? 'text-orange-600' :
+                                'text-red-600'
+                              }`}>
                                 {Math.round(app.percentile)}%
                               </span>
                             </td>
