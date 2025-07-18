@@ -193,15 +193,106 @@ export default function Services() {
 
           {/* Search Bar */}
           <div className="mb-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Search services by name, engine, labels, or tags..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-4 py-2 w-full max-w-md"
-              />
+            <div className="flex items-center justify-between gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="Search services by name, engine, labels, or tags..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 w-full"
+                />
+              </div>
+              <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    size="sm" 
+                    className="bg-green-600 hover:bg-green-700 text-white flex-shrink-0"
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Service
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>Add New Service</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Service Name *</Label>
+                        <Input
+                          id="name"
+                          placeholder="Enter service name"
+                          value={newService.name}
+                          onChange={(e) => handleInputChange("name", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="owner">Service Owner</Label>
+                        <Input
+                          id="owner"
+                          placeholder="Enter service owner"
+                          value={newService.serviceOwner}
+                          onChange={(e) => handleInputChange("serviceOwner", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea
+                        id="description"
+                        placeholder="Enter service description"
+                        value={newService.description}
+                        onChange={(e) => handleInputChange("description", e.target.value)}
+                        rows={3}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="github">GitHub Repository</Label>
+                        <Input
+                          id="github"
+                          placeholder="https://github.com/..."
+                          value={newService.githubRepo}
+                          onChange={(e) => handleInputChange("githubRepo", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="jira">Jira Project</Label>
+                        <Input
+                          id="jira"
+                          placeholder="https://company.atlassian.net/..."
+                          value={newService.jiraProject}
+                          onChange={(e) => handleInputChange("jiraProject", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="slack">Slack Channel</Label>
+                      <Input
+                        id="slack"
+                        placeholder="#team-channel"
+                        value={newService.slackChannel}
+                        onChange={(e) => handleInputChange("slackChannel", e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsAddServiceOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleAddService}
+                      disabled={createServiceMutation.isPending || !newService.name.trim()}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {createServiceMutation.isPending ? "Adding..." : "Add Service"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
@@ -251,107 +342,16 @@ export default function Services() {
                           </Button>
                         </th>
                         <th className="text-center py-3 px-4 w-1/4">
-                          <div className="flex items-center justify-between">
-                            <Button
-                              variant="ghost"
-                              onClick={() => handleSort("percentile")}
-                              className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900"
-                            >
-                              Percentile Ranking
-                              {sortField === "percentile" && (
-                                sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                              )}
-                            </Button>
-                            <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
-                              <DialogTrigger asChild>
-                                <Button 
-                                  size="sm" 
-                                  className="bg-green-600 hover:bg-green-700 text-white ml-2"
-                                >
-                                  <Plus className="h-4 w-4 mr-1" />
-                                  Add Service
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-2xl">
-                                <DialogHeader>
-                                  <DialogTitle>Add New Service</DialogTitle>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                      <Label htmlFor="name">Service Name *</Label>
-                                      <Input
-                                        id="name"
-                                        placeholder="Enter service name"
-                                        value={newService.name}
-                                        onChange={(e) => handleInputChange("name", e.target.value)}
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label htmlFor="serviceOwner">Service Owner</Label>
-                                      <Input
-                                        id="serviceOwner"
-                                        placeholder="Enter service owner"
-                                        value={newService.serviceOwner}
-                                        onChange={(e) => handleInputChange("serviceOwner", e.target.value)}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label htmlFor="description">Description</Label>
-                                    <Textarea
-                                      id="description"
-                                      placeholder="Enter service description"
-                                      value={newService.description}
-                                      onChange={(e) => handleInputChange("description", e.target.value)}
-                                      rows={3}
-                                    />
-                                  </div>
-                                  <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                      <Label htmlFor="githubRepo">GitHub Repository</Label>
-                                      <Input
-                                        id="githubRepo"
-                                        placeholder="https://github.com/org/repo"
-                                        value={newService.githubRepo}
-                                        onChange={(e) => handleInputChange("githubRepo", e.target.value)}
-                                      />
-                                    </div>
-                                    <div className="space-y-2">
-                                      <Label htmlFor="jiraProject">Jira Project</Label>
-                                      <Input
-                                        id="jiraProject"
-                                        placeholder="PROJECT-KEY"
-                                        value={newService.jiraProject}
-                                        onChange={(e) => handleInputChange("jiraProject", e.target.value)}
-                                      />
-                                    </div>
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label htmlFor="slackChannel">Slack Channel</Label>
-                                    <Input
-                                      id="slackChannel"
-                                      placeholder="#team-channel"
-                                      value={newService.slackChannel}
-                                      onChange={(e) => handleInputChange("slackChannel", e.target.value)}
-                                    />
-                                  </div>
-                                </div>
-                                <DialogFooter>
-                                  <Button variant="outline" onClick={() => setIsAddServiceOpen(false)}>
-                                    Cancel
-                                  </Button>
-                                  <Button 
-                                    onClick={handleAddService}
-                                    disabled={createServiceMutation.isPending || !newService.name.trim()}
-                                    className="bg-green-600 hover:bg-green-700"
-                                  >
-                                    {createServiceMutation.isPending ? "Adding..." : "Add Service"}
-                                  </Button>
-                                </DialogFooter>
-                              </DialogContent>
-                            </Dialog>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            onClick={() => handleSort("percentile")}
+                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full"
+                          >
+                            Percentile Ranking
+                            {sortField === "percentile" && (
+                              sortDirection === "asc" ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
                         </th>
                         <th className="text-right py-3 px-4 w-12"></th>
                       </tr>
