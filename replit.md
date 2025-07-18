@@ -20,6 +20,7 @@ Mend findings separation: Created separate tables for Mend SCA, SAST, and Contai
 Authentication disabled: Temporarily removed login/logout requirements from all API endpoints for development purposes (updated July 18, 2025)
 Dashboard layout: Moved Findings Trend chart from Reports page to Dashboard, replacing Recent Scan Activity section for better visibility of security trends (updated July 18, 2025)
 Reports page clearing: Completely emptied Reports page content, leaving only basic navigation and empty state message for future development (updated July 18, 2025)
+Page functionality swap: Moved all Services page functionality (security findings table, filters, onboarding) to Reports page, and cleared Services page to empty state (updated July 18, 2025)
 
 ## System Architecture
 
