@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, real, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -120,7 +120,7 @@ export const riskAssessments = pgTable("risk_assessments", {
   dataClassificationScore: integer("data_classification_score").default(0),
   ciaTriadScore: integer("cia_triad_score").default(0),
   attackSurfaceScore: integer("attack_surface_score").default(0),
-  finalRiskScore: integer("final_risk_score").default(0),
+  finalRiskScore: real("final_risk_score").default(0),
   riskLevel: text("risk_level").default("Low"),
   // Metadata
   lastUpdated: timestamp("last_updated").defaultNow(),

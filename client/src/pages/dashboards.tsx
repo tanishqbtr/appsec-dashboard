@@ -158,7 +158,7 @@ export default function Dashboards() {
     // Key metrics
     doc.text('Key Metrics', 20, 70);
     doc.text(`Total Applications: ${applications.length}`, 30, 85);
-    doc.text(`Critical Findings: ${applications.reduce((sum, app) => sum + (app.totalFindings ? JSON.parse(app.totalFindings).C : 0), 0)}`, 30, 95);
+    doc.text(`Critical Findings: ${applications.reduce((sum, app) => sum + (app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings).C : 0), 0)}`, 30, 95);
     doc.text(`Average Risk Score: ${(applications.reduce((sum, app) => sum + parseFloat(app.riskScore), 0) / applications.length).toFixed(1)}`, 30, 105);
     
     doc.save(`Dashboard_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
@@ -185,9 +185,9 @@ export default function Dashboards() {
     );
   }
 
-  const totalFindings = applications.reduce((sum, app) => sum + (app.totalFindings ? JSON.parse(app.totalFindings).total : 0), 0);
-  const criticalFindings = applications.reduce((sum, app) => sum + (app.totalFindings ? JSON.parse(app.totalFindings).C : 0), 0);
-  const highFindings = applications.reduce((sum, app) => sum + (app.totalFindings ? JSON.parse(app.totalFindings).H : 0), 0);
+  const totalFindings = applications.reduce((sum, app) => sum + (app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings).total : 0), 0);
+  const criticalFindings = applications.reduce((sum, app) => sum + (app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings).C : 0), 0);
+  const highFindings = applications.reduce((sum, app) => sum + (app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings).H : 0), 0);
   const averageRiskScore = applications.length > 0 ? (applications.reduce((sum, app) => sum + parseFloat(app.riskScore), 0) / applications.length) : 0;
 
   return (
