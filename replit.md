@@ -25,6 +25,8 @@ Services page redesign: Created simple services list view with search functional
 Services table enhancement: Added sortable table format with Risk Score and Percentile Ranking columns, removed tags/labels display, implemented three-column sorting functionality (updated July 18, 2025)
 Services data integration: Updated to use calculated risk scores from risk assessments and proper percentile ranking based on risk scores, removed findings count display (updated July 18, 2025)
 Services API endpoint: Created dedicated `/api/services-with-risk-scores` endpoint that directly fetches services from risk_assessments table with final_risk_score values (updated July 18, 2025)
+Service detail page enhancement: Enhanced Risk Assessment Details and Findings by Scanner sections with beautiful gradient card designs, integrated "Take me to" buttons within scanner cards, and updated risk scores to display actual values from database final_risk_score field (updated July 18, 2025)
+UI cleanup: Removed unnecessary SCA/SAST labels from service detail pages and consolidated scanner navigation into individual card-based buttons (updated July 18, 2025)
 
 
 ## System Architecture

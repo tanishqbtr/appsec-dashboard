@@ -504,8 +504,12 @@ export default function ServiceDetail() {
               
               <div className="text-right">
                 <div className="text-sm text-gray-600">Risk Score</div>
-                <div className="text-3xl font-bold text-orange-600">{application.riskScore}</div>
-                <div className="text-sm text-gray-600">Medium Risk</div>
+                <div className="text-3xl font-bold text-orange-600">
+                  {riskAssessmentData?.finalRiskScore || application.riskScore || "0.0"}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {riskAssessmentData?.riskLevel || "Medium Risk"}
+                </div>
               </div>
             </div>
           </div>
@@ -769,7 +773,7 @@ export default function ServiceDetail() {
                       <p className="text-sm text-gray-600 animate-in fade-in-0 slide-in-from-left-2 duration-500">Risk Score</p>
                       <div className="flex items-center gap-3">
                         <p className="text-2xl font-bold text-orange-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
-                          {application.riskScore}
+                          {riskAssessmentData?.finalRiskScore || application.riskScore || "0.0"}
                         </p>
                       </div>
                     </div>
@@ -796,16 +800,7 @@ export default function ServiceDetail() {
                       </div>
                     </div>
 
-                    <div>
-                      <p className="text-sm text-gray-600 mb-2">Labels</p>
-                      <div className="flex flex-wrap gap-2">
-                        {application.labels?.map((label, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
-                            {label}
-                          </Badge>
-                        )) || <span className="text-sm text-gray-400">No labels assigned</span>}
-                      </div>
-                    </div>
+
                   </div>
 
                   {/* Risk Assessment Details */}
