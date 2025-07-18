@@ -831,9 +831,20 @@ export default function ServiceDetail() {
                   {/* Risk Assessment Details */}
                   {riskAssessmentData && (
                     <div className="space-y-4 border-t pt-6">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Shield className="h-5 w-5 text-green-600" />
-                        <h4 className="text-lg font-semibold text-gray-900">Risk Assessment Details</h4>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <Shield className="h-5 w-5 text-green-600" />
+                          <h4 className="text-lg font-semibold text-gray-900">Risk Assessment Details</h4>
+                        </div>
+                        <Button 
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.location.href = '/risk-scoring'}
+                          className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50"
+                        >
+                          <Edit3 className="h-3 w-3" />
+                          Edit
+                        </Button>
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
