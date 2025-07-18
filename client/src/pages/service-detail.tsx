@@ -316,11 +316,11 @@ export default function ServiceDetail() {
 
   const handleEdit = () => {
     setEditingService({
+      name: application?.name || "",
       githubRepo: application?.githubRepo || "",
       jiraProject: application?.jiraProject || "",
       slackChannel: application?.slackChannel || "",
       serviceOwner: application?.serviceOwner || "",
-      riskScore: application?.riskScore || 0,
       tags: application?.tags || [],
       mendLink: application?.mendLink || "",
       crowdstrikeLink: application?.crowdstrikeLink || "",
@@ -1067,22 +1067,18 @@ export default function ServiceDetail() {
               <DialogHeader>
                 <DialogTitle>Edit Service Information</DialogTitle>
                 <DialogDescription>
-                  Update the service links, risk score, compliance tags, and owner information below.
+                  Update the service name, links, compliance tags, and owner information below.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4 max-h-96 overflow-y-auto">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
-                    <Label htmlFor="riskScore">Risk Score</Label>
+                    <Label htmlFor="serviceName">Service Name</Label>
                     <Input
-                      id="riskScore"
-                      type="number"
-                      step="0.1"
-                      min="0"
-                      max="10"
-                      placeholder="1.9"
-                      value={editingService?.riskScore || ""}
-                      onChange={(e) => setEditingService({...editingService, riskScore: parseFloat(e.target.value) || 0})}
+                      id="serviceName"
+                      placeholder="Enter service name"
+                      value={editingService?.name || ""}
+                      onChange={(e) => setEditingService({...editingService, name: e.target.value})}
                     />
                   </div>
                   <div>
