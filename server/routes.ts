@@ -355,6 +355,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Risk score distribution endpoint for charts
+  app.get("/api/dashboard/risk-distribution", async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const riskAssessments = await storage.getAllRiskAssessments();
+      
+      // Categorize risk scores
+      const distribution = riskAssessments.reduce((acc, assessment) => {
+        const score = assessment.finalRiskScore || 0;
+        let category;
+        if (score >= 8) category = 'Critical';
+        else if (score >= 6) category = 'High';
+        else if (score >= 4) category = 'Medium';
+        else category = 'Low';
+        
+        acc[category] = (acc[category] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      // Convert to array format for the pie chart
+      const distributionArray = Object.entries(distribution).map(([name, value]) => ({
+        name,
+        value
+      }));
+      
+      res.json(distributionArray);
+    } catch (error) {
+      console.error("Risk distribution error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Scan engine findings endpoint for charts
   app.get("/api/dashboard/scan-engine-findings", async (req, res) => {
     try {
