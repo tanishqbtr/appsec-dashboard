@@ -775,6 +775,16 @@ export default function ServiceDetail() {
                         <p className="text-2xl font-bold text-orange-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
                           {riskAssessmentData?.finalRiskScore || application.riskScore || "0.0"}
                         </p>
+                        {riskAssessmentData?.riskLevel && (
+                          <Badge className={`${
+                            riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
+                            riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                            riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                            'bg-green-100 text-green-800 border-green-200'
+                          }`}>
+                            {riskAssessmentData.riskLevel}
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
@@ -921,37 +931,77 @@ export default function ServiceDetail() {
                         </div>
 
                         {/* Score Breakdown Card */}
-                        <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                        <div className={`${
+                          riskAssessmentData.riskLevel === 'Critical' ? 'bg-gradient-to-br from-red-50 to-red-100 border border-red-200' :
+                          riskAssessmentData.riskLevel === 'High' ? 'bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200' :
+                          riskAssessmentData.riskLevel === 'Medium' ? 'bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200' :
+                          'bg-gradient-to-br from-green-50 to-green-100 border border-green-200'
+                        } rounded-xl p-4 hover:shadow-md transition-all duration-200`}>
                           <div className="flex items-center gap-2 mb-3">
-                            <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
-                              <BarChart3 className="h-4 w-4 text-green-600" />
+                            <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
+                              riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100' :
+                              riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100' :
+                              riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100' :
+                              'bg-green-100'
+                            }`}>
+                              <BarChart3 className={`h-4 w-4 ${
+                                riskAssessmentData.riskLevel === 'Critical' ? 'text-red-600' :
+                                riskAssessmentData.riskLevel === 'High' ? 'text-orange-600' :
+                                riskAssessmentData.riskLevel === 'Medium' ? 'text-yellow-600' :
+                                'text-green-600'
+                              }`} />
                             </div>
                             <h5 className="font-semibold text-gray-800">Score Breakdown</h5>
                           </div>
                           <div className="space-y-2">
                             <div className="flex justify-between items-center py-1">
                               <span className="text-sm text-gray-600">Data Classification:</span>
-                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                              <Badge className={`${
+                                riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
+                                riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                                'bg-green-100 text-green-800 border-green-200'
+                              }`}>
                                 {riskAssessmentData.dataClassificationScore || 0}
                               </Badge>
                             </div>
                             <div className="flex justify-between items-center py-1">
                               <span className="text-sm text-gray-600">CIA Triad:</span>
-                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                              <Badge className={`${
+                                riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
+                                riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                                'bg-green-100 text-green-800 border-green-200'
+                              }`}>
                                 {riskAssessmentData.ciaTriadScore || 0}
                               </Badge>
                             </div>
                             <div className="flex justify-between items-center py-1">
                               <span className="text-sm text-gray-600">Attack Surface:</span>
-                              <Badge className="bg-green-100 text-green-800 border-green-200">
+                              <Badge className={`${
+                                riskAssessmentData.riskLevel === 'Critical' ? 'bg-red-100 text-red-800 border-red-200' :
+                                riskAssessmentData.riskLevel === 'High' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                riskAssessmentData.riskLevel === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+                                'bg-green-100 text-green-800 border-green-200'
+                              }`}>
                                 {riskAssessmentData.attackSurfaceScore || 0}
                               </Badge>
                             </div>
-                            <div className="border-t border-green-200 pt-2 mt-2">
+                            <div className={`border-t pt-2 mt-2 ${
+                              riskAssessmentData.riskLevel === 'Critical' ? 'border-red-200' :
+                              riskAssessmentData.riskLevel === 'High' ? 'border-orange-200' :
+                              riskAssessmentData.riskLevel === 'Medium' ? 'border-yellow-200' :
+                              'border-green-200'
+                            }`}>
                               <div className="flex justify-between items-center">
                                 <span className="text-sm font-semibold text-gray-700">Final Score:</span>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-lg font-bold text-green-700">
+                                  <span className={`text-lg font-bold ${
+                                    riskAssessmentData.riskLevel === 'Critical' ? 'text-red-700' :
+                                    riskAssessmentData.riskLevel === 'High' ? 'text-orange-700' :
+                                    riskAssessmentData.riskLevel === 'Medium' ? 'text-yellow-700' :
+                                    'text-green-700'
+                                  }`}>
                                     {riskAssessmentData.finalRiskScore || 0}
                                   </span>
                                   <Badge className={`${
