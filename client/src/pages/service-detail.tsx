@@ -940,18 +940,18 @@ export default function ServiceDetail() {
                           </div>
                         </div>
 
-                        {/* CIA Triad Impact Card */}
+                        {/* CIA Triad Card */}
                         <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
                               <Lock className="h-4 w-4 text-purple-600" />
                             </div>
-                            <h5 className="font-semibold text-gray-800">CIA Triad Impact</h5>
+                            <h5 className="font-semibold text-gray-800">CIA Triad</h5>
                           </div>
                           <div className="space-y-2">
                             {riskAssessmentData.confidentialityImpact && (
                               <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Confidentiality:</span>
+                                <span className="text-sm text-gray-600">Confidentiality Impact:</span>
                                 <Badge className="bg-purple-100 text-purple-800 border-purple-200">
                                   {riskAssessmentData.confidentialityImpact}
                                 </Badge>
@@ -959,7 +959,7 @@ export default function ServiceDetail() {
                             )}
                             {riskAssessmentData.integrityImpact && (
                               <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Integrity:</span>
+                                <span className="text-sm text-gray-600">Integrity Impact:</span>
                                 <Badge className="bg-purple-100 text-purple-800 border-purple-200">
                                   {riskAssessmentData.integrityImpact}
                                 </Badge>
@@ -967,7 +967,7 @@ export default function ServiceDetail() {
                             )}
                             {riskAssessmentData.availabilityImpact && (
                               <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Availability:</span>
+                                <span className="text-sm text-gray-600">Availability Impact:</span>
                                 <Badge className="bg-purple-100 text-purple-800 border-purple-200">
                                   {riskAssessmentData.availabilityImpact}
                                 </Badge>
@@ -976,66 +976,80 @@ export default function ServiceDetail() {
                           </div>
                         </div>
 
-                        {/* Score Breakdown Card */}
+                        {/* Attack Surface Factors Card */}
                         <div className="bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-8 w-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                              <BarChart3 className="h-4 w-4 text-orange-600" />
+                              <Globe className="h-4 w-4 text-orange-600" />
                             </div>
-                            <h5 className="font-semibold text-gray-800">Score Breakdown</h5>
+                            <h5 className="font-semibold text-gray-800">Attack Surface Factors</h5>
                           </div>
                           <div className="space-y-2">
-                            <div className="flex justify-between items-center py-1">
-                              <span className="text-sm text-gray-600">Base Score:</span>
-                              <Badge className="bg-orange-100 text-orange-800 border-orange-200">
-                                {riskAssessmentData.baseRiskScore || 'N/A'}
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between items-center py-1">
-                              <span className="text-sm text-gray-600">Final Score:</span>
-                              <Badge className="bg-orange-100 text-orange-800 border-orange-200">
-                                {riskAssessmentData.finalRiskScore || 'N/A'}
-                              </Badge>
-                            </div>
-                            <div className="flex justify-between items-center py-1">
-                              <span className="text-sm text-gray-600">Risk Level:</span>
-                              <Badge className="bg-orange-100 text-orange-800 border-orange-200">
-                                {riskAssessmentData.riskLevel || 'N/A'}
-                              </Badge>
-                            </div>
+                            {riskAssessmentData.publicEndpoint && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Public Endpoint:</span>
+                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                  {riskAssessmentData.publicEndpoint}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.discoverability && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Discoverability:</span>
+                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                  {riskAssessmentData.discoverability}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.awareness && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Awareness:</span>
+                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                  {riskAssessmentData.awareness}
+                                </Badge>
+                              </div>
+                            )}
                           </div>
                         </div>
 
-                        {/* External Factors Card */}
+                        {/* Risk Scores Card */}
                         <div className="bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-8 w-8 bg-teal-100 rounded-lg flex items-center justify-center">
-                              <Globe className="h-4 w-4 text-teal-600" />
+                              <BarChart3 className="h-4 w-4 text-teal-600" />
                             </div>
-                            <h5 className="font-semibold text-gray-800">External Factors</h5>
+                            <h5 className="font-semibold text-gray-800">Risk Scores</h5>
                           </div>
                           <div className="space-y-2">
-                            {riskAssessmentData.internetAccessible && (
+                            {riskAssessmentData.dataClassificationScore && (
                               <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Internet Accessible:</span>
+                                <span className="text-sm text-gray-600">Data Classification Score:</span>
                                 <Badge className="bg-teal-100 text-teal-800 border-teal-200">
-                                  {riskAssessmentData.internetAccessible}
+                                  {riskAssessmentData.dataClassificationScore}
                                 </Badge>
                               </div>
                             )}
-                            {riskAssessmentData.regulatoryCompliance && (
+                            {riskAssessmentData.ciaTriadScore && (
                               <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Compliance:</span>
+                                <span className="text-sm text-gray-600">CIA Triad Score:</span>
                                 <Badge className="bg-teal-100 text-teal-800 border-teal-200">
-                                  {riskAssessmentData.regulatoryCompliance}
+                                  {riskAssessmentData.ciaTriadScore}
                                 </Badge>
                               </div>
                             )}
-                            {riskAssessmentData.businessImpact && (
+                            {riskAssessmentData.attackSurfaceScore && (
                               <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Business Impact:</span>
+                                <span className="text-sm text-gray-600">Attack Surface Score:</span>
                                 <Badge className="bg-teal-100 text-teal-800 border-teal-200">
-                                  {riskAssessmentData.businessImpact}
+                                  {riskAssessmentData.attackSurfaceScore}
+                                </Badge>
+                              </div>
+                            )}
+                            {riskAssessmentData.finalRiskScore && (
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Final Risk Score:</span>
+                                <Badge className="bg-red-100 text-red-800 border-red-200">
+                                  {riskAssessmentData.finalRiskScore}
                                 </Badge>
                               </div>
                             )}
@@ -1075,59 +1089,35 @@ export default function ServiceDetail() {
                               <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
                                 <Lock className="h-4 w-4 text-gray-400" />
                               </div>
-                              <h5 className="font-semibold text-gray-800">CIA Triad Impact</h5>
+                              <h5 className="font-semibold text-gray-800">CIA Triad</h5>
                             </div>
                             <div className="space-y-2">
                               <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Confidentiality:</span>
+                                <span className="text-sm text-gray-600">Confidentiality Impact:</span>
                                 <span className="text-sm text-gray-400">Not assessed</span>
                               </div>
                               <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Integrity:</span>
+                                <span className="text-sm text-gray-600">Integrity Impact:</span>
                                 <span className="text-sm text-gray-400">Not assessed</span>
                               </div>
                               <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Availability:</span>
+                                <span className="text-sm text-gray-600">Availability Impact:</span>
                                 <span className="text-sm text-gray-400">Not assessed</span>
                               </div>
                             </div>
                           </div>
 
-                          {/* Score Breakdown Placeholder */}
-                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 transition-all duration-200">
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <BarChart3 className="h-4 w-4 text-gray-400" />
-                              </div>
-                              <h5 className="font-semibold text-gray-800">Score Breakdown</h5>
-                            </div>
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Data Classification:</span>
-                                <span className="text-sm text-gray-400">Not assessed</span>
-                              </div>
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">CIA Triad:</span>
-                                <span className="text-sm text-gray-400">Not assessed</span>
-                              </div>
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">OWASP ASVS:</span>
-                                <span className="text-sm text-gray-400">Not assessed</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* External Factors Placeholder */}
+                          {/* Attack Surface Factors Placeholder */}
                           <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 transition-all duration-200">
                             <div className="flex items-center gap-2 mb-3">
                               <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
                                 <Globe className="h-4 w-4 text-gray-400" />
                               </div>
-                              <h5 className="font-semibold text-gray-800">External Factors</h5>
+                              <h5 className="font-semibold text-gray-800">Attack Surface Factors</h5>
                             </div>
                             <div className="space-y-2">
                               <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Internet Facing:</span>
+                                <span className="text-sm text-gray-600">Public Endpoint:</span>
                                 <span className="text-sm text-gray-400">Not assessed</span>
                               </div>
                               <div className="flex justify-between items-center py-1">
@@ -1136,6 +1126,34 @@ export default function ServiceDetail() {
                               </div>
                               <div className="flex justify-between items-center py-1">
                                 <span className="text-sm text-gray-600">Awareness:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Risk Scores Placeholder */}
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-xl p-4 transition-all duration-200">
+                            <div className="flex items-center gap-2 mb-3">
+                              <div className="h-8 w-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                <BarChart3 className="h-4 w-4 text-gray-400" />
+                              </div>
+                              <h5 className="font-semibold text-gray-800">Risk Scores</h5>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Data Classification Score:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">CIA Triad Score:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Attack Surface Score:</span>
+                                <span className="text-sm text-gray-400">Not assessed</span>
+                              </div>
+                              <div className="flex justify-between items-center py-1">
+                                <span className="text-sm text-gray-600">Final Risk Score:</span>
                                 <span className="text-sm text-gray-400">Not assessed</span>
                               </div>
                             </div>
