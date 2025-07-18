@@ -120,6 +120,10 @@ export default function Dashboards() {
     queryKey: ["/api/dashboard/metrics"],
   });
 
+  const { data: scanEngineFindings = [], isLoading: isScanEngineLoading } = useQuery({
+    queryKey: ["/api/dashboard/scan-engine-findings"],
+  });
+
   const analytics = processAnalyticsData(applications);
 
   // Weekly trend data - simulate 7 days of findings by severity
@@ -168,7 +172,7 @@ export default function Dashboards() {
     doc.save(`Dashboard_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
-  if (isLoading || isMetricsLoading) {
+  if (isLoading || isMetricsLoading || isScanEngineLoading) {
     return (
       <PageWrapper loadingMessage="Loading Dashboard...">
         <div className="min-h-screen bg-gray-50">
@@ -373,7 +377,7 @@ export default function Dashboards() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={analytics.findingsByEngine}>
+                  <BarChart data={scanEngineFindings}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="engine" />
                     <YAxis />

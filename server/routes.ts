@@ -355,6 +355,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Scan engine findings endpoint for charts
+  app.get("/api/dashboard/scan-engine-findings", async (req, res) => {
+    try {
+      const storage = await getStorage();
+      
+      // Get findings from all scan engines
+      const [
+        mendScaFindings,
+        mendSastFindings, 
+        mendContainersFindings,
+        escapeWebAppsFindings,
+        escapeApisFindings,
+        crowdstrikeImagesFindings,
+        crowdstrikeContainersFindings
+      ] = await Promise.all([
+        storage.getMendScaFindings(),
+        storage.getMendSastFindings(),
+        storage.getMendContainersFindings(),
+        storage.getEscapeWebAppsFindings(),
+        storage.getEscapeApisFindings(),
+        storage.getCrowdstrikeImagesFindings(),
+        storage.getCrowdstrikeContainersFindings()
+      ]);
+      
+      // Aggregate findings by engine
+      const aggregateFindings = (findings: any[], engineName: string) => {
+        return findings.reduce((acc, finding) => ({
+          critical: acc.critical + (finding.critical || 0),
+          high: acc.high + (finding.high || 0),
+          medium: acc.medium + (finding.medium || 0),
+          low: acc.low + (finding.low || 0)
+        }), { engine: engineName, critical: 0, high: 0, medium: 0, low: 0 });
+      };
+      
+      const scanEngineData = [
+        aggregateFindings([...mendScaFindings, ...mendSastFindings, ...mendContainersFindings], "Mend"),
+        aggregateFindings([...escapeWebAppsFindings, ...escapeApisFindings], "Escape"),
+        aggregateFindings([...crowdstrikeImagesFindings, ...crowdstrikeContainersFindings], "Crowdstrike")
+      ];
+      
+      res.json(scanEngineData);
+    } catch (error) {
+      console.error("Scan engine findings error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Dashboard metrics endpoint
   app.get("/api/dashboard/metrics", async (req, res) => {
     try {
