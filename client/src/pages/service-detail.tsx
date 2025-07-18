@@ -234,6 +234,8 @@ export default function ServiceDetail() {
     queryKey: ["/api/applications"],
   });
 
+  const application = applications.find(app => app.id.toString() === serviceId);
+
   // Risk assessment data query
   const { data: riskAssessmentData } = useQuery({
     queryKey: ['/api/risk-assessments', application?.name],
@@ -268,8 +270,6 @@ export default function ServiceDetail() {
   const allCrowdstrikeContainersQuery = useQuery({
     queryKey: ["/api/crowdstrike/containers"],
   });
-
-  const application = applications.find(app => app.id.toString() === serviceId);
 
   const updateServiceMutation = useMutation({
     mutationFn: async (updatedData: any) => {
