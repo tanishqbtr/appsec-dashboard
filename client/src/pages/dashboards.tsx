@@ -4,19 +4,13 @@ import DashboardTutorial from "@/components/dashboard-tutorial";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import {
   BarChart3,
   TrendingUp,
   Shield,
   AlertTriangle,
-  Download,
+
   Calendar,
   FileText,
   PieChart,
@@ -108,7 +102,6 @@ const processAnalyticsData = (applications: Application[]) => {
 };
 
 export default function Dashboards() {
-  const [timeRange, setTimeRange] = useState("7d");
   const [showTutorial, setShowTutorial] = useState(false);
   const { toast } = useToast();
 
@@ -173,25 +166,7 @@ export default function Dashboards() {
 
   const PIE_COLORS = ['#ef4444', '#f59e0b', '#3b82f6', '#22c55e'];
 
-  const exportDashboard = async () => {
-    const { default: jsPDF } = await import('jspdf');
-    const { default: autoTable } = await import('jspdf-autotable');
-    
-    const doc = new jsPDF();
-    
-    doc.setFontSize(20);
-    doc.text('Security Dashboard Report', 20, 30);
-    doc.setFontSize(12);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 20, 50);
-    
-    // Key metrics
-    doc.text('Key Metrics', 20, 70);
-    doc.text(`Total Applications: ${totalApplications}`, 30, 85);
-    doc.text(`Critical Findings: ${criticalFindings}`, 30, 95);
-    doc.text(`Average Risk Score: ${averageRiskScore}`, 30, 105);
-    
-    doc.save(`Dashboard_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
-  };
+
 
   if (isLoading || isMetricsLoading || isScanEngineLoading || isRiskDistributionLoading) {
     return (
@@ -236,26 +211,6 @@ export default function Dashboards() {
                 </p>
               </div>
               <div className="flex items-center gap-4">
-                <Select value={timeRange} onValueChange={setTimeRange}>
-                  <SelectTrigger className="w-32" data-tutorial="time-range">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="24h">24 Hours</SelectItem>
-                    <SelectItem value="7d">7 Days</SelectItem>
-                    <SelectItem value="30d">30 Days</SelectItem>
-                    <SelectItem value="90d">90 Days</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  variant="outline"
-                  onClick={exportDashboard}
-                  className="flex items-center gap-2"
-                  data-tutorial="export-button"
-                >
-                  <Download className="h-4 w-4" />
-                  Export Report
-                </Button>
                 <Button
                   variant="outline"
                   onClick={handleStartTutorial}
