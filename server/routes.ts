@@ -28,7 +28,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("User found:", user ? { id: user.id, username: user.username } : "not found");
       
       if (!user || user.password !== password) {
-        console.log("Invalid credentials");
+        console.log("Invalid credentials - expected:", user?.password, "got:", password);
         return res.status(401).json({ message: "Invalid credentials" });
       }
       
@@ -47,7 +47,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/auth/user", requireAuth, async (req: any, res) => {
     try {
       const storage = await getStorage();
-      const user = await storage.getUserById(req.session.userId);
+      const user = await storage.getUser(req.session.userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }

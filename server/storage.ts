@@ -78,7 +78,7 @@ export class MemStorage implements IStorage {
     this.currentApplicationId = 1;
     
     // Initialize with dummy admin user
-    this.createUser({ username: "admin", password: "password@hh" });
+    this.createUser({ username: "admin", password: "password" });
     
     // Initialize with dummy applications data
     this.initializeApplications();
