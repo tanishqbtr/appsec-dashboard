@@ -48,7 +48,7 @@ import type { Application } from "@shared/schema";
 // Analytics data processing functions
 const processAnalyticsData = (applications: Application[]) => {
   const findingsByEngine = applications.reduce((acc, app) => {
-    const findings = JSON.parse(app.totalFindings);
+    const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { C: 0, H: 0, M: 0, L: 0, total: 0 };
     const engine = acc.find(e => e.engine === app.scanEngine);
     if (engine) {
       engine.critical += findings.C;
@@ -132,7 +132,10 @@ export default function Reports() {
     const reportData = {
       summary: {
         totalApplications: applications.length,
-        criticalFindings: applications.reduce((sum, app) => sum + JSON.parse(app.totalFindings).C, 0),
+        criticalFindings: applications.reduce((sum, app) => {
+          const findings = app.totalFindings ? JSON.parse(app.totalFindings) : { C: 0 };
+          return sum + findings.C;
+        }, 0),
         averageRiskScore: (applications.reduce((sum, app) => sum + parseFloat(app.riskScore), 0) / applications.length).toFixed(1),
         reportDate: new Date().toISOString(),
         timeRange
@@ -140,7 +143,7 @@ export default function Reports() {
       analytics,
       applications: applications.map(app => ({
         ...app,
-        findings: JSON.parse(app.totalFindings)
+        findings: app.totalFindings ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 }
       }))
     };
 

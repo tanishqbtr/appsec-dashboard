@@ -324,7 +324,10 @@ export default function ServiceDetail() {
     );
   }
 
-  const findings: FindingsData = JSON.parse(application.totalFindings);
+  // Use default values if totalFindings is not available
+  const findings: FindingsData = application.totalFindings ? 
+    JSON.parse(application.totalFindings) : 
+    { total: 0, C: 0, H: 0, M: 0, L: 0 };
   const percentile = calculatePercentile(applications, application);
   
   // Mock engine findings data
