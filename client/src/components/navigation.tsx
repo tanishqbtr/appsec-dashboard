@@ -50,13 +50,13 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
   return (
     <nav className="bg-primary shadow-sm" data-tutorial-target="nav">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+        <div className="flex justify-between h-40">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
               <img 
                 src={hingeHealthLogoPath} 
                 alt="Hinge Health Logo" 
-                className="h-12 w-auto"
+                className="h-36 w-auto"
               />
             </div>
             <div className="hidden md:ml-6 md:flex md:space-x-8">
