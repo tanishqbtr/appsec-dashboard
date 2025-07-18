@@ -50,7 +50,7 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
   return (
     <nav className="bg-primary shadow-sm" data-tutorial-target="nav">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-40">
+        <div className="flex justify-between h-20">
           <div className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
               <img 
