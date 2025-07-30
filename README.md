@@ -1,185 +1,95 @@
-# Overview
+# AppSec Security Dashboard
 
-This is a full-stack security dashboard application built with Express.js backend and React frontend. The application provides a comprehensive interface for managing security applications and viewing vulnerability findings with different severity levels (Critical, High, Medium, Low).
+A full-stack security dashboard application built with Express.js backend and React frontend. Provides a comprehensive interface for managing security applications and viewing vulnerability findings across different severity levels (Critical, High, Medium, Low).
 
-## User Preferences
+## Key Features
 
-Preferred communication style: Simple, everyday language.
-Navigation menu items: "Dashboard (main analytics), Services, Reports, Alerts, Risk Scoring" (updated July 17, 2025)
-Login page: Green background matching Hinge Health logo color (updated July 17, 2025)
-Services page: Main application management page with clickable rows leading to detailed service pages (updated July 17, 2025)
-Dashboard page: Landing page with comprehensive analytics, weekly findings by severity trends, and security insights (updated July 17, 2025)
-Reports page: Document generation and export functionality for compliance reporting (updated July 17, 2025)
-Color scheme: Consistent green theme throughout interface - dark green for primary actions, light green for secondary
-Animations: Smooth hover effects with 200ms transitions and subtle scaling
-Other pages: Empty placeholder pages for future development
-Percentile system: Services ranked by total findings with color-coded badges - services with fewer findings get higher percentiles (Top 10% = Green, Top 25% = Blue, Top 50% = Yellow, Bottom 50% = Orange, Bottom 25% = Red) (updated July 17, 2025)
-Interactive onboarding tutorial: Guides new users through key features with step-by-step walkthrough, highlighting elements and providing contextual information (updated July 17, 2025)
-Database schema simplification: Removed unnecessary fields (projects, violating findings, risk factors, last scan) from services table - keeping only essential data (updated July 18, 2025)
-Mend findings separation: Created separate tables for Mend SCA, SAST, and Containers findings with individual critical/high/medium/low counts and scan dates (updated July 18, 2025)
-Authentication system fully restored: Successfully implemented session-based authentication with proper login/logout flow, protected API endpoints, and centralized useAuth hook across all pages for consistent authentication state management (updated July 18, 2025)
-Dashboard layout: Moved Findings Trend chart from Reports page to Dashboard, replacing Recent Scan Activity section for better visibility of security trends (updated July 18, 2025)
-Reports page clearing: Completely emptied Reports page content, leaving only basic navigation and empty state message for future development (updated July 18, 2025)
-Page functionality swap: Moved all Services page functionality (security findings table, filters, onboarding) to Reports page, and cleared Services page to empty state (updated July 18, 2025)
-Services page redesign: Created simple services list view with search functionality and clickable rows that navigate to individual service detail pages (updated July 18, 2025)
-Services table enhancement: Added sortable table format with Risk Score and Percentile Ranking columns, removed tags/labels display, implemented three-column sorting functionality (updated July 18, 2025)
-Services data integration: Updated to use calculated risk scores from risk assessments and proper percentile ranking based on risk scores, removed findings count display (updated July 18, 2025)
-Services API endpoint: Created dedicated `/api/services-with-risk-scores` endpoint that directly fetches services from risk_assessments table with final_risk_score values (updated July 18, 2025)
-Service detail page enhancement: Enhanced Risk Assessment Details and Findings by Scanner sections with beautiful gradient card designs, integrated "Take me to" buttons within scanner cards, and updated risk scores to display actual values from database final_risk_score field (updated July 18, 2025)
-UI cleanup: Removed unnecessary SCA/SAST labels from service detail pages and consolidated scanner navigation into individual card-based buttons (updated July 18, 2025)
-Percentile calculation standardization: Implemented consistent percentile calculation logic based on total findings across all scan engines for both Services page and Service Detail page - higher findings result in lower percentile ranking (updated July 18, 2025)
-Total findings API endpoint: Created /api/services-total-findings endpoint that aggregates findings across all scan engines (Mend SCA/SAST/Containers, Escape WebApps/APIs, Crowdstrike Images/Containers) for accurate percentile calculations (updated July 18, 2025)
-Comprehensive animation system: Added smooth page transitions, micro-interactions, and hover animations across all pages with CSS keyframes, staggered list animations, chart entrance effects, and enhanced button interactions (updated July 18, 2025)
-
+- **Multi-Engine Integration**: Supports Mend (SCA, SAST, Containers), Escape (WebApps, APIs), and Crowdstrike (Images, Containers)
+- **Risk Assessment**: Comprehensive risk scoring and percentile ranking system
+- **Interactive Analytics**: Real-time dashboards with trend analysis and compliance tracking
+- **Service Management**: Complete lifecycle management of security-monitored services
+- **Authentication**: Session-based authentication with protected API endpoints
+- **Responsive UI**: Modern design with Hinge Health green theme and smooth animations
 
 ## System Architecture
 
-### Frontend Architecture
-- **Framework**: React with TypeScript
-- **Routing**: Wouter for client-side routing
-- **UI Components**: Shadcn/ui component library with Radix UI primitives
-- **Styling**: Tailwind CSS with custom security-themed color variables
-- **State Management**: React Query (TanStack Query) for server state
-- **Build Tool**: Vite with React plugin
+### Frontend
+- **React** with TypeScript and Wouter routing
+- **Shadcn/ui** components with Radix UI primitives
+- **Tailwind CSS** with custom security-themed variables
+- **TanStack Query** for server state management
+- **Vite** build tool with HMR
 
-### Backend Architecture
-- **Framework**: Express.js with TypeScript
-- **Runtime**: Node.js with ESM modules
-- **API Style**: RESTful endpoints
-- **Session Management**: In-memory storage (development setup)
-- **Request Logging**: Custom middleware for API request logging
+### Backend
+- **Express.js** with TypeScript and ESM modules
+- **Drizzle ORM** with PostgreSQL
+- **RESTful API** with session management
+- **Custom middleware** for authentication and logging
 
-### Database Layer
-- **ORM**: Drizzle ORM configured for PostgreSQL
-- **Schema**: Defined in shared directory for type safety
-- **Migration**: Drizzle Kit for schema migrations
-- **Current Storage**: In-memory implementation (MemStorage class) for development
+### Database
+- **PostgreSQL** with Neon serverless
+- **Separate tables** for each scan engine (Mend, Escape, Crowdstrike)
+- **Risk assessments** with CIA triad scoring
+- **Applications registry** with metadata
 
-## Key Components
+## Quick Start
 
-### Authentication System
-- Simple username/password authentication
-- No session persistence (development mode)
-- Default credentials: admin/password
-- Basic login/logout flow
+```bash
+# Install dependencies
+npm install
 
-### Application Management
-- Applications table with security metrics and clickable rows
-- Vulnerability findings categorized by severity
-- Risk factor calculations
-- Label and tag system for organization
-- Last scan timestamp tracking
-- Export functionality (CSV, XLSX, PDF) for filtered data
-- Two-column filtering: Scan Engine/Labels + Compliance Tags
-- Percentile ranking system based on total findings with color-coded badges
-- Mutually exclusive filtering between scan engines/labels and compliance tags
+# Start development servers
+npm run dev
 
-### Service Detail Pages
-- Individual service pages accessible via clickable table rows
-- Comprehensive security findings display with total and violating findings
-- GitHub repository, Jira project, and Slack channel links
-- Service owner information and descriptions
-- Risk score analysis and compliance tag management
-- Quick action buttons for scanning and history
-- Interactive badges for findings categorization
-- Animated service tier badges (Bronze, Silver, Gold, Platinum) based on risk scores
-- Smooth badge reveal animations with shimmer effects and floating animations
+# Update database schema
+npm run db:push
 
-### Dashboard (Main Analytics)
-- Real-time security insights and comprehensive vulnerability management
-- Interactive charts: Weekly trend lines, risk distribution pie charts, findings by engine bar charts
-- Key performance metrics: Total applications, critical findings, average risk score, active scans
-- Weekly activity trends showing scans completed, new findings, and resolved issues
-- Compliance standards coverage with progress indicators
-- Recent scan activity timeline with latest 4 scans
-- Quick stats summary with total findings, compliance rate, and response times
-- Dashboard export functionality for executive reporting
+# Access database management UI
+npm run db:studio
+```
 
-### Reports Page
-- Focused on document generation and compliance reporting
-- Export capabilities for detailed security documentation
-- Report templates for different compliance standards
-- Historical data compilation and trend reporting
+## Authentication
+- **Default credentials**: admin/password
+- **Session-based** authentication
+- **Protected routes** for all dashboard pages
 
-### UI Component System
-- Complete Shadcn/ui component library
-- Responsive design with mobile-first approach
-- Accessibility features built-in
-- Custom security-themed color scheme
+## API Endpoints
 
-## Data Flow
+### Core Endpoints
+- `GET /api/applications` - List all applications
+- `GET /api/services-with-risk-scores` - Services with risk data
+- `GET /api/dashboard/metrics` - Key performance indicators
+- `POST /api/login` - User authentication
 
-1. **Authentication Flow**:
-   - User submits credentials via login form
-   - Backend validates against in-memory user store
-   - Success redirects to dashboard, failure shows error
+### Scanner Data
+- `GET /api/mend/{sca|sast|containers}` - Mend findings
+- `GET /api/escape/{webapps|apis}` - Escape findings  
+- `GET /api/crowdstrike/{images|containers}` - Crowdstrike findings
 
-2. **Application Data Flow**:
-   - Dashboard fetches applications via React Query
-   - Backend serves from in-memory mock data
-   - Real-time filtering and search on frontend
-   - Severity badges rendered based on findings data
-
-3. **Component Communication**:
-   - Parent-child prop passing for data
-   - React Query for server state management
-   - Wouter for navigation state
-
-## External Dependencies
-
-### Core Dependencies
-- **@neondatabase/serverless**: PostgreSQL connection (configured but not used)
-- **drizzle-orm**: Database ORM and query builder
-- **@tanstack/react-query**: Server state management
-- **wouter**: Lightweight React router
-- **express**: Web framework for Node.js
-
-### UI Dependencies
-- **@radix-ui/***: Primitive UI components
-- **tailwindcss**: Utility-first CSS framework
-- **lucide-react**: Icon library
-- **class-variance-authority**: Component variant management
-
-### Development Tools
-- **vite**: Frontend build tool and dev server
-- **tsx**: TypeScript execution for Node.js
-- **esbuild**: Fast bundler for production builds
-
-## Deployment Strategy
+## Deployment
 
 ### Development
-- Vite dev server for frontend with HMR
-- tsx for running TypeScript backend directly
-- Concurrent development with proxy setup
+```bash
+npm run dev  # Concurrent frontend/backend with HMR
+```
 
-### Production Build
-- Frontend: Vite builds to `dist/public`
-- Backend: esbuild bundles to `dist/index.js`
-- Static file serving from Express
-- Single deployment artifact
-
-### Environment Configuration
-- NODE_ENV for environment detection
-- DATABASE_URL for PostgreSQL connection
-- Port configuration via environment variables
-
-### Database Migration
-- Drizzle Kit handles schema migrations
-- `npm run db:push` for development schema updates
-- Production migrations via Drizzle migrate commands
+### Production
+```bash
+npm run build  # Build frontend and backend
+npm start      # Start production server
+```
 
 ## Security Considerations
 
-- Basic authentication implementation (development only)
-- No session encryption or JWT tokens
-- In-memory data storage (not persistent)
-- CORS not configured for production
+- Session-based authentication (development setup)
+- Input validation with Zod schemas
+- SQL injection prevention via Drizzle ORM
 - Environment variables for sensitive configuration
+- HTTPS/TLS for production deployment
 
-## Development Notes
+## Technology Stack
 
-- TypeScript strict mode enabled
-- Path aliases configured for clean imports
-- ESM modules throughout the stack
-- Replit-specific plugins for development environment
-- Hot reload enabled for both frontend and backend
+**Frontend**: React, TypeScript, Tailwind CSS, Shadcn/ui, TanStack Query  
+**Backend**: Node.js, Express.js, TypeScript, Drizzle ORM  
+**Database**: PostgreSQL (Neon serverless)  
+**Deployment**: Replit platform with auto-scaling
