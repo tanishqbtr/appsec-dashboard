@@ -1,26 +1,21 @@
 # Use Node.js 20 LTS
-FROM node:20-alpine
-
-# Set working directory
+FROM node:20-alpine AS builder
 WORKDIR /app
-
-# Copy package files
 COPY package*.json ./
-
-# Install dependencies
-RUN npm ci --only=production
-
-# Copy source code
+# Install ALL deps (dev + prod) for building
+RUN npm ci
 COPY . .
-
-# Build the application
+# Build client (Vite) and server bundle (esbuild)
 RUN npm run build
 
-# Expose port
+FROM node:20-alpine AS runner
+WORKDIR /app
+COPY package*.json ./
+# Install only production deps for runtime
+RUN npm ci --omit=dev
+# Copy built artifacts from builder
+COPY --from=builder /app/dist ./dist
+
 EXPOSE 5000
-
-# Set environment to production
 ENV NODE_ENV=production
-
-# Start the application
 CMD ["npm", "start"]
