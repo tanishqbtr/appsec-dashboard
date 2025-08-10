@@ -1,95 +1,123 @@
-# AppSec Security Dashboard
+## AppSec Security Dashboard
 
-A full-stack security dashboard application built with Express.js backend and React frontend. Provides a comprehensive interface for managing security applications and viewing vulnerability findings across different severity levels (Critical, High, Medium, Low).
+A full‑stack security dashboard (React + Express) for managing services and visualizing scanner findings (Critical/High/Medium/Low), risk scoring, and analytics.
 
-## Key Features
+## Highlights
 
-- **Multi-Engine Integration**: Supports Mend (SCA, SAST, Containers), Escape (WebApps, APIs), and Crowdstrike (Images, Containers)
-- **Risk Assessment**: Comprehensive risk scoring and percentile ranking system
-- **Interactive Analytics**: Real-time dashboards with trend analysis and compliance tracking
-- **Service Management**: Complete lifecycle management of security-monitored services
-- **Authentication**: Session-based authentication with protected API endpoints
-- **Responsive UI**: Modern design with Hinge Health green theme and smooth animations
+- **Multi‑engine data**: Mend (SCA, SAST, Containers), Escape (WebApps, APIs), Crowdstrike (Images, Containers)
+- **Risk Assessments**: CIA triad inputs, calculated final risk score, risk level
+- **Dashboards**: Risk distribution, findings by engine, KPIs
+- **Services**: List with risk context; deep service detail views
+- **Auth**: Session‑based auth with protected API routes
 
-## System Architecture
+## Architecture
 
 ### Frontend
-- **React** with TypeScript and Wouter routing
-- **Shadcn/ui** components with Radix UI primitives
-- **Tailwind CSS** with custom security-themed variables
-- **TanStack Query** for server state management
-- **Vite** build tool with HMR
+- React + TypeScript, Wouter router
+- Shadcn/UI (Radix primitives), Tailwind CSS
+- React Query for data fetching
+- Built with Vite to `dist/public`
 
 ### Backend
-- **Express.js** with TypeScript and ESM modules
-- **Drizzle ORM** with PostgreSQL
-- **RESTful API** with session management
-- **Custom middleware** for authentication and logging
+- Express + TypeScript (ESM)
+- REST API, request logging middleware
+- Serves SPA statically in production
 
 ### Database
-- **PostgreSQL** with Neon serverless
-- **Separate tables** for each scan engine (Mend, Escape, Crowdstrike)
-- **Risk assessments** with CIA triad scoring
-- **Applications registry** with metadata
+- PostgreSQL via Drizzle ORM/Drizzle Kit
+- Tables: `applications`, `risk_assessments`, and per‑engine findings tables
 
-## Quick Start
+## Requirements
 
+- Node.js 20+
+- Docker (for local Postgres or full Docker Compose)
+
+## Quick start (clone and run locally)
+
+### A) Run with Docker Compose (production‑like)
 ```bash
-# Install dependencies
+git clone <your_repo_url> appsec-dashboard
+cd appsec-dashboard
+
+# Build and start Postgres + app image
+docker compose up -d --build
+
+# Apply DB schema from your host (runtime image has prod deps only)
+export DATABASE_URL=postgresql://appsec_user:appsec_password@localhost:5432/appsec_dashboard
 npm install
-
-# Start development servers
-npm run dev
-
-# Update database schema
 npm run db:push
 
-# Access database management UI
-npm run db:studio
+# (Re)start the app if needed
+docker compose restart app
+
+# Open
+open http://localhost:3000
 ```
 
-## Authentication
-- **Default credentials**: admin/password
-- **Session-based** authentication
-- **Protected routes** for all dashboard pages
-
-## API Endpoints
-
-### Core Endpoints
-- `GET /api/applications` - List all applications
-- `GET /api/services-with-risk-scores` - Services with risk data
-- `GET /api/dashboard/metrics` - Key performance indicators
-- `POST /api/login` - User authentication
-
-### Scanner Data
-- `GET /api/mend/{sca|sast|containers}` - Mend findings
-- `GET /api/escape/{webapps|apis}` - Escape findings  
-- `GET /api/crowdstrike/{images|containers}` - Crowdstrike findings
-
-## Deployment
-
-### Development
+### B) Developer mode with hot reload (Docker)
 ```bash
-npm run dev  # Concurrent frontend/backend with HMR
+docker compose -f docker-compose.dev.yml up --build
+# In another terminal, push schema (once):
+export DATABASE_URL=postgresql://appsec_user:appsec_password@localhost:5432/appsec_dashboard
+npm install
+npm run db:push
+# App on http://localhost:3000
 ```
 
-### Production
+### C) Direct Node.js locally (Postgres via Docker)
 ```bash
-npm run build  # Build frontend and backend
-npm start      # Start production server
+git clone <your_repo_url> appsec-dashboard
+cd appsec-dashboard
+
+# Start only Postgres
+docker compose up -d postgres
+
+# Configure env and push schema
+export DATABASE_URL=postgresql://appsec_user:appsec_password@localhost:5432/appsec_dashboard
+npm install
+npm run db:push
+
+# Start dev server (Express + Vite dev for client)
+npm run dev
+# App on http://localhost:5000
 ```
 
-## Security Considerations
+## Credentials
 
-- Session-based authentication (development setup)
-- Input validation with Zod schemas
-- SQL injection prevention via Drizzle ORM
-- Environment variables for sensitive configuration
-- HTTPS/TLS for production deployment
+- Default admin: `admin`
+- Password: `password@hh`
 
-## Technology Stack
+## API (core)
 
-**Frontend**: React, TypeScript, Tailwind CSS, Shadcn/ui, TanStack Query  
-**Backend**: Node.js, Express.js, TypeScript, Drizzle ORM  
-**Database**: PostgreSQL (Neon serverless)  
-**Deployment**: Replit platform with auto-scaling
+- `POST /api/login`
+- `GET /api/applications`
+- `GET /api/services-with-risk-scores`
+- `GET /api/dashboard/metrics`
+- Per‑engine findings: `/api/mend/{sca|sast|containers}`, `/api/escape/{webapps|apis}`, `/api/crowdstrike/{images|containers}`
+
+## Scripts
+
+- `npm run dev` — development (HMR)
+- `npm run build` — build client and server bundles
+- `npm start` — run production server (serves `dist/public` and API)
+- `npm run db:push` — apply Drizzle schema to the database
+
+## Troubleshooting
+
+- App container exits with “Cannot find package 'vite' imported from /app/dist/index.js”:
+  - Rebuild after pulling latest changes (we load Vite only in dev now):
+    ```bash
+    docker compose down
+    docker compose build --no-cache app
+    docker compose up -d postgres
+    export DATABASE_URL=postgresql://appsec_user:appsec_password@localhost:5432/appsec_dashboard
+    npm run db:push
+    docker compose up -d app
+    ```
+- DB errors at startup: ensure `DATABASE_URL` is correct and Postgres is `healthy`; run `npm run db:push`.
+
+## Security notes
+
+- Session cookies must be `secure` in real production behind HTTPS
+- Validate inputs server‑side; Drizzle helps prevent SQL injection
+- Store secrets in env vars or secret managers
