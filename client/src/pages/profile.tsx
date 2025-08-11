@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, Lock, Save, ArrowLeft } from "lucide-react";
+import { User, Mail, Lock, Save, ArrowLeft, Clock } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -295,6 +295,32 @@ export default function Profile() {
               </CardContent>
             </Card>
           )}
+
+          {/* Email Notification Preferences */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Email Notification Preferences
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center space-y-4">
+                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-100 to-blue-50 shadow-lg">
+                    <Clock className="h-8 w-8 text-blue-600 animate-pulse" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Coming Soon!</h3>
+                    <p className="text-gray-600 max-w-md">
+                      Email notification preferences will be available in an upcoming release. 
+                      You'll be able to customize alerts for security findings, scan results, and system updates.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </main>
       </div>
     </PageWrapper>
