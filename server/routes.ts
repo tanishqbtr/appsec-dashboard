@@ -115,29 +115,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add application endpoint - Admin only
-  app.post("/api/applications", requireAdmin, async (req, res) => {
+  app.post("/api/applications", requireAdmin, async (req: any, res) => {
     try {
       const newApplication = req.body;
       
       const storage = await getStorage();
       const createdApplication = await storage.createApplication(newApplication);
       
+      // Log the activity
+      await logActivity(
+        req.session.userId,
+        req.session.username,
+        'CREATE_SERVICE',
+        createdApplication.name,
+        `Created new service: ${createdApplication.name}`
+      );
+      
       res.status(201).json(createdApplication);
     } catch (error) {
+      console.error("Error creating application:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
   // Delete application endpoint - Admin only
-  app.delete("/api/applications/:id", requireAdmin, async (req, res) => {
+  app.delete("/api/applications/:id", requireAdmin, async (req: any, res) => {
     try {
       const { id } = req.params;
       
       const storage = await getStorage();
+      
+      // Get the application first to log its name
+      const application = await storage.getApplication(parseInt(id));
       const success = await storage.deleteApplication(parseInt(id));
       
       if (!success) {
         return res.status(404).json({ message: "Application not found" });
+      }
+      
+      // Log the activity
+      if (application) {
+        await logActivity(
+          req.session.userId,
+          req.session.username,
+          'DELETE_SERVICE',
+          application.name,
+          `Deleted service: ${application.name}`
+        );
       }
       
       res.json({ success: true, message: "Application deleted successfully" });
@@ -240,11 +264,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/risk-assessments", requireAdmin, async (req, res) => {
+  app.post("/api/risk-assessments", requireAdmin, async (req: any, res) => {
     try {
       const assessmentData = req.body;
       const storage = await getStorage();
       const assessment = await storage.createOrUpdateRiskAssessment(assessmentData);
+      
+      // Log the activity
+      await logActivity(
+        req.session.userId,
+        req.session.username,
+        'UPDATE_RISK_SCORE',
+        assessment.serviceName,
+        `Updated risk assessment for ${assessment.serviceName} - Final Risk Score: ${assessment.finalRiskScore}, Risk Level: ${assessment.riskLevel}`
+      );
+      
       res.json(assessment);
     } catch (error) {
       console.error("Error saving risk assessment:", error);
