@@ -172,12 +172,6 @@ export default function Login() {
           alt="Security Office"
           className="w-full h-full object-cover"
         />
-        {/* Hinge Health Shield Logo Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center z-20">
-          <div className="w-32 h-32 bg-slate-800/80 rounded-2xl border border-slate-700/50 backdrop-blur-sm flex items-center justify-center">
-            <Shield className="h-16 w-16 text-white" />
-          </div>
-        </div>
       </div>
 
       {/* Animated Error Popup Modal */}
