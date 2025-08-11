@@ -334,12 +334,18 @@ export class MemStorage implements IStorage {
 
   async createApplication(insertApplication: InsertApplication): Promise<Application> {
     const id = this.currentApplicationId++;
-    const application: Application = { 
-      ...insertApplication, 
+    const application: Application = {
       id,
-      labels: insertApplication.labels || null,
-      tags: insertApplication.tags || null,
-      hasAlert: insertApplication.hasAlert || false
+      name: insertApplication.name,
+      riskScore: insertApplication.riskScore,
+      labels: insertApplication.labels ?? null,
+      tags: insertApplication.tags ?? null,
+      hasAlert: insertApplication.hasAlert ?? false,
+      githubRepo: insertApplication.githubRepo ?? null,
+      jiraProject: insertApplication.jiraProject ?? null,
+      serviceOwner: insertApplication.serviceOwner ?? null,
+      slackChannel: insertApplication.slackChannel ?? null,
+      description: insertApplication.description ?? null,
     };
     this.applications.set(id, application);
     return application;
@@ -488,7 +494,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(applications)
       .where(eq(applications.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Mend findings methods - simplified since each service has only one record
@@ -710,32 +716,54 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-// Initialize storage - try database first, fallback to memory if database fails
+// Initialize storage - DATABASE ONLY MODE (no fallback)
 async function initializeStorage(): Promise<IStorage> {
+  console.log("🔄 Initializing database storage...");
+  
+  const dbStorage = new DatabaseStorage();
+  
   try {
-    const dbStorage = new DatabaseStorage();
-    
-    // Test database connection
+    // Test database connection first
+    console.log("🔍 Testing database connection...");
     await dbStorage.getApplications();
+    console.log("✅ Database connection successful");
     
     // Check if we need to seed data
+    console.log("🔍 Checking for existing data...");
     const existingApps = await dbStorage.getApplications();
     const existingUsers = await dbStorage.getUserByUsername("admin");
     
     if (!existingUsers) {
+      console.log("👤 Creating admin user...");
       await dbStorage.createUser({ username: "admin", password: "password@hh" });
+      console.log("✅ Admin user created");
+    } else {
+      console.log("👤 Admin user already exists");
     }
     
     if (existingApps.length === 0) {
-      // Seed initial applications data
+      console.log("📊 Seeding initial application data...");
       await seedApplications(dbStorage);
+      console.log("✅ Initial data seeded");
+    } else {
+      console.log("📊 Application data already exists");
     }
     
-    console.log("Database storage initialized successfully");
+    console.log("🎉 Database storage initialized successfully");
     return dbStorage;
+    
   } catch (error) {
-    console.error("Database storage failed, falling back to memory storage:", error);
-    return new MemStorage();
+    console.error("❌ DATABASE INITIALIZATION FAILED:");
+    console.error("   This application REQUIRES a working database connection.");
+    console.error("   Error details:", error);
+    console.error("   Please check:");
+    console.error("   - DATABASE_URL is correct");
+    console.error("   - PostgreSQL is running");
+    console.error("   - Database schema is up to date (run: npm run db:push)");
+    
+    // Do NOT fallback to memory storage - fail explicitly
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Database connection failed: ${message}`);
   }
 }
 
