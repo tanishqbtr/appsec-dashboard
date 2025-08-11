@@ -1,3 +1,4 @@
+import React from "react";
 import hingeHealthLogo from "@assets/ChatGPT Image Jul 17, 2025, 07_08_44 PM_1752760077600.png";
 
 interface HingeLogoProps {

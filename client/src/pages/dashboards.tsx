@@ -1,3 +1,4 @@
+import React from "react";
 import Navigation from "@/components/navigation";
 import PageWrapper from "@/components/page-wrapper";
 import DashboardTutorial from "@/components/dashboard-tutorial";
@@ -48,8 +49,8 @@ import type { Application } from "@shared/schema";
 // Analytics data processing functions
 const processAnalyticsData = (applications: Application[]) => {
   const findingsByEngine = applications.reduce((acc, app) => {
-    const findings = app.totalFindings && app.totalFindings !== "undefined" ? JSON.parse(app.totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
-    const engine = acc.find(e => e.engine === app.scanEngine);
+    const findings = (app as any).totalFindings && (app as any).totalFindings !== "undefined" ? JSON.parse((app as any).totalFindings) : { total: 0, C: 0, H: 0, M: 0, L: 0 };
+    const engine = acc.find(e => e.engine === (app as any).scanEngine);
     if (engine) {
       engine.critical += findings.C;
       engine.high += findings.H;
@@ -58,7 +59,7 @@ const processAnalyticsData = (applications: Application[]) => {
       engine.total += findings.total;
     } else {
       acc.push({
-        engine: app.scanEngine,
+        engine: (app as any).scanEngine,
         critical: findings.C,
         high: findings.H,
         medium: findings.M,
@@ -187,10 +188,10 @@ export default function Dashboards() {
   }
 
   // Use metrics from API or fallback to calculated values
-  const totalApplications = dashboardMetrics?.totalApplications ?? applications.length;
-  const criticalFindings = dashboardMetrics?.criticalFindings ?? 0;
-  const highFindings = dashboardMetrics?.highFindings ?? 0;
-  const averageRiskScore = dashboardMetrics?.averageRiskScore ?? 0;
+  const totalApplications = (dashboardMetrics as any)?.totalApplications ?? applications.length;
+  const criticalFindings = (dashboardMetrics as any)?.criticalFindings ?? 0;
+  const highFindings = (dashboardMetrics as any)?.highFindings ?? 0;
+  const averageRiskScore = (dashboardMetrics as any)?.averageRiskScore ?? 0;
 
   return (
     <PageWrapper loadingMessage="Loading Dashboard...">
@@ -351,7 +352,7 @@ export default function Dashboards() {
                 <ResponsiveContainer width="100%" height={300}>
                   <RechartsPieChart>
                     <Pie
-                      data={riskDistribution}
+                      data={(riskDistribution as any) || []}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
@@ -360,7 +361,7 @@ export default function Dashboards() {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {riskDistribution.map((entry, index) => (
+                      {((riskDistribution as any) || []).map((entry: any, index: number) => (
                         <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                       ))}
                     </Pie>
@@ -383,7 +384,7 @@ export default function Dashboards() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={scanEngineFindings}>
+                  <BarChart data={(scanEngineFindings as any) || []}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="engine" />
                     <YAxis />

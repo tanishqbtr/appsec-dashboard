@@ -1,3 +1,4 @@
+import React from "react";
 import infinityGif from "@assets/Infinity@1x-1.0s-200px-200px_1752739825180.gif";
 
 interface LoadingProps {
