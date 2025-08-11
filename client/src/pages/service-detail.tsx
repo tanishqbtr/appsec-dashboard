@@ -683,26 +683,38 @@ export default function ServiceDetail() {
               <CardContent>
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Total by Severity</h4>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Critical:</span>
-                        <RiskBadge level="C" count={comprehensiveFindings.C} />
+                    <h4 className="font-medium text-gray-900 mb-4">Total by Severity</h4>
+                    <div className="grid grid-cols-4 gap-3">
+                      <div className="flex flex-col items-center bg-red-50 rounded-lg p-3 border border-red-200">
+                        <div className="flex items-center gap-1 mb-1">
+                          <AlertOctagon className="h-4 w-4 text-red-600" />
+                        </div>
+                        <div className="text-red-600 font-bold text-xl">{comprehensiveFindings.C}</div>
+                        <div className="text-xs text-red-700 font-medium">Critical</div>
                       </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">High:</span>
-                        <RiskBadge level="H" count={comprehensiveFindings.H} />
+                      <div className="flex flex-col items-center bg-orange-50 rounded-lg p-3 border border-orange-200">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Zap className="h-4 w-4 text-orange-600" />
+                        </div>
+                        <div className="text-orange-600 font-bold text-xl">{comprehensiveFindings.H}</div>
+                        <div className="text-xs text-orange-700 font-medium">High</div>
                       </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Medium:</span>
-                        <RiskBadge level="M" count={comprehensiveFindings.M} />
+                      <div className="flex flex-col items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                        <div className="flex items-center gap-1 mb-1">
+                          <AlertCircle className="h-4 w-4 text-yellow-600" />
+                        </div>
+                        <div className="text-yellow-600 font-bold text-xl">{comprehensiveFindings.M}</div>
+                        <div className="text-xs text-yellow-700 font-medium">Medium</div>
                       </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Low:</span>
-                        <RiskBadge level="L" count={comprehensiveFindings.L} />
+                      <div className="flex flex-col items-center bg-green-50 rounded-lg p-3 border border-green-200">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Info className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div className="text-green-600 font-bold text-xl">{comprehensiveFindings.L}</div>
+                        <div className="text-xs text-green-700 font-medium">Low</div>
                       </div>
                     </div>
-                    <div className="mt-3 pt-3 border-t text-sm text-gray-600 font-medium">
+                    <div className="mt-4 text-center text-sm text-gray-600 font-medium">
                       Total: {comprehensiveFindings.total} findings
                     </div>
                   </div>
@@ -976,7 +988,7 @@ export default function ServiceDetail() {
                     </div>
                     
                     {riskAssessmentData ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-4">
                         {/* Data Classification Card */}
                         <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden">
                           <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-200/20 rounded-full -mr-10 -mt-10"></div>
@@ -1158,13 +1170,20 @@ export default function ServiceDetail() {
                         </div>
 
                         {/* Risk Scores Card */}
-                        <div className={`bg-gradient-to-br border rounded-xl p-4 hover:shadow-md transition-all duration-200 ${
+                        <div className={`bg-gradient-to-br border rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden ${
                           riskAssessmentData.finalRiskScore >= 7 
                             ? 'from-red-50 to-red-100 border-red-200' 
                             : riskAssessmentData.finalRiskScore >= 4 
                             ? 'from-orange-50 to-orange-100 border-orange-200'
                             : 'from-green-50 to-green-100 border-green-200'
                         }`}>
+                          <div className={`absolute top-0 right-0 w-20 h-20 rounded-full -mr-10 -mt-10 ${
+                            riskAssessmentData.finalRiskScore >= 7 
+                              ? 'bg-red-200/20' 
+                              : riskAssessmentData.finalRiskScore >= 4 
+                              ? 'bg-orange-200/20'
+                              : 'bg-green-200/20'
+                          }`}></div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
                               riskAssessmentData.finalRiskScore >= 7 
