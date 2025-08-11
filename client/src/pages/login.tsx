@@ -78,8 +78,8 @@ export default function Login() {
         />
       </div>
       
-      {/* Left Panel - Login Form with Translucent Background */}
-      <div className="flex-1 flex items-center justify-center p-8 lg:p-12 relative z-10 bg-gradient-to-br from-slate-900/80 via-blue-900/70 to-slate-800/75">
+      {/* Left Panel - Login Form with Gradient to Transparent */}
+      <div className="flex-1 flex items-center justify-center p-8 lg:p-12 relative z-10 bg-gradient-to-r from-slate-900/85 via-blue-900/60 to-transparent">
         <div className="w-full max-w-md">
           {/* Back to Home Link */}
           <button className="flex items-center text-slate-300 hover:text-white mb-8 transition-colors duration-200">
