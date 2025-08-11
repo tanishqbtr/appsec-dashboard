@@ -1204,38 +1204,56 @@ export default function ServiceDetail() {
                           </div>
                           <div className="space-y-2">
                             {riskAssessmentData.dataClassificationScore !== null && riskAssessmentData.dataClassificationScore !== undefined && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Data Classification Score:</span>
-                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Data Classification Score:</span>
+                                </div>
+                                <Badge className="bg-gradient-to-r from-cyan-100 to-cyan-200 text-cyan-800 border-cyan-300 font-semibold">
                                   {riskAssessmentData.dataClassificationScore}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.ciaTriadScore !== null && riskAssessmentData.ciaTriadScore !== undefined && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">CIA Triad Score:</span>
-                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">CIA Triad Score:</span>
+                                </div>
+                                <Badge className="bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-800 border-indigo-300 font-semibold">
                                   {riskAssessmentData.ciaTriadScore}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.attackSurfaceScore !== null && riskAssessmentData.attackSurfaceScore !== undefined && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Attack Surface Score:</span>
-                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Attack Surface Score:</span>
+                                </div>
+                                <Badge className="bg-gradient-to-r from-amber-100 to-amber-200 text-amber-800 border-amber-300 font-semibold">
                                   {riskAssessmentData.attackSurfaceScore}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.finalRiskScore !== null && riskAssessmentData.finalRiskScore !== undefined && (
                               <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-3 pt-3">
-                                <span className="text-sm font-medium text-gray-700">Final Risk Score:</span>
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 rounded-full animate-pulse ${
+                                    riskAssessmentData.finalRiskScore >= 7 
+                                      ? 'bg-red-500' 
+                                      : riskAssessmentData.finalRiskScore >= 4 
+                                      ? 'bg-orange-500'
+                                      : 'bg-green-500'
+                                  }`}></div>
+                                  <span className="text-sm font-medium text-gray-700">Final Risk Score:</span>
+                                </div>
                                 <Badge className={`text-sm font-semibold px-3 py-1 ${
                                   riskAssessmentData.finalRiskScore >= 7 
-                                    ? 'bg-red-100 text-red-800 border-red-200' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300' 
                                     : riskAssessmentData.finalRiskScore >= 4 
-                                    ? 'bg-orange-100 text-orange-800 border-orange-200'
-                                    : 'bg-green-100 text-green-800 border-green-200'
+                                    ? 'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border-orange-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
                                 }`}>
                                   {riskAssessmentData.finalRiskScore}
                                 </Badge>
