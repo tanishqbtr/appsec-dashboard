@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, Lock, Save, ArrowLeft, Clock, Check, X } from "lucide-react";
+import { User, Mail, Lock, Save, ArrowLeft, Clock, Check, X, Eye, EyeOff } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,6 +24,12 @@ export default function Profile() {
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
+  });
+
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
   });
 
   // Password strength validation
@@ -43,6 +49,12 @@ export default function Profile() {
   };
 
   const passwordValidation = validatePassword(profileData.newPassword);
+  
+  // Check if passwords match
+  const passwordsMatch = profileData.newPassword && profileData.confirmPassword && 
+    profileData.newPassword === profileData.confirmPassword;
+  const passwordsDontMatch = profileData.newPassword && profileData.confirmPassword && 
+    profileData.newPassword !== profileData.confirmPassword;
 
   // Fetch user profile data
   const { data: profileUser, isLoading } = useQuery({
@@ -266,24 +278,44 @@ export default function Profile() {
                 <div className="grid gap-6">
                   <div className="grid gap-2">
                     <Label htmlFor="currentPassword">Current Password</Label>
-                    <Input
-                      id="currentPassword"
-                      type="password"
-                      value={profileData.currentPassword}
-                      onChange={(e) => handleInputChange("currentPassword", e.target.value)}
-                      placeholder="Enter current password (required to change password)"
-                    />
+                    <div className="relative">
+                      <Input
+                        id="currentPassword"
+                        type={showPasswords.current ? "text" : "password"}
+                        value={profileData.currentPassword}
+                        onChange={(e) => handleInputChange("currentPassword", e.target.value)}
+                        placeholder="Enter current password (required to change password)"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswords(prev => ({ ...prev, current: !prev.current }))}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      >
+                        {showPasswords.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="newPassword">New Password</Label>
-                    <Input
-                      id="newPassword"
-                      type="password"
-                      value={profileData.newPassword}
-                      onChange={(e) => handleInputChange("newPassword", e.target.value)}
-                      placeholder="Enter new password (leave blank to keep current)"
-                      maxLength={20}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="newPassword"
+                        type={showPasswords.new ? "text" : "password"}
+                        value={profileData.newPassword}
+                        onChange={(e) => handleInputChange("newPassword", e.target.value)}
+                        placeholder="Enter new password (leave blank to keep current)"
+                        maxLength={20}
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswords(prev => ({ ...prev, new: !prev.new }))}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      >
+                        {showPasswords.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
                     
                     {/* Password Strength Indicator */}
                     {profileData.newPassword && (
@@ -351,14 +383,47 @@ export default function Profile() {
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      value={profileData.confirmPassword}
-                      onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                      placeholder="Confirm new password"
-                      maxLength={20}
-                    />
+                    <div className="relative">
+                      <Input
+                        id="confirmPassword"
+                        type={showPasswords.confirm ? "text" : "password"}
+                        value={profileData.confirmPassword}
+                        onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                        placeholder="Confirm new password"
+                        maxLength={20}
+                        className={`pr-10 ${
+                          passwordsDontMatch ? "border-red-500 focus:border-red-500 focus:ring-red-500" :
+                          passwordsMatch ? "border-green-500 focus:border-green-500 focus:ring-green-500" :
+                          ""
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswords(prev => ({ ...prev, confirm: !prev.confirm }))}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+                      >
+                        {showPasswords.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                    
+                    {/* Real-time password match indicator */}
+                    {profileData.confirmPassword && (
+                      <div className={`flex items-center gap-2 text-sm mt-1 ${
+                        passwordsMatch ? "text-green-600" : "text-red-600"
+                      }`}>
+                        {passwordsMatch ? (
+                          <>
+                            <Check className="h-4 w-4" />
+                            <span>Passwords match</span>
+                          </>
+                        ) : (
+                          <>
+                            <X className="h-4 w-4" />
+                            <span>Passwords do not match</span>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
