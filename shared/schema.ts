@@ -6,7 +6,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   username: text("username").notNull().unique(), // This will be the email
-  status: text("status").notNull().default("Active"), // Active, Inactive
+  status: text("status").notNull().default("Active"), // Active, Disabled
   type: text("type").notNull().default("User"), // User, Admin
   password: text("password").notNull(),
   createdAt: timestamp("created_at").defaultNow(),

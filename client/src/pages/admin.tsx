@@ -690,7 +690,7 @@ export default function AdminPanel() {
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="Active">Active</SelectItem>
-                                      <SelectItem value="Inactive">Inactive</SelectItem>
+                                      <SelectItem value="Disabled">Disabled</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </div>
@@ -916,7 +916,7 @@ export default function AdminPanel() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="Active">Active</SelectItem>
-                                <SelectItem value="Inactive">Inactive</SelectItem>
+                                <SelectItem value="Disabled">Disabled</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>

@@ -42,6 +42,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("Invalid credentials - expected:", user?.password, "got:", password);
         return res.status(401).json({ message: "Invalid credentials" });
       }
+
+      // Check if user account is disabled
+      if (user.status === 'Disabled') {
+        console.log("Disabled user attempted login:", user.username);
+        return res.status(403).json({ 
+          message: "Your account has been disabled. Please contact AppSec Team!",
+          accountDisabled: true 
+        });
+      }
       
       // Set session
       req.session.userId = user.id;

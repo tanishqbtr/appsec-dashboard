@@ -32,8 +32,31 @@ export default function Login() {
         queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
         setLocation("/dashboards");
       }
-    } catch (err) {
-      setError("Invalid credentials");
+    } catch (err: any) {
+      // Try to parse the error message from the API response
+      let errorMessage = "Invalid credentials";
+      
+      if (err.message) {
+        try {
+          // Extract JSON from error message if present
+          const jsonMatch = err.message.match(/\{.*\}/);
+          if (jsonMatch) {
+            const errorData = JSON.parse(jsonMatch[0]);
+            if (errorData.message) {
+              errorMessage = errorData.message;
+            }
+          } else if (err.message.includes("disabled")) {
+            errorMessage = "Your account has been disabled. Please contact AppSec Team!";
+          }
+        } catch (parseError) {
+          // If parsing fails, check for disabled account text
+          if (err.message.includes("disabled")) {
+            errorMessage = "Your account has been disabled. Please contact AppSec Team!";
+          }
+        }
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
