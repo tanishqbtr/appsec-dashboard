@@ -39,7 +39,11 @@ import {
   Database,
   Lock,
   Globe,
-  BarChart3
+  BarChart3,
+  AlertOctagon,
+  Zap,
+  AlertCircle,
+  Info
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
@@ -715,18 +719,34 @@ export default function ServiceDetail() {
                             </Button>
                           )}
                         </div>
-                        <div className="grid grid-cols-4 gap-2 text-xs">
-                          <div className="text-center">
-                            <div className="text-red-600 font-bold text-lg">C: {engineFindings.mend.C}</div>
+                        <div className="grid grid-cols-4 gap-3">
+                          <div className="flex flex-col items-center bg-red-50 rounded-lg p-3 border border-red-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertOctagon className="h-4 w-4 text-red-600" />
+                              <span className="text-xs font-medium text-red-700">Critical</span>
+                            </div>
+                            <div className="text-red-600 font-bold text-xl">{engineFindings.mend.C}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-orange-600 font-bold text-lg">H: {engineFindings.mend.H}</div>
+                          <div className="flex flex-col items-center bg-orange-50 rounded-lg p-3 border border-orange-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Zap className="h-4 w-4 text-orange-600" />
+                              <span className="text-xs font-medium text-orange-700">High</span>
+                            </div>
+                            <div className="text-orange-600 font-bold text-xl">{engineFindings.mend.H}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-yellow-600 font-bold text-lg">M: {engineFindings.mend.M}</div>
+                          <div className="flex flex-col items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertCircle className="h-4 w-4 text-yellow-600" />
+                              <span className="text-xs font-medium text-yellow-700">Medium</span>
+                            </div>
+                            <div className="text-yellow-600 font-bold text-xl">{engineFindings.mend.M}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-green-600 font-bold text-lg">L: {engineFindings.mend.L}</div>
+                          <div className="flex flex-col items-center bg-green-50 rounded-lg p-3 border border-green-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Info className="h-4 w-4 text-green-600" />
+                              <span className="text-xs font-medium text-green-700">Low</span>
+                            </div>
+                            <div className="text-green-600 font-bold text-xl">{engineFindings.mend.L}</div>
                           </div>
                         </div>
                         <div className="text-center mt-2 text-sm text-gray-600">
@@ -760,18 +780,34 @@ export default function ServiceDetail() {
                             </Button>
                           )}
                         </div>
-                        <div className="grid grid-cols-4 gap-2 text-xs">
-                          <div className="text-center">
-                            <div className="text-red-600 font-bold text-lg">C: {engineFindings.crowdstrike.C}</div>
+                        <div className="grid grid-cols-4 gap-3">
+                          <div className="flex flex-col items-center bg-red-50 rounded-lg p-3 border border-red-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertOctagon className="h-4 w-4 text-red-600" />
+                              <span className="text-xs font-medium text-red-700">Critical</span>
+                            </div>
+                            <div className="text-red-600 font-bold text-xl">{engineFindings.crowdstrike.C}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-orange-600 font-bold text-lg">H: {engineFindings.crowdstrike.H}</div>
+                          <div className="flex flex-col items-center bg-orange-50 rounded-lg p-3 border border-orange-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Zap className="h-4 w-4 text-orange-600" />
+                              <span className="text-xs font-medium text-orange-700">High</span>
+                            </div>
+                            <div className="text-orange-600 font-bold text-xl">{engineFindings.crowdstrike.H}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-yellow-600 font-bold text-lg">M: {engineFindings.crowdstrike.M}</div>
+                          <div className="flex flex-col items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertCircle className="h-4 w-4 text-yellow-600" />
+                              <span className="text-xs font-medium text-yellow-700">Medium</span>
+                            </div>
+                            <div className="text-yellow-600 font-bold text-xl">{engineFindings.crowdstrike.M}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-green-600 font-bold text-lg">L: {engineFindings.crowdstrike.L}</div>
+                          <div className="flex flex-col items-center bg-green-50 rounded-lg p-3 border border-green-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Info className="h-4 w-4 text-green-600" />
+                              <span className="text-xs font-medium text-green-700">Low</span>
+                            </div>
+                            <div className="text-green-600 font-bold text-xl">{engineFindings.crowdstrike.L}</div>
                           </div>
                         </div>
                         <div className="text-center mt-2 text-sm text-gray-600">
@@ -805,18 +841,34 @@ export default function ServiceDetail() {
                             </Button>
                           )}
                         </div>
-                        <div className="grid grid-cols-4 gap-2 text-xs">
-                          <div className="text-center">
-                            <div className="text-red-600 font-bold text-lg">C: {engineFindings.escape.C}</div>
+                        <div className="grid grid-cols-4 gap-3">
+                          <div className="flex flex-col items-center bg-red-50 rounded-lg p-3 border border-red-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertOctagon className="h-4 w-4 text-red-600" />
+                              <span className="text-xs font-medium text-red-700">Critical</span>
+                            </div>
+                            <div className="text-red-600 font-bold text-xl">{engineFindings.escape.C}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-orange-600 font-bold text-lg">H: {engineFindings.escape.H}</div>
+                          <div className="flex flex-col items-center bg-orange-50 rounded-lg p-3 border border-orange-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Zap className="h-4 w-4 text-orange-600" />
+                              <span className="text-xs font-medium text-orange-700">High</span>
+                            </div>
+                            <div className="text-orange-600 font-bold text-xl">{engineFindings.escape.H}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-yellow-600 font-bold text-lg">M: {engineFindings.escape.M}</div>
+                          <div className="flex flex-col items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertCircle className="h-4 w-4 text-yellow-600" />
+                              <span className="text-xs font-medium text-yellow-700">Medium</span>
+                            </div>
+                            <div className="text-yellow-600 font-bold text-xl">{engineFindings.escape.M}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-green-600 font-bold text-lg">L: {engineFindings.escape.L}</div>
+                          <div className="flex flex-col items-center bg-green-50 rounded-lg p-3 border border-green-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Info className="h-4 w-4 text-green-600" />
+                              <span className="text-xs font-medium text-green-700">Low</span>
+                            </div>
+                            <div className="text-green-600 font-bold text-xl">{engineFindings.escape.L}</div>
                           </div>
                         </div>
                         <div className="text-center mt-2 text-sm text-gray-600">
