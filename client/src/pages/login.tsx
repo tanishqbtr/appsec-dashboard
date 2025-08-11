@@ -79,7 +79,7 @@ export default function Login() {
       <div className="absolute inset-0 bg-[#070f1b] w-[25%]"></div>
       
       {/* Login Form Container */}
-      <div className="relative z-10 min-h-screen flex items-center justify-start p-6 sm:p-8 lg:p-12">
+      <div className="relative z-10 min-h-screen flex items-center justify-start p-6 sm:p-8 lg:p-12 pl-[10%]">
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="mb-8">
