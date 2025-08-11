@@ -66,7 +66,7 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
               <Link href="/dashboards">
                 <Button 
                   variant="ghost" 
-                  className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-sm font-medium btn-smooth ${activePage === 'dashboards' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
+                  className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-base font-medium btn-smooth ${activePage === 'dashboards' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
                 >
                   <ChartLine className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
                   Dashboard
@@ -76,7 +76,7 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
               <Link href="/services">
                 <Button 
                   variant="ghost" 
-                  className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-sm font-medium btn-smooth ${activePage === 'services' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
+                  className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-base font-medium btn-smooth ${activePage === 'services' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
                 >
                   <Server className="h-4 w-4 mr-2" />
                   Services
@@ -86,7 +86,7 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
               <Link href="/reports">
                 <Button 
                   variant="ghost" 
-                  className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-sm font-medium btn-smooth ${activePage === 'reports' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
+                  className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-base font-medium btn-smooth ${activePage === 'reports' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
                 >
                   <BarChart className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
                   Reports
@@ -96,7 +96,7 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
               <Link href="/alerts">
                 <Button 
                   variant="ghost" 
-                  className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-sm font-medium btn-smooth ${activePage === 'alerts' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
+                  className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-base font-medium btn-smooth ${activePage === 'alerts' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
                 >
                   <AlertTriangle className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
                   Alerts
@@ -106,7 +106,7 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
               <Link href="/risk-scoring">
                 <Button 
                   variant="ghost" 
-                  className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-sm font-medium btn-smooth ${activePage === 'risk-scoring' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
+                  className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-base font-medium btn-smooth ${activePage === 'risk-scoring' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
                 >
                   <TrendingUp className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
                   Risk Scoring
@@ -117,7 +117,7 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
                 <Link href="/admin">
                   <Button 
                     variant="ghost" 
-                    className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-sm font-medium btn-smooth ${activePage === 'admin' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
+                    className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-base font-medium btn-smooth ${activePage === 'admin' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
                   >
                     <Settings className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
                     Admin
