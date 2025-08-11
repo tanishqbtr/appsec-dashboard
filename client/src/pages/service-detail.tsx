@@ -727,7 +727,8 @@ export default function ServiceDetail() {
                     
                     <div className="grid grid-cols-1 gap-4">
                       {/* Mend Scanner Card */}
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -741,9 +742,10 @@ export default function ServiceDetail() {
                               target="_blank" 
                               rel="noopener noreferrer"
                             >
-                              <Button size="sm" variant="outline" className="bg-white/50 border-blue-300 text-blue-700 hover:bg-blue-50">
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                Take me to Mend
+                              <Button size="sm" variant="outline" className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-300 text-blue-700 hover:from-blue-600 hover:to-blue-700 hover:text-white hover:border-blue-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                                <ExternalLink className="h-3 w-3 mr-1 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                                <span className="relative z-10">Take me to Mend</span>
                               </Button>
                             </a>
                           ) : (
@@ -753,28 +755,28 @@ export default function ServiceDetail() {
                           )}
                         </div>
                         <div className="grid grid-cols-4 gap-3">
-                          <div className="flex flex-col items-center bg-red-50 rounded-lg p-3 border border-red-200">
+                          <div className="flex flex-col items-center bg-red-50 rounded-lg p-3 border border-red-200 hover:bg-red-100 hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer">
                             <div className="flex items-center gap-2 mb-1">
                               <AlertOctagon className="h-4 w-4 text-red-600" />
                               <span className="text-xs font-medium text-red-700">Critical</span>
                             </div>
                             <div className="text-red-600 font-bold text-xl">{engineFindings.mend.C}</div>
                           </div>
-                          <div className="flex flex-col items-center bg-orange-50 rounded-lg p-3 border border-orange-200">
+                          <div className="flex flex-col items-center bg-orange-50 rounded-lg p-3 border border-orange-200 hover:bg-orange-100 hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer">
                             <div className="flex items-center gap-2 mb-1">
                               <Zap className="h-4 w-4 text-orange-600" />
                               <span className="text-xs font-medium text-orange-700">High</span>
                             </div>
                             <div className="text-orange-600 font-bold text-xl">{engineFindings.mend.H}</div>
                           </div>
-                          <div className="flex flex-col items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                          <div className="flex flex-col items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200 hover:bg-yellow-100 hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer">
                             <div className="flex items-center gap-2 mb-1">
                               <AlertCircle className="h-4 w-4 text-yellow-600" />
                               <span className="text-xs font-medium text-yellow-700">Medium</span>
                             </div>
                             <div className="text-yellow-600 font-bold text-xl">{engineFindings.mend.M}</div>
                           </div>
-                          <div className="flex flex-col items-center bg-green-50 rounded-lg p-3 border border-green-200">
+                          <div className="flex flex-col items-center bg-green-50 rounded-lg p-3 border border-green-200 hover:bg-green-100 hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer">
                             <div className="flex items-center gap-2 mb-1">
                               <Info className="h-4 w-4 text-green-600" />
                               <span className="text-xs font-medium text-green-700">Low</span>
@@ -788,7 +790,8 @@ export default function ServiceDetail() {
                       </div>
 
                       {/* Crowdstrike Scanner Card */}
-                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
+                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-slate-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="h-8 w-8 bg-slate-100 rounded-lg flex items-center justify-center">
@@ -802,9 +805,10 @@ export default function ServiceDetail() {
                               target="_blank" 
                               rel="noopener noreferrer"
                             >
-                              <Button size="sm" variant="outline" className="bg-white/50 border-slate-300 text-slate-700 hover:bg-slate-50">
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                Take me to Crowdstrike
+                              <Button size="sm" variant="outline" className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 text-slate-700 hover:from-slate-600 hover:to-slate-700 hover:text-white hover:border-slate-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-slate-400 to-slate-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                                <ExternalLink className="h-3 w-3 mr-1 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                                <span className="relative z-10">Take me to Crowdstrike</span>
                               </Button>
                             </a>
                           ) : (
@@ -849,7 +853,8 @@ export default function ServiceDetail() {
                       </div>
 
                       {/* Escape Scanner Card */}
-                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
+                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-purple-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -863,9 +868,10 @@ export default function ServiceDetail() {
                               target="_blank" 
                               rel="noopener noreferrer"
                             >
-                              <Button size="sm" variant="outline" className="bg-white/50 border-purple-300 text-purple-700 hover:bg-purple-50">
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                Take me to Escape
+                              <Button size="sm" variant="outline" className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-300 text-purple-700 hover:from-purple-600 hover:to-purple-700 hover:text-white hover:border-purple-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                                <ExternalLink className="h-3 w-3 mr-1 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                                <span className="relative z-10">Take me to Escape</span>
                               </Button>
                             </a>
                           ) : (
