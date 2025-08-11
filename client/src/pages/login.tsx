@@ -166,7 +166,7 @@ export default function Login() {
 
       {/* Right Panel - Security Office Image */}
       <div className="hidden lg:flex flex-1 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-slate-900/40 z-10"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/60 via-transparent to-transparent z-10"></div>
         <img
           src={securityOfficeImage}
           alt="Security Office"
