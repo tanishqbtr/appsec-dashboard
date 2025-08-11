@@ -53,6 +53,27 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import type { Application } from "@shared/schema";
 
+// Function to format lowercase values to proper case
+function formatValue(value: string): string {
+  if (!value) return value;
+  
+  const formatMap: { [key: string]: string } = {
+    'yes': 'Yes',
+    'no': 'No',
+    'high': 'High',
+    'medium': 'Medium',
+    'low': 'Low',
+    'critical': 'Critical',
+    'sensitive-regulated': 'Sensitive Regulated',
+    'public-regulated': 'Public Regulated',
+    'internal': 'Internal',
+    'confidential': 'Confidential',
+    'restricted': 'Restricted'
+  };
+  
+  return formatMap[value.toLowerCase()] || value.charAt(0).toUpperCase() + value.slice(1).replace(/-/g, ' ');
+}
+
 interface FindingsData {
   total: number;
   C: number;
@@ -957,7 +978,8 @@ export default function ServiceDetail() {
                     {riskAssessmentData ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Data Classification Card */}
-                        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-200/20 rounded-full -mr-10 -mt-10"></div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-8 w-8 bg-cyan-100 rounded-lg flex items-center justify-center">
                               <Database className="h-4 w-4 text-cyan-600" />
@@ -966,26 +988,43 @@ export default function ServiceDetail() {
                           </div>
                           <div className="space-y-2">
                             {riskAssessmentData.dataClassification && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Classification:</span>
-                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
-                                  {riskAssessmentData.dataClassification}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Classification:</span>
+                                </div>
+                                <Badge className="bg-gradient-to-r from-cyan-100 to-cyan-200 text-cyan-800 border-cyan-300 font-semibold">
+                                  {formatValue(riskAssessmentData.dataClassification)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.phi && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">PHI:</span>
-                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
-                                  {riskAssessmentData.phi}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">PHI:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.phi.toLowerCase() === 'yes' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300' 
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.phi)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.eligibilityData && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Eligibility Data:</span>
-                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
-                                  {riskAssessmentData.eligibilityData}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Eligibility Data:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.eligibilityData.toLowerCase() === 'yes' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300' 
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.eligibilityData)}
                                 </Badge>
                               </div>
                             )}
@@ -993,7 +1032,8 @@ export default function ServiceDetail() {
                         </div>
 
                         {/* CIA Triad Card */}
-                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-200/20 rounded-full -mr-10 -mt-10"></div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center">
                               <Lock className="h-4 w-4 text-indigo-600" />
@@ -1002,26 +1042,53 @@ export default function ServiceDetail() {
                           </div>
                           <div className="space-y-2">
                             {riskAssessmentData.confidentialityImpact && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Confidentiality Impact:</span>
-                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
-                                  {riskAssessmentData.confidentialityImpact}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Confidentiality Impact:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.confidentialityImpact.toLowerCase() === 'high' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300'
+                                    : riskAssessmentData.confidentialityImpact.toLowerCase() === 'medium'
+                                    ? 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.confidentialityImpact)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.integrityImpact && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Integrity Impact:</span>
-                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
-                                  {riskAssessmentData.integrityImpact}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Integrity Impact:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.integrityImpact.toLowerCase() === 'high' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300'
+                                    : riskAssessmentData.integrityImpact.toLowerCase() === 'medium'
+                                    ? 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.integrityImpact)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.availabilityImpact && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Availability Impact:</span>
-                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
-                                  {riskAssessmentData.availabilityImpact}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Availability Impact:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.availabilityImpact.toLowerCase() === 'high' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300'
+                                    : riskAssessmentData.availabilityImpact.toLowerCase() === 'medium'
+                                    ? 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.availabilityImpact)}
                                 </Badge>
                               </div>
                             )}
@@ -1029,7 +1096,8 @@ export default function ServiceDetail() {
                         </div>
 
                         {/* Attack Surface Factors Card */}
-                        <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                        <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-amber-200/20 rounded-full -mr-10 -mt-10"></div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-8 w-8 bg-amber-100 rounded-lg flex items-center justify-center">
                               <Globe className="h-4 w-4 text-amber-600" />
@@ -1038,26 +1106,51 @@ export default function ServiceDetail() {
                           </div>
                           <div className="space-y-2">
                             {riskAssessmentData.publicEndpoint && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Public Endpoint:</span>
-                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                                  {riskAssessmentData.publicEndpoint}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Public Endpoint:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.publicEndpoint.toLowerCase() === 'yes' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300' 
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.publicEndpoint)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.discoverability && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Discoverability:</span>
-                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                                  {riskAssessmentData.discoverability}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Discoverability:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.discoverability.toLowerCase() === 'high' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300'
+                                    : riskAssessmentData.discoverability.toLowerCase() === 'medium'
+                                    ? 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.discoverability)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.awareness && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Awareness:</span>
-                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                                  {riskAssessmentData.awareness}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Awareness:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.awareness.toLowerCase() === 'high' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300'
+                                    : riskAssessmentData.awareness.toLowerCase() === 'medium'
+                                    ? 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.awareness)}
                                 </Badge>
                               </div>
                             )}

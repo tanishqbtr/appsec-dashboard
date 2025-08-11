@@ -31,6 +31,7 @@ UI cleanup: Removed unnecessary SCA/SAST labels from service detail pages and co
 Percentile calculation standardization: Implemented consistent percentile calculation logic based on total findings across all scan engines for both Services page and Service Detail page - higher findings result in lower percentile ranking (updated July 18, 2025)
 Total findings API endpoint: Created /api/services-total-findings endpoint that aggregates findings across all scan engines (Mend SCA/SAST/Containers, Escape WebApps/APIs, Crowdstrike Images/Containers) for accurate percentile calculations (updated July 18, 2025)
 Comprehensive animation system: Added smooth page transitions, micro-interactions, and hover animations across all pages with CSS keyframes, staggered list animations, chart entrance effects, and enhanced button interactions (updated July 18, 2025)
+Professional UI enhancement: Replaced boring plain text severity indicators with beautiful icon-based system (AlertOctagon, Zap, AlertCircle, Info) in color-coded cards, implemented proper camel-case formatting for all values, added animated pulse dots, gradient backgrounds, and enhanced visual hierarchy across Risk Assessment Details section (updated August 11, 2025)
 
 
 ## System Architecture
