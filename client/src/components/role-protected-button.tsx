@@ -1,7 +1,7 @@
+import React, { ReactNode, forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
-import { ReactNode } from "react";
 
 interface RoleProtectedButtonProps {
   children: ReactNode;
@@ -12,9 +12,10 @@ interface RoleProtectedButtonProps {
   onClick?: () => void;
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
+  [key: string]: any;
 }
 
-export function RoleProtectedButton({
+export const RoleProtectedButton = forwardRef<HTMLButtonElement, RoleProtectedButtonProps>(({
   children,
   requiredRole = "admin",
   className,
@@ -24,7 +25,7 @@ export function RoleProtectedButton({
   disabled = false,
   type = "button",
   ...props
-}: RoleProtectedButtonProps) {
+}, ref) => {
   const { user, isAdmin } = useAuth();
 
   const hasRequiredRole = requiredRole === "admin" ? isAdmin : true;
@@ -32,6 +33,7 @@ export function RoleProtectedButton({
 
   const button = (
     <Button
+      ref={ref}
       className={className}
       variant={variant}
       size={size}
@@ -61,4 +63,6 @@ export function RoleProtectedButton({
   }
 
   return button;
-}
+});
+
+RoleProtectedButton.displayName = "RoleProtectedButton";
