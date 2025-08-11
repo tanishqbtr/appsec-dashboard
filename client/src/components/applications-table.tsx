@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AlertTriangle, ChevronLeft, ChevronRight, Search, ArrowUpDown, Download, ExternalLink, Settings } from "lucide-react";
+import { RoleProtectedButton } from "@/components/role-protected-button";
 import { useLocation, Link } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -25,11 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Application } from "@shared/schema";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
+import { useAuth } from "@/hooks/useAuth";
+import { RoleProtectedButton } from "./role-protected-button";
 
 // Extend jsPDF type to include autoTable
 declare module 'jspdf' {
@@ -174,6 +177,7 @@ function LoadingSkeleton() {
 }
 
 export default function ApplicationsTable({ applications, isLoading, searchTerm, onSearchChange, selectedEngine, selectedLabels, selectedTags }: ApplicationsTableProps) {
+  const { isAdmin, user } = useAuth();
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -660,22 +664,30 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         <div className="flex gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" data-tutorial="export-controls">
+              <RoleProtectedButton 
+                variant="outline" 
+                size="sm" 
+                className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" 
+                data-tutorial="export-controls"
+                requiredRole="admin"
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Export
-              </Button>
+              </RoleProtectedButton>
             </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={exportToCSV}>
-              Export as CSV
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={exportToXLSX}>
-              Export as XLSX
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={exportToPDF}>
-              Export as PDF
-            </DropdownMenuItem>
-          </DropdownMenuContent>
+            {isAdmin && (
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={exportToCSV}>
+                  Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportToXLSX}>
+                  Export as XLSX
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportToPDF}>
+                  Export as PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            )}
           </DropdownMenu>
         </div>
       </div>

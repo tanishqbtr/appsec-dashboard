@@ -11,6 +11,17 @@ const requireAuth = (req: any, res: any, next: any) => {
   next();
 };
 
+// Admin role middleware
+const requireAdmin = (req: any, res: any, next: any) => {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  if (req.session.type !== 'Admin') {
+    return res.status(403).json({ message: "Admin access required" });
+  }
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Login endpoint
@@ -31,12 +42,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("Invalid credentials - expected:", user?.password, "got:", password);
         return res.status(401).json({ message: "Invalid credentials" });
       }
+
+      // Check if user account is disabled
+      if (user.status === 'Disabled') {
+        console.log("Disabled user attempted login:", user.username);
+        return res.status(403).json({ 
+          message: "Your account has been disabled. Please contact AppSec Team!",
+          accountDisabled: true 
+        });
+      }
       
       // Set session
       req.session.userId = user.id;
       req.session.username = user.username;
-      console.log("Session set:", { userId: req.session.userId, username: req.session.username });
-      res.json({ success: true, user: { id: user.id, username: user.username } });
+      req.session.type = user.type;
+      console.log("Session set:", { userId: req.session.userId, username: req.session.username, type: req.session.type });
+      res.json({ success: true, user: { id: user.id, username: user.username, type: user.type } });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -51,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json({ id: user.id, username: user.username });
+      res.json({ id: user.id, name: user.name, username: user.username, type: user.type });
     } catch (error) {
       console.error("Get user error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -62,9 +83,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/logout", async (req, res) => {
     try {
       // Clear session
-      req.session.destroy();
+      req.session.destroy((err) => {
+        if (err) console.error("Session destroy error:", err);
+      });
       res.json({ success: true, message: "Logged out successfully" });
     } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Profile endpoints
+  app.get("/api/profile", requireAuth, async (req: any, res) => {
+    try {
+      const storage = await getStorage();
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ 
+        id: user.id, 
+        name: user.name, 
+        username: user.username, 
+        type: user.type
+      });
+    } catch (error) {
+      console.error("Get profile error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/profile", requireAuth, async (req: any, res) => {
+    try {
+      const { name, username, currentPassword, newPassword } = req.body;
+      
+      if (!name || !username) {
+        return res.status(400).json({ message: "Name and username are required" });
+      }
+
+      const storage = await getStorage();
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // If password change is requested, verify current password
+      if (newPassword) {
+        if (!currentPassword) {
+          return res.status(400).json({ message: "Current password is required to change password" });
+        }
+        if (user.password !== currentPassword) {
+          return res.status(401).json({ message: "Current password is incorrect" });
+        }
+        if (newPassword.length < 6) {
+          return res.status(400).json({ message: "New password must be at least 6 characters long" });
+        }
+      }
+
+      // Check if username is already taken by another user
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser && existingUser.id !== user.id) {
+        return res.status(400).json({ message: "Username is already taken" });
+      }
+
+      // Update user
+      const updateData: any = { name, username };
+      if (newPassword) {
+        updateData.password = newPassword;
+      }
+
+      const updatedUser = await storage.updateUser(user.id, updateData);
+      
+      // Update session if username changed
+      if (username !== user.username) {
+        req.session.username = username;
+      }
+
+      res.json({ 
+        id: updatedUser.id, 
+        name: updatedUser.name, 
+        username: updatedUser.username, 
+        type: updatedUser.type 
+      });
+    } catch (error) {
+      console.error("Update profile error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -80,8 +181,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update application endpoint
-  app.patch("/api/applications/:id", requireAuth, async (req, res) => {
+  // Update application endpoint - Admin only
+  app.patch("/api/applications/:id", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -100,30 +201,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add application endpoint
-  app.post("/api/applications", requireAuth, async (req, res) => {
+  // Add application endpoint - Admin only
+  app.post("/api/applications", requireAdmin, async (req: any, res) => {
     try {
       const newApplication = req.body;
       
       const storage = await getStorage();
       const createdApplication = await storage.createApplication(newApplication);
       
+      // Log the activity
+      await logActivity(
+        req.session.userId,
+        req.session.username,
+        'CREATE_SERVICE',
+        createdApplication.name,
+        `Created new service: ${createdApplication.name}`
+      );
+      
       res.status(201).json(createdApplication);
     } catch (error) {
+      console.error("Error creating application:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
-  // Delete application endpoint
-  app.delete("/api/applications/:id", requireAuth, async (req, res) => {
+  // Delete application endpoint - Admin only
+  app.delete("/api/applications/:id", requireAdmin, async (req: any, res) => {
     try {
       const { id } = req.params;
       
       const storage = await getStorage();
+      
+      // Get the application first to log its name
+      const application = await storage.getApplication(parseInt(id));
       const success = await storage.deleteApplication(parseInt(id));
       
       if (!success) {
         return res.status(404).json({ message: "Application not found" });
+      }
+      
+      // Log the activity
+      if (application) {
+        await logActivity(
+          req.session.userId,
+          req.session.username,
+          'DELETE_SERVICE',
+          application.name,
+          `Deleted service: ${application.name}`
+        );
       }
       
       res.json({ success: true, message: "Application deleted successfully" });
@@ -226,11 +351,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/risk-assessments", requireAuth, async (req, res) => {
+  app.post("/api/risk-assessments", requireAdmin, async (req: any, res) => {
     try {
       const assessmentData = req.body;
       const storage = await getStorage();
       const assessment = await storage.createOrUpdateRiskAssessment(assessmentData);
+      
+      // Log the activity
+      await logActivity(
+        req.session.userId,
+        req.session.username,
+        'UPDATE_RISK_SCORE',
+        assessment.serviceName,
+        `Updated risk assessment for ${assessment.serviceName} - Final Risk Score: ${assessment.finalRiskScore}, Risk Level: ${assessment.riskLevel}`
+      );
+      
       res.json(assessment);
     } catch (error) {
       console.error("Error saving risk assessment:", error);
@@ -510,6 +645,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Internal server error" });
     }
   });
+
+  // Admin endpoints
+  app.get("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/admin/metrics", requireAdmin, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const users = await storage.getAllUsers();
+      const applications = await storage.getApplications();
+      
+      const metrics = {
+        totalUsers: users.length,
+        activeUsers: users.filter(u => u.status === 'Active').length,
+        adminUsers: users.filter(u => u.type === 'Admin').length,
+        totalServices: applications.length,
+        totalFindings: 0, // Could be calculated from all findings
+        criticalFindings: 0, // Could be calculated from all findings
+        systemHealth: 'healthy' as const
+      };
+      
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching metrics:", error);
+      res.status(500).json({ error: "Failed to fetch metrics" });
+    }
+  });
+
+  app.post("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const userData = req.body;
+      const storage = await getStorage();
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(userData.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      const user = await storage.createUser(userData);
+      res.json(user);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ error: "Failed to create user" });
+    }
+  });
+
+  app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const updates = req.body;
+      const storage = await getStorage();
+      
+      const user = await storage.updateUser(userId, updates);
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ error: "Failed to update user" });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const storage = await getStorage();
+      
+      await storage.deleteUser(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ error: "Failed to delete user" });
+    }
+  });
+
+  // Bulk delete users endpoint
+  app.delete("/api/admin/users/bulk", requireAdmin, async (req, res) => {
+    try {
+      const { userIds } = req.body;
+      
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ error: "Invalid user IDs provided" });
+      }
+      
+      const storage = await getStorage();
+      let deletedCount = 0;
+      
+      for (const userId of userIds) {
+        try {
+          await storage.deleteUser(userId);
+          deletedCount++;
+        } catch (error) {
+          console.error(`Failed to delete user ${userId}:`, error);
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Successfully deleted ${deletedCount} users`,
+        deletedCount 
+      });
+    } catch (error) {
+      console.error("Bulk delete users error:", error);
+      res.status(500).json({ error: "Failed to delete users" });
+    }
+  });
+
+  // Activity logs endpoint for admin panel
+  app.get("/api/admin/activity-logs", requireAdmin, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      
+      const logs = await storage.getActivityLogs(limit);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching activity logs:", error);
+      res.status(500).json({ error: "Failed to fetch activity logs" });
+    }
+  });
+
+  // Helper function to log user activities (used by other endpoints)
+  const logActivity = async (userId: number, username: string, action: string, serviceName?: string, details?: string) => {
+    try {
+      const storage = await getStorage();
+      await storage.createActivityLog({
+        userId,
+        username,
+        action,
+        serviceName,
+        details
+      });
+    } catch (error) {
+      console.error("Failed to log activity:", error);
+    }
+  };
 
   const httpServer = createServer(app);
   return httpServer;

@@ -9,6 +9,7 @@ import {
   crowdstrikeImagesFindings,
   crowdstrikeContainersFindings,
   riskAssessments,
+  activityLogs,
   type User, 
   type InsertUser, 
   type Application, 
@@ -28,7 +29,9 @@ import {
   type CrowdstrikeContainersFinding,
   type InsertCrowdstrikeContainersFinding,
   type RiskAssessment,
-  type InsertRiskAssessment
+  type InsertRiskAssessment,
+  type ActivityLog,
+  type InsertActivityLog
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
@@ -37,6 +40,9 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>;
+  updateUser(id: number, updates: Partial<User>): Promise<User | undefined>;
+  deleteUser(id: number): Promise<boolean>;
   getApplications(): Promise<Application[]>;
   getApplication(id: number): Promise<Application | undefined>;
   createApplication(application: InsertApplication): Promise<Application>;
@@ -63,6 +69,9 @@ export interface IStorage {
   getRiskAssessment(serviceName: string): Promise<RiskAssessment | undefined>;
   createOrUpdateRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment>;
   getAllRiskAssessments(): Promise<RiskAssessment[]>;
+  // Activity log methods
+  createActivityLog(log: InsertActivityLog): Promise<ActivityLog>;
+  getActivityLogs(limit?: number): Promise<ActivityLog[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -324,6 +333,23 @@ export class MemStorage implements IStorage {
     return user;
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return Array.from(this.users.values());
+  }
+
+  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    
+    const updatedUser = { ...user, ...updates, updatedAt: new Date() };
+    this.users.set(id, updatedUser);
+    return updatedUser;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    return this.users.delete(id);
+  }
+
   async getApplications(): Promise<Application[]> {
     return Array.from(this.applications.values());
   }
@@ -443,6 +469,16 @@ export class MemStorage implements IStorage {
     // Not implemented in memory storage - will use database storage for persistence
     return [];
   }
+
+  async createActivityLog(log: InsertActivityLog): Promise<ActivityLog> {
+    // Not implemented in memory storage - will use database storage for persistence
+    throw new Error("Activity logs not implemented in memory storage");
+  }
+
+  async getActivityLogs(limit?: number): Promise<ActivityLog[]> {
+    // Not implemented in memory storage - will use database storage for persistence
+    return [];
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -462,6 +498,27 @@ export class DatabaseStorage implements IStorage {
       .values(insertUser)
       .returning();
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async updateUser(id: number, updates: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async deleteUser(id: number): Promise<boolean> {
+    const result = await db
+      .delete(users)
+      .where(eq(users.id, id))
+      .returning();
+    return result.length > 0;
   }
 
   async getApplications(): Promise<Application[]> {
@@ -714,6 +771,22 @@ export class DatabaseStorage implements IStorage {
   async getAllRiskAssessments(): Promise<RiskAssessment[]> {
     return await db.select().from(riskAssessments);
   }
+
+  async createActivityLog(log: InsertActivityLog): Promise<ActivityLog> {
+    const [created] = await db
+      .insert(activityLogs)
+      .values(log)
+      .returning();
+    return created;
+  }
+
+  async getActivityLogs(limit: number = 100): Promise<ActivityLog[]> {
+    return await db
+      .select()
+      .from(activityLogs)
+      .orderBy(desc(activityLogs.timestamp))
+      .limit(limit);
+  }
 }
 
 // Initialize storage - DATABASE ONLY MODE (no fallback)
@@ -731,14 +804,35 @@ async function initializeStorage(): Promise<IStorage> {
     // Check if we need to seed data
     console.log("🔍 Checking for existing data...");
     const existingApps = await dbStorage.getApplications();
-    const existingUsers = await dbStorage.getUserByUsername("admin");
+    const existingAdminUser = await dbStorage.getUserByUsername("admin@hingehealth.com");
+    const existingDemoUser = await dbStorage.getUserByUsername("demo@hingehealth.com");
     
-    if (!existingUsers) {
+    if (!existingAdminUser) {
       console.log("👤 Creating admin user...");
-      await dbStorage.createUser({ username: "admin", password: "password@hh" });
+      await dbStorage.createUser({ 
+        name: "Admin User", 
+        username: "admin@hingehealth.com", 
+        password: "password@hh",
+        status: "Active",
+        type: "Admin"
+      });
       console.log("✅ Admin user created");
     } else {
       console.log("👤 Admin user already exists");
+    }
+    
+    if (!existingDemoUser) {
+      console.log("👤 Creating demo user...");
+      await dbStorage.createUser({ 
+        name: "Demo User", 
+        username: "demo@hingehealth.com", 
+        password: "password",
+        status: "Active",
+        type: "User"
+      });
+      console.log("✅ Demo user created");
+    } else {
+      console.log("👤 Demo user already exists");
     }
     
     if (existingApps.length === 0) {

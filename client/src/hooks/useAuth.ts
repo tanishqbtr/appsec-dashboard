@@ -25,6 +25,8 @@ export function useAuth() {
     user,
     isLoading,
     isAuthenticated: !!user && !isError,
+    isAdmin: user?.type === 'Admin',
+    isUser: user?.type === 'User',
     logout,
   };
 }

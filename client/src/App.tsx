@@ -1,3 +1,4 @@
+import React from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -13,6 +14,8 @@ import Dashboards from "@/pages/dashboards";
 import Reports from "@/pages/reports";
 import Alerts from "@/pages/alerts";
 import RiskScoring from "@/pages/risk-scoring";
+import AdminPanel from "@/pages/admin";
+import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -35,12 +38,14 @@ function Router() {
       <Route path="/" component={Dashboards} />
       <Route path="/dashboard" component={Dashboards} />
       <Route path="/services" component={Services} />
-      <Route path="/service/:id" component={ServiceDetail} />
+      <Route path="/service/:slug" component={ServiceDetail} />
       <Route path="/manage-applications" component={ManageApplications} />
       <Route path="/dashboards" component={Dashboards} />
       <Route path="/reports" component={Reports} />
       <Route path="/alerts" component={Alerts} />
       <Route path="/risk-scoring" component={RiskScoring} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/admin" component={AdminPanel} />
       <Route component={NotFound} />
     </Switch>
   );

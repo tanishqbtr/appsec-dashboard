@@ -18,6 +18,7 @@ Interactive onboarding tutorial: Guides new users through key features with step
 Database schema simplification: Removed unnecessary fields (projects, violating findings, risk factors, last scan) from services table - keeping only essential data (updated July 18, 2025)
 Mend findings separation: Created separate tables for Mend SCA, SAST, and Containers findings with individual critical/high/medium/low counts and scan dates (updated July 18, 2025)
 Authentication system fully restored: Successfully implemented session-based authentication with proper login/logout flow, protected API endpoints, and centralized useAuth hook across all pages for consistent authentication state management (updated July 18, 2025)
+Database connectivity restored: Fixed PostgreSQL connection timeout issues, updated connection pool settings for optimal performance, and successfully authenticated admin user (admin/password@hh) with complete database functionality (updated August 11, 2025)
 Dashboard layout: Moved Findings Trend chart from Reports page to Dashboard, replacing Recent Scan Activity section for better visibility of security trends (updated July 18, 2025)
 Reports page clearing: Completely emptied Reports page content, leaving only basic navigation and empty state message for future development (updated July 18, 2025)
 Page functionality swap: Moved all Services page functionality (security findings table, filters, onboarding) to Reports page, and cleared Services page to empty state (updated July 18, 2025)
@@ -30,6 +31,9 @@ UI cleanup: Removed unnecessary SCA/SAST labels from service detail pages and co
 Percentile calculation standardization: Implemented consistent percentile calculation logic based on total findings across all scan engines for both Services page and Service Detail page - higher findings result in lower percentile ranking (updated July 18, 2025)
 Total findings API endpoint: Created /api/services-total-findings endpoint that aggregates findings across all scan engines (Mend SCA/SAST/Containers, Escape WebApps/APIs, Crowdstrike Images/Containers) for accurate percentile calculations (updated July 18, 2025)
 Comprehensive animation system: Added smooth page transitions, micro-interactions, and hover animations across all pages with CSS keyframes, staggered list animations, chart entrance effects, and enhanced button interactions (updated July 18, 2025)
+Professional UI enhancement: Replaced boring plain text severity indicators with beautiful icon-based system (AlertOctagon, Zap, AlertCircle, Info) in color-coded cards, implemented proper camel-case formatting for all values, added animated pulse dots, gradient backgrounds, and enhanced visual hierarchy across Risk Assessment Details section (updated August 11, 2025)
+Role-based access control system: Implemented comprehensive admin/user role system with database schema updates, demo user creation (demo/password), role-protected buttons with "Admin access required" tooltips, protected API endpoints for admin-only operations (create/update/delete), enhanced authentication hooks with role checking capabilities, and export functionality restriction for user role - export button is visible but disabled/greyed out for non-admin users with helpful tooltip (updated August 11, 2025)
+Navigation menu cleanup: Removed Settings option from top right user dropdown menu, keeping only Profile and Sign out options for simplified user interface (updated August 11, 2025)
 
 
 ## System Architecture

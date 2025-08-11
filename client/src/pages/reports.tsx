@@ -1,11 +1,12 @@
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import Navigation from "@/components/navigation";
 import ApplicationsTable from "@/components/applications-table";
 import ReportsTutorial from "@/components/reports-tutorial";
 import PageWrapper from "@/components/page-wrapper";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { RoleProtectedButton } from "@/components/role-protected-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +35,7 @@ export default function Reports() {
   });
 
   const { toast } = useToast();
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
 
   const handleStartTutorial = () => {
     setShowTutorial(true);
@@ -101,7 +102,7 @@ export default function Reports() {
     const matchesSearch = app.name.toLowerCase().includes(searchTerm.toLowerCase());
     
     // Apply either labels OR tags filtering, never both
-    if (filterMode === "labels") {
+    if (filterMode === "labels" && selectedEngine) {
       // Special handling for Mend and Escape engines: only show services when specific labels are selected
       // and findings data comes from separate database tables, not service labels
       if ((selectedEngine === "Mend" && selectedLabels.length > 0 && 
@@ -118,13 +119,13 @@ export default function Reports() {
         return false; // Hide all services until labels are selected
       }
       
-      // For other engines or no engine selected, filter by service labels as before
-      const matchesLabels = selectedLabels.length === 0 || 
-        selectedLabels.some(label => app.labels?.includes(label));
-      return matchesSearch && matchesLabels;
+      return matchesSearch;
     } else {
-      const matchesTags = selectedTags.length === 0 || 
-        selectedTags.some(tag => app.tags?.includes(tag));
+      // Default behavior: show all applications when no filters are applied, or filter by tags
+      if (selectedTags.length === 0) {
+        return matchesSearch; // Show all applications when no tags are selected
+      }
+      const matchesTags = selectedTags.some(tag => app.tags?.includes(tag));
       return matchesSearch && matchesTags;
     }
   });

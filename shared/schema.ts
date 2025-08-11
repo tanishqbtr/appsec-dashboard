@@ -4,8 +4,13 @@ import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
+  name: text("name").notNull(),
+  username: text("username").notNull().unique(), // This will be the email
+  status: text("status").notNull().default("Active"), // Active, Disabled
+  type: text("type").notNull().default("User"), // User, Admin
   password: text("password").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const applications = pgTable("applications", {
@@ -21,6 +26,10 @@ export const applications = pgTable("applications", {
   serviceOwner: text("service_owner"),
   slackChannel: text("slack_channel"),
   description: text("description"),
+  // Scanner URLs
+  mendUrl: text("mend_url"),
+  crowdstrikeUrl: text("crowdstrike_url"),
+  escapeUrl: text("escape_url"),
 });
 
 // Mend SCA findings table
@@ -127,9 +136,21 @@ export const riskAssessments = pgTable("risk_assessments", {
   updatedBy: text("updated_by"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+// Activity logs table for tracking user actions
+export const activityLogs = pgTable("activity_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  username: text("username").notNull(),
+  action: text("action").notNull(), // CREATE_SERVICE, DELETE_SERVICE, EXPORT_DATA, UPDATE_RISK_SCORE, etc.
+  serviceName: text("service_name"), // Optional - for service-related actions
+  details: text("details"), // Additional context or data
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertApplicationSchema = createInsertSchema(applications).omit({
@@ -169,8 +190,13 @@ export const insertRiskAssessmentSchema = createInsertSchema(riskAssessments).om
   lastUpdated: true,
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
+export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({
+  id: true,
+  timestamp: true,
+});
+
 export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Application = typeof applications.$inferSelect;
 export type InsertApplication = z.infer<typeof insertApplicationSchema>;
 export type MendScaFinding = typeof mendScaFindings.$inferSelect;
@@ -189,6 +215,8 @@ export type CrowdstrikeContainersFinding = typeof crowdstrikeContainersFindings.
 export type InsertCrowdstrikeContainersFinding = z.infer<typeof insertCrowdstrikeContainersFindingsSchema>;
 export type RiskAssessment = typeof riskAssessments.$inferSelect;
 export type InsertRiskAssessment = z.infer<typeof insertRiskAssessmentSchema>;
+export type ActivityLog = typeof activityLogs.$inferSelect;
+export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 
 // Analytics and reporting types
 export interface SecurityMetrics {

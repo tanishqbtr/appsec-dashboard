@@ -33,6 +33,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { RoleProtectedButton } from "@/components/role-protected-button";
 import { 
   TrendingUp, 
   Edit, 
@@ -74,7 +75,7 @@ export default function RiskScoring() {
     awareness: ""
   });
   const { toast } = useToast();
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
   const handleStartTutorial = () => {
@@ -590,16 +591,17 @@ export default function RiskScoring() {
 
 
                         <TableCell>
-                          <Button
+                          <RoleProtectedButton
                             size="sm"
                             variant="outline"
                             onClick={() => handleEdit(app)}
                             className="btn-smooth"
                             data-tutorial="edit-assessment"
+                            requiredRole="admin"
                           >
                             <Edit className="h-4 w-4 mr-1" />
                             Edit
-                          </Button>
+                          </RoleProtectedButton>
                         </TableCell>
                       </TableRow>
                     );

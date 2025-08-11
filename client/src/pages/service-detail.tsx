@@ -1,3 +1,4 @@
+import React from "react";
 import Navigation from "@/components/navigation";
 import PageWrapper from "@/components/page-wrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,7 +39,11 @@ import {
   Database,
   Lock,
   Globe,
-  BarChart3
+  BarChart3,
+  AlertOctagon,
+  Zap,
+  AlertCircle,
+  Info
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
@@ -46,7 +51,30 @@ import { useState } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { RoleProtectedButton } from "@/components/role-protected-button";
+import { findServiceBySlug, getServiceIdBySlug } from "@/lib/slugUtils";
 import type { Application } from "@shared/schema";
+
+// Function to format lowercase values to proper case
+function formatValue(value: string): string {
+  if (!value) return value;
+  
+  const formatMap: { [key: string]: string } = {
+    'yes': 'Yes',
+    'no': 'No',
+    'high': 'High',
+    'medium': 'Medium',
+    'low': 'Low',
+    'critical': 'Critical',
+    'sensitive-regulated': 'Sensitive Regulated',
+    'public-regulated': 'Public Regulated',
+    'internal': 'Internal',
+    'confidential': 'Confidential',
+    'restricted': 'Restricted'
+  };
+  
+  return formatMap[value.toLowerCase()] || value.charAt(0).toUpperCase() + value.slice(1).replace(/-/g, ' ');
+}
 
 interface FindingsData {
   total: number;
@@ -224,7 +252,7 @@ function ServiceTierBadge({ percentile }: { percentile: number }) {
 
 export default function ServiceDetail() {
   const params = useParams();
-  const serviceId = params.id;
+  const serviceSlug = params.slug;
   const { toast } = useToast();
   const { logout } = useAuth();
   const [editingService, setEditingService] = useState<any>(null);
@@ -244,7 +272,7 @@ export default function ServiceDetail() {
     queryKey: ["/api/services-total-findings"],
   });
 
-  const application = applications.find(app => app.id.toString() === serviceId);
+  const application = findServiceBySlug(applications, serviceSlug || "");
 
   // Risk assessment data query
   const { data: riskAssessmentData } = useQuery({
@@ -283,7 +311,7 @@ export default function ServiceDetail() {
 
   const updateServiceMutation = useMutation({
     mutationFn: async (updatedData: any) => {
-      const response = await fetch(`/api/applications/${serviceId}`, {
+      const response = await fetch(`/api/applications/${application?.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -323,9 +351,9 @@ export default function ServiceDetail() {
       slackChannel: application?.slackChannel || "",
       serviceOwner: application?.serviceOwner || "",
       tags: application?.tags || [],
-      mendLink: application?.mendLink || "",
-      crowdstrikeLink: application?.crowdstrikeLink || "",
-      escapeLink: application?.escapeLink || "",
+      mendUrl: application?.mendUrl || "",
+      crowdstrikeUrl: application?.crowdstrikeUrl || "",
+      escapeUrl: application?.escapeUrl || "",
     });
     setIsEditDialogOpen(true);
   };
@@ -657,26 +685,38 @@ export default function ServiceDetail() {
               <CardContent>
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-3">Total by Severity</h4>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Critical:</span>
-                        <RiskBadge level="C" count={comprehensiveFindings.C} />
+                    <h4 className="font-medium text-gray-900 mb-4">Total by Severity</h4>
+                    <div className="grid grid-cols-4 gap-3">
+                      <div className="flex flex-col items-center bg-red-50 rounded-lg p-3 border border-red-200">
+                        <div className="flex items-center gap-1 mb-1">
+                          <AlertOctagon className="h-4 w-4 text-red-600" />
+                        </div>
+                        <div className="text-red-600 font-bold text-xl">{comprehensiveFindings.C}</div>
+                        <div className="text-xs text-red-700 font-medium">Critical</div>
                       </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">High:</span>
-                        <RiskBadge level="H" count={comprehensiveFindings.H} />
+                      <div className="flex flex-col items-center bg-orange-50 rounded-lg p-3 border border-orange-200">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Zap className="h-4 w-4 text-orange-600" />
+                        </div>
+                        <div className="text-orange-600 font-bold text-xl">{comprehensiveFindings.H}</div>
+                        <div className="text-xs text-orange-700 font-medium">High</div>
                       </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Medium:</span>
-                        <RiskBadge level="M" count={comprehensiveFindings.M} />
+                      <div className="flex flex-col items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                        <div className="flex items-center gap-1 mb-1">
+                          <AlertCircle className="h-4 w-4 text-yellow-600" />
+                        </div>
+                        <div className="text-yellow-600 font-bold text-xl">{comprehensiveFindings.M}</div>
+                        <div className="text-xs text-yellow-700 font-medium">Medium</div>
                       </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Low:</span>
-                        <RiskBadge level="L" count={comprehensiveFindings.L} />
+                      <div className="flex flex-col items-center bg-green-50 rounded-lg p-3 border border-green-200">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Info className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div className="text-green-600 font-bold text-xl">{comprehensiveFindings.L}</div>
+                        <div className="text-xs text-green-700 font-medium">Low</div>
                       </div>
                     </div>
-                    <div className="mt-3 pt-3 border-t text-sm text-gray-600 font-medium">
+                    <div className="mt-4 text-center text-sm text-gray-600 font-medium">
                       Total: {comprehensiveFindings.total} findings
                     </div>
                   </div>
@@ -689,7 +729,8 @@ export default function ServiceDetail() {
                     
                     <div className="grid grid-cols-1 gap-4">
                       {/* Mend Scanner Card */}
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -697,15 +738,16 @@ export default function ServiceDetail() {
                             </div>
                             <h5 className="font-semibold text-gray-800">Mend</h5>
                           </div>
-                          {application.mendLink ? (
+                          {application.mendUrl ? (
                             <a 
-                              href={application.mendLink} 
+                              href={application.mendUrl} 
                               target="_blank" 
                               rel="noopener noreferrer"
                             >
-                              <Button size="sm" variant="outline" className="bg-white/50 border-blue-300 text-blue-700 hover:bg-blue-50">
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                Take me to Mend
+                              <Button size="sm" variant="outline" className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-300 text-blue-700 hover:from-blue-600 hover:to-blue-700 hover:text-white hover:border-blue-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-blue-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                                <ExternalLink className="h-3 w-3 mr-1 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                                <span className="relative z-10">Take me to Mend</span>
                               </Button>
                             </a>
                           ) : (
@@ -714,18 +756,34 @@ export default function ServiceDetail() {
                             </Button>
                           )}
                         </div>
-                        <div className="grid grid-cols-4 gap-2 text-xs">
-                          <div className="text-center">
-                            <div className="text-red-600 font-bold text-lg">C: {engineFindings.mend.C}</div>
+                        <div className="grid grid-cols-4 gap-3">
+                          <div className="flex flex-col items-center bg-red-50 rounded-lg p-3 border border-red-200 hover:bg-red-100 hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertOctagon className="h-4 w-4 text-red-600" />
+                              <span className="text-xs font-medium text-red-700">Critical</span>
+                            </div>
+                            <div className="text-red-600 font-bold text-xl">{engineFindings.mend.C}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-orange-600 font-bold text-lg">H: {engineFindings.mend.H}</div>
+                          <div className="flex flex-col items-center bg-orange-50 rounded-lg p-3 border border-orange-200 hover:bg-orange-100 hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Zap className="h-4 w-4 text-orange-600" />
+                              <span className="text-xs font-medium text-orange-700">High</span>
+                            </div>
+                            <div className="text-orange-600 font-bold text-xl">{engineFindings.mend.H}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-yellow-600 font-bold text-lg">M: {engineFindings.mend.M}</div>
+                          <div className="flex flex-col items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200 hover:bg-yellow-100 hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertCircle className="h-4 w-4 text-yellow-600" />
+                              <span className="text-xs font-medium text-yellow-700">Medium</span>
+                            </div>
+                            <div className="text-yellow-600 font-bold text-xl">{engineFindings.mend.M}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-green-600 font-bold text-lg">L: {engineFindings.mend.L}</div>
+                          <div className="flex flex-col items-center bg-green-50 rounded-lg p-3 border border-green-200 hover:bg-green-100 hover:shadow-md hover:scale-105 transition-all duration-300 cursor-pointer">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Info className="h-4 w-4 text-green-600" />
+                              <span className="text-xs font-medium text-green-700">Low</span>
+                            </div>
+                            <div className="text-green-600 font-bold text-xl">{engineFindings.mend.L}</div>
                           </div>
                         </div>
                         <div className="text-center mt-2 text-sm text-gray-600">
@@ -734,7 +792,8 @@ export default function ServiceDetail() {
                       </div>
 
                       {/* Crowdstrike Scanner Card */}
-                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
+                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-slate-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="h-8 w-8 bg-slate-100 rounded-lg flex items-center justify-center">
@@ -742,15 +801,16 @@ export default function ServiceDetail() {
                             </div>
                             <h5 className="font-semibold text-gray-800">Crowdstrike</h5>
                           </div>
-                          {application.crowdstrikeLink ? (
+                          {application.crowdstrikeUrl ? (
                             <a 
-                              href={application.crowdstrikeLink} 
+                              href={application.crowdstrikeUrl} 
                               target="_blank" 
                               rel="noopener noreferrer"
                             >
-                              <Button size="sm" variant="outline" className="bg-white/50 border-slate-300 text-slate-700 hover:bg-slate-50">
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                Take me to Crowdstrike
+                              <Button size="sm" variant="outline" className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 text-slate-700 hover:from-slate-600 hover:to-slate-700 hover:text-white hover:border-slate-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-slate-400 to-slate-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                                <ExternalLink className="h-3 w-3 mr-1 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                                <span className="relative z-10">Take me to Crowdstrike</span>
                               </Button>
                             </a>
                           ) : (
@@ -759,18 +819,34 @@ export default function ServiceDetail() {
                             </Button>
                           )}
                         </div>
-                        <div className="grid grid-cols-4 gap-2 text-xs">
-                          <div className="text-center">
-                            <div className="text-red-600 font-bold text-lg">C: {engineFindings.crowdstrike.C}</div>
+                        <div className="grid grid-cols-4 gap-3">
+                          <div className="flex flex-col items-center bg-red-50 rounded-lg p-3 border border-red-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertOctagon className="h-4 w-4 text-red-600" />
+                              <span className="text-xs font-medium text-red-700">Critical</span>
+                            </div>
+                            <div className="text-red-600 font-bold text-xl">{engineFindings.crowdstrike.C}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-orange-600 font-bold text-lg">H: {engineFindings.crowdstrike.H}</div>
+                          <div className="flex flex-col items-center bg-orange-50 rounded-lg p-3 border border-orange-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Zap className="h-4 w-4 text-orange-600" />
+                              <span className="text-xs font-medium text-orange-700">High</span>
+                            </div>
+                            <div className="text-orange-600 font-bold text-xl">{engineFindings.crowdstrike.H}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-yellow-600 font-bold text-lg">M: {engineFindings.crowdstrike.M}</div>
+                          <div className="flex flex-col items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertCircle className="h-4 w-4 text-yellow-600" />
+                              <span className="text-xs font-medium text-yellow-700">Medium</span>
+                            </div>
+                            <div className="text-yellow-600 font-bold text-xl">{engineFindings.crowdstrike.M}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-green-600 font-bold text-lg">L: {engineFindings.crowdstrike.L}</div>
+                          <div className="flex flex-col items-center bg-green-50 rounded-lg p-3 border border-green-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Info className="h-4 w-4 text-green-600" />
+                              <span className="text-xs font-medium text-green-700">Low</span>
+                            </div>
+                            <div className="text-green-600 font-bold text-xl">{engineFindings.crowdstrike.L}</div>
                           </div>
                         </div>
                         <div className="text-center mt-2 text-sm text-gray-600">
@@ -779,7 +855,8 @@ export default function ServiceDetail() {
                       </div>
 
                       {/* Escape Scanner Card */}
-                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-4 hover:shadow-lg transition-all duration-200">
+                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-20 h-20 bg-purple-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -787,15 +864,16 @@ export default function ServiceDetail() {
                             </div>
                             <h5 className="font-semibold text-gray-800">Escape</h5>
                           </div>
-                          {application.escapeLink ? (
+                          {application.escapeUrl ? (
                             <a 
-                              href={application.escapeLink} 
+                              href={application.escapeUrl} 
                               target="_blank" 
                               rel="noopener noreferrer"
                             >
-                              <Button size="sm" variant="outline" className="bg-white/50 border-purple-300 text-purple-700 hover:bg-purple-50">
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                Take me to Escape
+                              <Button size="sm" variant="outline" className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-300 text-purple-700 hover:from-purple-600 hover:to-purple-700 hover:text-white hover:border-purple-700 hover:shadow-lg transform hover:scale-105 transition-all duration-300 group relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-r from-purple-400 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                                <ExternalLink className="h-3 w-3 mr-1 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                                <span className="relative z-10">Take me to Escape</span>
                               </Button>
                             </a>
                           ) : (
@@ -804,18 +882,34 @@ export default function ServiceDetail() {
                             </Button>
                           )}
                         </div>
-                        <div className="grid grid-cols-4 gap-2 text-xs">
-                          <div className="text-center">
-                            <div className="text-red-600 font-bold text-lg">C: {engineFindings.escape.C}</div>
+                        <div className="grid grid-cols-4 gap-3">
+                          <div className="flex flex-col items-center bg-red-50 rounded-lg p-3 border border-red-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertOctagon className="h-4 w-4 text-red-600" />
+                              <span className="text-xs font-medium text-red-700">Critical</span>
+                            </div>
+                            <div className="text-red-600 font-bold text-xl">{engineFindings.escape.C}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-orange-600 font-bold text-lg">H: {engineFindings.escape.H}</div>
+                          <div className="flex flex-col items-center bg-orange-50 rounded-lg p-3 border border-orange-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Zap className="h-4 w-4 text-orange-600" />
+                              <span className="text-xs font-medium text-orange-700">High</span>
+                            </div>
+                            <div className="text-orange-600 font-bold text-xl">{engineFindings.escape.H}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-yellow-600 font-bold text-lg">M: {engineFindings.escape.M}</div>
+                          <div className="flex flex-col items-center bg-yellow-50 rounded-lg p-3 border border-yellow-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <AlertCircle className="h-4 w-4 text-yellow-600" />
+                              <span className="text-xs font-medium text-yellow-700">Medium</span>
+                            </div>
+                            <div className="text-yellow-600 font-bold text-xl">{engineFindings.escape.M}</div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-green-600 font-bold text-lg">L: {engineFindings.escape.L}</div>
+                          <div className="flex flex-col items-center bg-green-50 rounded-lg p-3 border border-green-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Info className="h-4 w-4 text-green-600" />
+                              <span className="text-xs font-medium text-green-700">Low</span>
+                            </div>
+                            <div className="text-green-600 font-bold text-xl">{engineFindings.escape.L}</div>
                           </div>
                         </div>
                         <div className="text-center mt-2 text-sm text-gray-600">
@@ -890,21 +984,23 @@ export default function ServiceDetail() {
                         <Shield className="h-5 w-5 text-green-600" />
                         <h4 className="text-lg font-semibold text-gray-900">Risk Assessment Details</h4>
                       </div>
-                      <Button 
+                      <RoleProtectedButton 
                         size="sm"
                         variant="outline"
                         onClick={() => window.location.href = '/risk-scoring'}
                         className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50"
+                        requiredRole="admin"
                       >
                         <Edit3 className="h-3 w-3" />
                         {riskAssessmentData ? "Edit" : "Create"}
-                      </Button>
+                      </RoleProtectedButton>
                     </div>
                     
                     {riskAssessmentData ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-4">
                         {/* Data Classification Card */}
-                        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-200/20 rounded-full -mr-10 -mt-10"></div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-8 w-8 bg-cyan-100 rounded-lg flex items-center justify-center">
                               <Database className="h-4 w-4 text-cyan-600" />
@@ -913,26 +1009,43 @@ export default function ServiceDetail() {
                           </div>
                           <div className="space-y-2">
                             {riskAssessmentData.dataClassification && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Classification:</span>
-                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
-                                  {riskAssessmentData.dataClassification}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Classification:</span>
+                                </div>
+                                <Badge className="bg-gradient-to-r from-cyan-100 to-cyan-200 text-cyan-800 border-cyan-300 font-semibold">
+                                  {formatValue(riskAssessmentData.dataClassification)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.phi && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">PHI:</span>
-                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
-                                  {riskAssessmentData.phi}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">PHI:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.phi.toLowerCase() === 'yes' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300' 
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.phi)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.eligibilityData && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Eligibility Data:</span>
-                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
-                                  {riskAssessmentData.eligibilityData}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Eligibility Data:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.eligibilityData.toLowerCase() === 'yes' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300' 
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.eligibilityData)}
                                 </Badge>
                               </div>
                             )}
@@ -940,7 +1053,8 @@ export default function ServiceDetail() {
                         </div>
 
                         {/* CIA Triad Card */}
-                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-200/20 rounded-full -mr-10 -mt-10"></div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center">
                               <Lock className="h-4 w-4 text-indigo-600" />
@@ -949,26 +1063,53 @@ export default function ServiceDetail() {
                           </div>
                           <div className="space-y-2">
                             {riskAssessmentData.confidentialityImpact && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Confidentiality Impact:</span>
-                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
-                                  {riskAssessmentData.confidentialityImpact}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Confidentiality Impact:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.confidentialityImpact.toLowerCase() === 'high' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300'
+                                    : riskAssessmentData.confidentialityImpact.toLowerCase() === 'medium'
+                                    ? 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.confidentialityImpact)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.integrityImpact && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Integrity Impact:</span>
-                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
-                                  {riskAssessmentData.integrityImpact}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Integrity Impact:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.integrityImpact.toLowerCase() === 'high' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300'
+                                    : riskAssessmentData.integrityImpact.toLowerCase() === 'medium'
+                                    ? 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.integrityImpact)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.availabilityImpact && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Availability Impact:</span>
-                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
-                                  {riskAssessmentData.availabilityImpact}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Availability Impact:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.availabilityImpact.toLowerCase() === 'high' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300'
+                                    : riskAssessmentData.availabilityImpact.toLowerCase() === 'medium'
+                                    ? 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.availabilityImpact)}
                                 </Badge>
                               </div>
                             )}
@@ -976,7 +1117,8 @@ export default function ServiceDetail() {
                         </div>
 
                         {/* Attack Surface Factors Card */}
-                        <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-4 hover:shadow-md transition-all duration-200">
+                        <div className="bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-amber-200/20 rounded-full -mr-10 -mt-10"></div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className="h-8 w-8 bg-amber-100 rounded-lg flex items-center justify-center">
                               <Globe className="h-4 w-4 text-amber-600" />
@@ -985,26 +1127,51 @@ export default function ServiceDetail() {
                           </div>
                           <div className="space-y-2">
                             {riskAssessmentData.publicEndpoint && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Public Endpoint:</span>
-                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                                  {riskAssessmentData.publicEndpoint}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Public Endpoint:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.publicEndpoint.toLowerCase() === 'yes' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300' 
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.publicEndpoint)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.discoverability && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Discoverability:</span>
-                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                                  {riskAssessmentData.discoverability}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Discoverability:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.discoverability.toLowerCase() === 'high' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300'
+                                    : riskAssessmentData.discoverability.toLowerCase() === 'medium'
+                                    ? 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.discoverability)}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.awareness && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Awareness:</span>
-                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                                  {riskAssessmentData.awareness}
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Awareness:</span>
+                                </div>
+                                <Badge className={`font-semibold ${
+                                  riskAssessmentData.awareness.toLowerCase() === 'high' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300'
+                                    : riskAssessmentData.awareness.toLowerCase() === 'medium'
+                                    ? 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border-yellow-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
+                                }`}>
+                                  {formatValue(riskAssessmentData.awareness)}
                                 </Badge>
                               </div>
                             )}
@@ -1012,13 +1179,20 @@ export default function ServiceDetail() {
                         </div>
 
                         {/* Risk Scores Card */}
-                        <div className={`bg-gradient-to-br border rounded-xl p-4 hover:shadow-md transition-all duration-200 ${
+                        <div className={`bg-gradient-to-br border rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden ${
                           riskAssessmentData.finalRiskScore >= 7 
                             ? 'from-red-50 to-red-100 border-red-200' 
                             : riskAssessmentData.finalRiskScore >= 4 
                             ? 'from-orange-50 to-orange-100 border-orange-200'
                             : 'from-green-50 to-green-100 border-green-200'
                         }`}>
+                          <div className={`absolute top-0 right-0 w-20 h-20 rounded-full -mr-10 -mt-10 ${
+                            riskAssessmentData.finalRiskScore >= 7 
+                              ? 'bg-red-200/20' 
+                              : riskAssessmentData.finalRiskScore >= 4 
+                              ? 'bg-orange-200/20'
+                              : 'bg-green-200/20'
+                          }`}></div>
                           <div className="flex items-center gap-2 mb-3">
                             <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${
                               riskAssessmentData.finalRiskScore >= 7 
@@ -1039,38 +1213,56 @@ export default function ServiceDetail() {
                           </div>
                           <div className="space-y-2">
                             {riskAssessmentData.dataClassificationScore !== null && riskAssessmentData.dataClassificationScore !== undefined && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Data Classification Score:</span>
-                                <Badge className="bg-cyan-100 text-cyan-800 border-cyan-200">
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Data Classification Score:</span>
+                                </div>
+                                <Badge className="bg-gradient-to-r from-cyan-100 to-cyan-200 text-cyan-800 border-cyan-300 font-semibold">
                                   {riskAssessmentData.dataClassificationScore}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.ciaTriadScore !== null && riskAssessmentData.ciaTriadScore !== undefined && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">CIA Triad Score:</span>
-                                <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">CIA Triad Score:</span>
+                                </div>
+                                <Badge className="bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-800 border-indigo-300 font-semibold">
                                   {riskAssessmentData.ciaTriadScore}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.attackSurfaceScore !== null && riskAssessmentData.attackSurfaceScore !== undefined && (
-                              <div className="flex justify-between items-center py-1">
-                                <span className="text-sm text-gray-600">Attack Surface Score:</span>
-                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
+                              <div className="flex justify-between items-center py-2">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                                  <span className="text-sm font-medium text-gray-700">Attack Surface Score:</span>
+                                </div>
+                                <Badge className="bg-gradient-to-r from-amber-100 to-amber-200 text-amber-800 border-amber-300 font-semibold">
                                   {riskAssessmentData.attackSurfaceScore}
                                 </Badge>
                               </div>
                             )}
                             {riskAssessmentData.finalRiskScore !== null && riskAssessmentData.finalRiskScore !== undefined && (
                               <div className="flex justify-between items-center py-2 border-t border-gray-200 mt-3 pt-3">
-                                <span className="text-sm font-medium text-gray-700">Final Risk Score:</span>
+                                <div className="flex items-center gap-2">
+                                  <div className={`w-2 h-2 rounded-full animate-pulse ${
+                                    riskAssessmentData.finalRiskScore >= 7 
+                                      ? 'bg-red-500' 
+                                      : riskAssessmentData.finalRiskScore >= 4 
+                                      ? 'bg-orange-500'
+                                      : 'bg-green-500'
+                                  }`}></div>
+                                  <span className="text-sm font-medium text-gray-700">Final Risk Score:</span>
+                                </div>
                                 <Badge className={`text-sm font-semibold px-3 py-1 ${
                                   riskAssessmentData.finalRiskScore >= 7 
-                                    ? 'bg-red-100 text-red-800 border-red-200' 
+                                    ? 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border-red-300' 
                                     : riskAssessmentData.finalRiskScore >= 4 
-                                    ? 'bg-orange-100 text-orange-800 border-orange-200'
-                                    : 'bg-green-100 text-green-800 border-green-200'
+                                    ? 'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border-orange-300'
+                                    : 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border-green-300'
                                 }`}>
                                   {riskAssessmentData.finalRiskScore}
                                 </Badge>
@@ -1246,6 +1438,68 @@ export default function ServiceDetail() {
                       onChange={(e) => setEditingService({...editingService, description: e.target.value})}
                     />
                   </div>
+                  
+                  <div className="space-y-4 border-t pt-4">
+                    <Label className="text-sm font-medium text-gray-700">Scanner URLs</Label>
+                    <div>
+                      <Label htmlFor="mendUrl">Mend Scanner URL</Label>
+                      <Input
+                        id="mendUrl"
+                        placeholder="https://mend.company.com/..."
+                        value={editingService?.mendUrl || ""}
+                        onChange={(e) => setEditingService({...editingService, mendUrl: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="crowdstrikeUrl">Crowdstrike URL</Label>
+                      <Input
+                        id="crowdstrikeUrl"
+                        placeholder="https://crowdstrike.company.com/..."
+                        value={editingService?.crowdstrikeUrl || ""}
+                        onChange={(e) => setEditingService({...editingService, crowdstrikeUrl: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="escapeUrl">Escape Scanner URL</Label>
+                      <Input
+                        id="escapeUrl"
+                        placeholder="https://escape.company.com/..."
+                        value={editingService?.escapeUrl || ""}
+                        onChange={(e) => setEditingService({...editingService, escapeUrl: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 border-t pt-4">
+                    <Label className="text-sm font-medium text-gray-700">External Links</Label>
+                    <div>
+                      <Label htmlFor="githubRepo">GitHub Repository</Label>
+                      <Input
+                        id="githubRepo"
+                        placeholder="https://github.com/company/repo"
+                        value={editingService?.githubRepo || ""}
+                        onChange={(e) => setEditingService({...editingService, githubRepo: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="jiraProject">Jira Project</Label>
+                      <Input
+                        id="jiraProject"
+                        placeholder="https://company.atlassian.net/..."
+                        value={editingService?.jiraProject || ""}
+                        onChange={(e) => setEditingService({...editingService, jiraProject: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="slackChannel">Slack Channel</Label>
+                      <Input
+                        id="slackChannel"
+                        placeholder="https://company.slack.com/channels/..."
+                        value={editingService?.slackChannel || ""}
+                        onChange={(e) => setEditingService({...editingService, slackChannel: e.target.value})}
+                      />
+                    </div>
+                  </div>
                 </div>
                 
                 <div>
@@ -1363,38 +1617,7 @@ export default function ServiceDetail() {
                     onChange={(e) => setEditingService({...editingService, slackChannel: e.target.value})}
                   />
                 </div>
-                
-                {/* Security Scanner Links */}
-                <div className="space-y-4 pt-4 border-t">
-                  <h4 className="font-medium text-gray-900">Security Scanner Links</h4>
-                  <div>
-                    <Label htmlFor="mendLink">Mend Scanner Link</Label>
-                    <Input
-                      id="mendLink"
-                      placeholder="https://mend.company.com/project/..."
-                      value={editingService?.mendLink || ""}
-                      onChange={(e) => setEditingService({...editingService, mendLink: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="crowdstrikeLink">Crowdstrike Scanner Link</Label>
-                    <Input
-                      id="crowdstrikeLink"
-                      placeholder="https://falcon.crowdstrike.com/investigate/..."
-                      value={editingService?.crowdstrikeLink || ""}
-                      onChange={(e) => setEditingService({...editingService, crowdstrikeLink: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="escapeLink">Escape Scanner Link</Label>
-                    <Input
-                      id="escapeLink"
-                      placeholder="https://escape.company.com/dashboard/..."
-                      value={editingService?.escapeLink || ""}
-                      onChange={(e) => setEditingService({...editingService, escapeLink: e.target.value})}
-                    />
-                  </div>
-                </div>
+
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
