@@ -84,20 +84,14 @@ export default function Login() {
       {/* Login Form Container */}
       <div className="relative z-10 min-h-screen flex items-center justify-start p-6 sm:p-8 lg:p-12">
         <div className="w-full max-w-md">
-          {/* Back to Home Link */}
-          <button className="flex items-center text-slate-300 hover:text-white mb-6 lg:mb-8 transition-colors duration-200">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to home
-          </button>
-
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center text-slate-300 mb-6">
               <Shield className="h-5 w-5 mr-2" />
-              <span className="text-sm">Hinge Health Security | Application Security</span>
+              <span className="text-sm">Hinge Health AppSec team</span>
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">
-              Security Dashboard Access
+              Security Dashboard
             </h1>
             <p className="text-slate-400 text-sm">
               Currently supports web-based authentication
