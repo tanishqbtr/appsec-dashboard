@@ -68,9 +68,18 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex">
-      {/* Left Panel - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8 lg:p-12">
+    <div className="min-h-screen relative flex">
+      {/* Background Image - Full Screen */}
+      <div className="absolute inset-0">
+        <img
+          src={securityOfficeImage}
+          alt="Security Office"
+          className="w-full h-full object-cover"
+        />
+      </div>
+      
+      {/* Left Panel - Login Form with Translucent Background */}
+      <div className="flex-1 flex items-center justify-center p-8 lg:p-12 relative z-10 bg-gradient-to-br from-slate-900/80 via-blue-900/70 to-slate-800/75">
         <div className="w-full max-w-md">
           {/* Back to Home Link */}
           <button className="flex items-center text-slate-300 hover:text-white mb-8 transition-colors duration-200">
@@ -164,15 +173,8 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right Panel - Security Office Image */}
-      <div className="hidden lg:flex flex-1 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/60 via-transparent to-transparent z-10"></div>
-        <img
-          src={securityOfficeImage}
-          alt="Security Office"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      {/* Right Panel - Continues the background image */}
+      <div className="hidden lg:flex flex-1 relative z-10"></div>
 
       {/* Animated Error Popup Modal */}
       <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
