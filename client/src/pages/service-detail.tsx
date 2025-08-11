@@ -52,6 +52,7 @@ import { useParams, Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { RoleProtectedButton } from "@/components/role-protected-button";
+import { findServiceBySlug, getServiceIdBySlug } from "@/lib/slugUtils";
 import type { Application } from "@shared/schema";
 
 // Function to format lowercase values to proper case
@@ -251,7 +252,7 @@ function ServiceTierBadge({ percentile }: { percentile: number }) {
 
 export default function ServiceDetail() {
   const params = useParams();
-  const serviceId = params.id;
+  const serviceSlug = params.slug;
   const { toast } = useToast();
   const { logout } = useAuth();
   const [editingService, setEditingService] = useState<any>(null);
@@ -271,7 +272,7 @@ export default function ServiceDetail() {
     queryKey: ["/api/services-total-findings"],
   });
 
-  const application = applications.find(app => app.id.toString() === serviceId);
+  const application = findServiceBySlug(applications, serviceSlug || "");
 
   // Risk assessment data query
   const { data: riskAssessmentData } = useQuery({
@@ -310,7 +311,7 @@ export default function ServiceDetail() {
 
   const updateServiceMutation = useMutation({
     mutationFn: async (updatedData: any) => {
-      const response = await fetch(`/api/applications/${serviceId}`, {
+      const response = await fetch(`/api/applications/${application?.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { RoleProtectedButton } from "@/components/role-protected-button";
+import { nameToSlug } from "@/lib/slugUtils";
 import type { Application } from "@shared/schema";
 
 type SortField = "name" | "riskScore" | "percentile";
@@ -571,7 +572,7 @@ export default function Services() {
                                   </div>
                                 </div>
                               ) : (
-                                <Link href={`/service/${app.id}`}>
+                                <Link href={`/service/${nameToSlug(app.name)}`}>
                                   <div className="flex items-center gap-3 cursor-pointer group">
                                     <div className="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
                                       <Shield className="h-5 w-5 text-green-600" />
@@ -601,7 +602,7 @@ export default function Services() {
                               </span>
                             </td>
                             <td className="py-4 px-4 text-right">
-                              <Link href={`/service/${app.id}`}>
+                              <Link href={`/service/${nameToSlug(app.name)}`}>
                                 <ExternalLink className="h-4 w-4 text-gray-400 hover:text-green-600 transition-colors cursor-pointer" />
                               </Link>
                             </td>
