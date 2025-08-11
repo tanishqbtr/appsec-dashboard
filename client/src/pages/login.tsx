@@ -80,8 +80,8 @@ export default function Login() {
         </div>
       </div>
       
-      {/* Left Panel - Login Form with Natural Blend */}
-      <div className="w-full lg:w-[40%] flex items-center justify-center p-6 sm:p-8 lg:p-12 relative z-10 bg-[#070f1b] lg:bg-gradient-to-r lg:from-[#070f1b] lg:from-70% lg:via-[#070f1b]/80 lg:via-80% lg:via-[#070f1b]/50 lg:via-88% lg:via-[#070f1b]/20 lg:via-95% lg:to-transparent">
+      {/* Left Panel - Extended with Gradient Overlay */}
+      <div className="w-full lg:w-[50%] flex items-center justify-center p-6 sm:p-8 lg:p-12 relative z-10 bg-[#070f1b] lg:bg-gradient-to-r lg:from-[#070f1b] lg:from-75% lg:via-[#070f1b]/75 lg:via-85% lg:via-[#070f1b]/40 lg:via-92% lg:to-transparent">
         <div className="w-full max-w-md">
           {/* Back to Home Link */}
           <button className="flex items-center text-slate-300 hover:text-white mb-6 lg:mb-8 transition-colors duration-200">
