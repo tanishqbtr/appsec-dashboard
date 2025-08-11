@@ -369,7 +369,7 @@ export default function AdminPanel() {
   if (!user || user.type !== 'Admin') {
     return (
       <PageWrapper>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="min-h-screen bg-background flex items-center justify-center">
           <Card className="w-96">
             <CardContent className="p-6 text-center">
               <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
@@ -387,12 +387,12 @@ export default function AdminPanel() {
 
   return (
     <PageWrapper>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="admin" />
         
         <div className="flex">
           {/* Left Sidebar */}
-          <div className="w-64 bg-white shadow-lg border-r min-h-screen">
+          <div className="w-64 bg-card shadow-lg border-r min-h-screen">
             <div className="p-6">
               <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
               <p className="text-sm text-gray-600 mt-1">System Management</p>

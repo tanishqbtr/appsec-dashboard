@@ -169,7 +169,7 @@ export default function Dashboards() {
   if (isLoading || isMetricsLoading || isScanEngineLoading || isRiskDistributionLoading) {
     return (
       <PageWrapper loadingMessage="Loading Dashboard...">
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background">
           <Navigation onLogout={logout} currentPage="dashboards" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
@@ -195,7 +195,7 @@ export default function Dashboards() {
 
   return (
     <PageWrapper loadingMessage="Loading Dashboard...">
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="dashboards" />
       
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -203,8 +203,8 @@ export default function Dashboards() {
           <div className="mb-8" data-tutorial="dashboard-header">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Security Dashboard</h1>
-                <p className="mt-2 text-gray-600">
+                <h1 className="text-3xl font-bold text-foreground">Security Dashboard</h1>
+                <p className="mt-2 text-muted-foreground">
                   Real-time security insights and comprehensive vulnerability management
                 </p>
               </div>
@@ -228,8 +228,8 @@ export default function Dashboards() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Applications</p>
-                    <p className="text-3xl font-bold text-gray-900">{totalApplications}</p>
+                    <p className="text-sm font-medium text-muted-foreground">Total Applications</p>
+                    <p className="text-3xl font-bold text-foreground">{totalApplications}</p>
                     <p className="text-sm text-green-600">+2 this week</p>
                   </div>
                   <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -243,7 +243,7 @@ export default function Dashboards() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Critical Findings</p>
+                    <p className="text-sm font-medium text-muted-foreground">Critical Findings</p>
                     <p className="text-3xl font-bold text-red-600">{criticalFindings}</p>
                     <p className="text-sm text-red-600">Requires immediate attention</p>
                   </div>
