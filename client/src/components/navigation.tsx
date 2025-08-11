@@ -164,7 +164,6 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
                 <Link href="/profile">
                   <DropdownMenuItem>Profile</DropdownMenuItem>
                 </Link>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onLogout}>Sign out</DropdownMenuItem>
               </DropdownMenuContent>
