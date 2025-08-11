@@ -81,7 +81,7 @@ export default function Login() {
       </div>
       
       {/* Left Panel - Login Form with Overlapping Gradient */}
-      <div className="w-full lg:w-[40%] flex items-center justify-center p-6 sm:p-8 lg:p-12 relative z-10 bg-slate-800 lg:bg-gradient-to-r lg:from-slate-800 lg:via-slate-800/80 lg:to-slate-800/30">
+      <div className="w-full lg:w-[40%] flex items-center justify-center p-6 sm:p-8 lg:p-12 relative z-10 bg-[#070f1b] lg:bg-gradient-to-r lg:from-[#070f1b] lg:via-[#070f1b]/80 lg:to-[#070f1b]/30">
         <div className="w-full max-w-md">
           {/* Back to Home Link */}
           <button className="flex items-center text-slate-300 hover:text-white mb-6 lg:mb-8 transition-colors duration-200">
