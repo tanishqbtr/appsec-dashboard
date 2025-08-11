@@ -148,9 +148,9 @@ export default function Login() {
 
       {/* Animated Error Popup Modal */}
       <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
-        <DialogContent className="sm:max-w-md animate-in fade-in-0 zoom-in-95 duration-300 border-0 shadow-2xl bg-slate-800 border-slate-700">
-          <DialogHeader className="space-y-4">
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-red-100 to-red-50 shadow-lg">
+        <DialogContent className="sm:max-w-md animate-in fade-in-0 zoom-in-95 duration-300 border-0 shadow-2xl bg-gradient-to-br from-slate-800 via-slate-700 to-slate-800 border border-slate-600/50">
+          <DialogHeader className="space-y-6">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-red-50 to-pink-50 shadow-lg ring-2 ring-red-100">
               <AlertTriangle className="h-8 w-8 text-red-600 animate-bounce" />
             </div>
             <DialogTitle className="text-center text-xl font-bold text-white animate-in slide-in-from-top-4 duration-500">
@@ -163,7 +163,7 @@ export default function Login() {
           <div className="flex justify-center pt-6">
             <Button 
               onClick={() => setShowErrorModal(false)}
-              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg transform active:scale-95 animate-in slide-in-from-bottom-4 duration-500 delay-300"
+              className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 hover:scale-105 hover:shadow-lg transform active:scale-95 animate-in slide-in-from-bottom-4 duration-500 delay-300 ring-2 ring-red-500/20"
             >
               <X className="h-4 w-4 mr-2" />
               Try Again
