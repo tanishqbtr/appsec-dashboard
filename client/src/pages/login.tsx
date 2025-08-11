@@ -71,15 +71,15 @@ export default function Login() {
         <img
           src={securityOfficeImage}
           alt="Security Office"
-          className="absolute left-[25%] top-0 w-[75%] h-full object-cover"
+          className="absolute left-[35%] top-0 w-[65%] h-full object-cover"
         />
       </div>
       
       {/* Overlay - Solid color left side */}
-      <div className="absolute inset-0 bg-[#070f1b] w-[25%]"></div>
+      <div className="absolute inset-0 bg-[#070f1b] w-[35%]"></div>
       
       {/* Login Form Container */}
-      <div className="relative z-10 min-h-screen flex items-center justify-center w-[50%] p-6 sm:p-8 lg:p-12">
+      <div className="relative z-10 min-h-screen flex items-center justify-center w-[35%] p-6 sm:p-8 lg:p-12">
         <div className="w-full max-w-md">
           {/* Header */}
           <div className="mb-8">
