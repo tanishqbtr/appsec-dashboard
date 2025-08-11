@@ -29,7 +29,7 @@ export default function Profile() {
   // Password strength validation
   const validatePassword = (password: string) => {
     const requirements = {
-      length: password.length >= 8,
+      length: password.length >= 8 && password.length <= 20,
       uppercase: /[A-Z]/.test(password),
       lowercase: /[a-z]/.test(password),
       numbers: /\d/.test(password),
@@ -282,6 +282,7 @@ export default function Profile() {
                       value={profileData.newPassword}
                       onChange={(e) => handleInputChange("newPassword", e.target.value)}
                       placeholder="Enter new password (leave blank to keep current)"
+                      maxLength={20}
                     />
                     
                     {/* Password Strength Indicator */}
@@ -322,7 +323,7 @@ export default function Profile() {
                           <p className="font-medium text-gray-700">Requirements:</p>
                           <div className="grid gap-1">
                             {[
-                              { key: "length", text: "At least 8 characters" },
+                              { key: "length", text: "8-20 characters" },
                               { key: "uppercase", text: "One uppercase letter (A-Z)" },
                               { key: "lowercase", text: "One lowercase letter (a-z)" },
                               { key: "numbers", text: "One number (0-9)" },
@@ -356,6 +357,7 @@ export default function Profile() {
                       value={profileData.confirmPassword}
                       onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
                       placeholder="Confirm new password"
+                      maxLength={20}
                     />
                   </div>
                 </div>
