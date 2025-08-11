@@ -49,7 +49,11 @@ import {
   CheckCircle,
   Clock,
   FileText,
-  History
+  History,
+  Search,
+  ArrowUpDown,
+  CheckSquare,
+  Square
 } from "lucide-react";
 
 interface User {
@@ -95,12 +99,18 @@ export default function AdminPanel() {
     type: "User"
   });
 
+  // User management search and filter states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<keyof User>("name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [selectedUsers, setSelectedUsers] = useState<Set<number>>(new Set());
+
   const { toast } = useToast();
   const { user, logout } = useAuth();
   const queryClient = useQueryClient();
 
   // Fetch data
-  const { data: users = [], isLoading: usersLoading } = useQuery({
+  const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({
     queryKey: ["/api/admin/users"],
   });
 
@@ -108,7 +118,7 @@ export default function AdminPanel() {
     queryKey: ["/api/admin/metrics"],
   });
 
-  const { data: applications = [] } = useQuery({
+  const { data: applications = [] } = useQuery<any[]>({
     queryKey: ["/api/applications"],
   });
 
@@ -191,6 +201,28 @@ export default function AdminPanel() {
     }
   });
 
+  const bulkDeleteUsersMutation = useMutation({
+    mutationFn: async (userIds: number[]) => {
+      return apiRequest("DELETE", "/api/admin/users/bulk", { userIds });
+    },
+    onSuccess: (_, userIds) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/metrics"] });
+      setSelectedUsers(new Set());
+      toast({
+        title: "Users Deleted",
+        description: `${userIds.length} users have been removed from the system.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete users.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const handleInputChange = (field: string, value: string) => {
     setNewUser(prev => ({ ...prev, [field]: value }));
   };
@@ -224,6 +256,69 @@ export default function AdminPanel() {
       deleteUserMutation.mutate(userId);
     }
   };
+
+  // Helper functions for user management
+  const handleSort = (column: keyof User) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+  };
+
+  const handleSelectUser = (userId: number) => {
+    const newSelected = new Set(selectedUsers);
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId);
+    } else {
+      newSelected.add(userId);
+    }
+    setSelectedUsers(newSelected);
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUsers.size === filteredAndSortedUsers.length) {
+      setSelectedUsers(new Set());
+    } else {
+      setSelectedUsers(new Set(filteredAndSortedUsers.map((user: User) => user.id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    const userIds = Array.from(selectedUsers);
+    if (userIds.includes(user?.id as number)) {
+      toast({
+        title: "Cannot Delete",
+        description: "You cannot delete your own account.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (confirm(`Are you sure you want to delete ${userIds.length} users?`)) {
+      bulkDeleteUsersMutation.mutate(userIds);
+    }
+  };
+
+  // Filter and sort users
+  const filteredAndSortedUsers = (users as User[])
+    .filter((u: User) =>
+      u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      u.status.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a: User, b: User) => {
+      const aVal = a[sortBy] || '';
+      const bVal = b[sortBy] || '';
+      
+      if (sortOrder === "asc") {
+        return aVal.toString().localeCompare(bVal.toString());
+      } else {
+        return bVal.toString().localeCompare(aVal.toString());
+      }
+    });
 
   const getStatusBadge = (status: string) => {
     const color = status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
@@ -461,6 +556,61 @@ export default function AdminPanel() {
               {/* Users Section */}
               {activeSection === "users" && (
                 <div className="space-y-6">
+                  {/* User Statistics Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">Total Users</p>
+                            <p className="text-2xl font-bold">{(users as User[]).length}</p>
+                          </div>
+                          <Users className="h-8 w-8 text-blue-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">Active Users</p>
+                            <p className="text-2xl font-bold text-green-600">
+                              {(users as User[]).filter((u: User) => u.status === 'Active').length}
+                            </p>
+                          </div>
+                          <CheckCircle className="h-8 w-8 text-green-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">Admin Users</p>
+                            <p className="text-2xl font-bold text-purple-600">
+                              {(users as User[]).filter((u: User) => u.type === 'Admin').length}
+                            </p>
+                          </div>
+                          <Shield className="h-8 w-8 text-purple-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">Regular Users</p>
+                            <p className="text-2xl font-bold text-blue-600">
+                              {(users as User[]).filter((u: User) => u.type === 'User').length}
+                            </p>
+                          </div>
+                          <Users className="h-8 w-8 text-blue-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Header with Add User Button */}
                   <div className="flex justify-between items-center">
                     <h2 className="text-xl font-semibold">User Management</h2>
                     <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
@@ -545,57 +695,171 @@ export default function AdminPanel() {
                     </Dialog>
                   </div>
 
+                  {/* Search and Controls */}
+                  <Card>
+                    <CardContent className="p-6">
+                      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                        <div className="relative flex-1 max-w-sm">
+                          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                          <Input
+                            placeholder="Search users..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-8"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {selectedUsers.size > 0 && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={handleBulkDelete}
+                              disabled={bulkDeleteUsersMutation.isPending}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete {selectedUsers.size} Users
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSearchTerm("");
+                              setSelectedUsers(new Set());
+                            }}
+                          >
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Clear
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Enhanced User Table */}
                   <Card>
                     <CardContent className="p-0">
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>User</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Created</TableHead>
+                            <TableHead className="w-12">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                onClick={handleSelectAll}
+                              >
+                                {selectedUsers.size === filteredAndSortedUsers.length && filteredAndSortedUsers.length > 0 ? (
+                                  <CheckSquare className="h-4 w-4" />
+                                ) : (
+                                  <Square className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TableHead>
+                            <TableHead>
+                              <Button
+                                variant="ghost"
+                                className="h-auto p-0 font-semibold"
+                                onClick={() => handleSort("name")}
+                              >
+                                User
+                                <ArrowUpDown className="ml-2 h-4 w-4" />
+                              </Button>
+                            </TableHead>
+                            <TableHead>
+                              <Button
+                                variant="ghost"
+                                className="h-auto p-0 font-semibold"
+                                onClick={() => handleSort("status")}
+                              >
+                                Status
+                                <ArrowUpDown className="ml-2 h-4 w-4" />
+                              </Button>
+                            </TableHead>
+                            <TableHead>
+                              <Button
+                                variant="ghost"
+                                className="h-auto p-0 font-semibold"
+                                onClick={() => handleSort("type")}
+                              >
+                                Type
+                                <ArrowUpDown className="ml-2 h-4 w-4" />
+                              </Button>
+                            </TableHead>
+                            <TableHead>
+                              <Button
+                                variant="ghost"
+                                className="h-auto p-0 font-semibold"
+                                onClick={() => handleSort("createdAt")}
+                              >
+                                Created
+                                <ArrowUpDown className="ml-2 h-4 w-4" />
+                              </Button>
+                            </TableHead>
                             <TableHead>Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {users.map((user: User) => (
-                            <TableRow key={user.id}>
-                              <TableCell>
-                                <div>
-                                  <p className="font-medium">{user.name}</p>
-                                  <p className="text-sm text-gray-500">{user.username}</p>
-                                </div>
-                              </TableCell>
-                              <TableCell>
-                                {getStatusBadge(user.status)}
-                              </TableCell>
-                              <TableCell>
-                                {getTypeBadge(user.type)}
-                              </TableCell>
-                              <TableCell className="text-sm text-gray-500">
-                                {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
-                              </TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEditUser(user)}
-                                  >
-                                    <Edit className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleDeleteUser(user.id)}
-                                    className="text-red-600 hover:bg-red-50"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
-                                </div>
+                          {filteredAndSortedUsers.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                                {searchTerm ? "No users found matching your search." : "No users available."}
                               </TableCell>
                             </TableRow>
-                          ))}
+                          ) : (
+                            filteredAndSortedUsers.map((user: User) => (
+                              <TableRow key={user.id} className={selectedUsers.has(user.id) ? "bg-blue-50" : ""}>
+                                <TableCell>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => handleSelectUser(user.id)}
+                                  >
+                                    {selectedUsers.has(user.id) ? (
+                                      <CheckSquare className="h-4 w-4" />
+                                    ) : (
+                                      <Square className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                </TableCell>
+                                <TableCell>
+                                  <div>
+                                    <p className="font-medium">{user.name}</p>
+                                    <p className="text-sm text-gray-500">{user.username}</p>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  {getStatusBadge(user.status)}
+                                </TableCell>
+                                <TableCell>
+                                  {getTypeBadge(user.type)}
+                                </TableCell>
+                                <TableCell className="text-sm text-gray-500">
+                                  {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex space-x-2">
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleEditUser(user)}
+                                    >
+                                      <Edit className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleDeleteUser(user.id)}
+                                      className="text-red-600 hover:bg-red-50"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
                         </TableBody>
                       </Table>
                     </CardContent>

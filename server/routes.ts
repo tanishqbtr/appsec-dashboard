@@ -640,6 +640,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk delete users endpoint
+  app.delete("/api/admin/users/bulk", requireAdmin, async (req, res) => {
+    try {
+      const { userIds } = req.body;
+      
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ error: "Invalid user IDs provided" });
+      }
+      
+      const storage = await getStorage();
+      let deletedCount = 0;
+      
+      for (const userId of userIds) {
+        try {
+          await storage.deleteUser(userId);
+          deletedCount++;
+        } catch (error) {
+          console.error(`Failed to delete user ${userId}:`, error);
+        }
+      }
+      
+      res.json({ 
+        success: true, 
+        message: `Successfully deleted ${deletedCount} users`,
+        deletedCount 
+      });
+    } catch (error) {
+      console.error("Bulk delete users error:", error);
+      res.status(500).json({ error: "Failed to delete users" });
+    }
+  });
+
   // Activity logs endpoint for admin panel
   app.get("/api/admin/activity-logs", requireAdmin, async (req, res) => {
     try {
