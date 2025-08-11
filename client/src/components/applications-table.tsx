@@ -661,34 +661,35 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
           />
         </div>
         
-        {isAdmin && (
-          <div className="flex gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" 
-                  data-tutorial="export-controls"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={exportToCSV}>
-                Export as CSV
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={exportToXLSX}>
-                Export as XLSX
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={exportToPDF}>
-                Export as PDF
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
+        <div className="flex gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <RoleProtectedButton 
+                variant="outline" 
+                size="sm" 
+                className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" 
+                data-tutorial="export-controls"
+                requiredRole="admin"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </RoleProtectedButton>
+            </DropdownMenuTrigger>
+            {isAdmin && (
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={exportToCSV}>
+                  Export as CSV
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportToXLSX}>
+                  Export as XLSX
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={exportToPDF}>
+                  Export as PDF
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            )}
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="overflow-x-auto">
