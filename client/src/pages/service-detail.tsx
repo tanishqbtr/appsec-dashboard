@@ -324,9 +324,9 @@ export default function ServiceDetail() {
       slackChannel: application?.slackChannel || "",
       serviceOwner: application?.serviceOwner || "",
       tags: application?.tags || [],
-      mendLink: application?.mendLink || "",
-      crowdstrikeLink: application?.crowdstrikeLink || "",
-      escapeLink: application?.escapeLink || "",
+      mendUrl: application?.mendUrl || "",
+      crowdstrikeUrl: application?.crowdstrikeUrl || "",
+      escapeUrl: application?.escapeUrl || "",
     });
     setIsEditDialogOpen(true);
   };
@@ -698,9 +698,9 @@ export default function ServiceDetail() {
                             </div>
                             <h5 className="font-semibold text-gray-800">Mend</h5>
                           </div>
-                          {application.mendLink ? (
+                          {application.mendUrl ? (
                             <a 
-                              href={application.mendLink} 
+                              href={application.mendUrl} 
                               target="_blank" 
                               rel="noopener noreferrer"
                             >
@@ -743,9 +743,9 @@ export default function ServiceDetail() {
                             </div>
                             <h5 className="font-semibold text-gray-800">Crowdstrike</h5>
                           </div>
-                          {application.crowdstrikeLink ? (
+                          {application.crowdstrikeUrl ? (
                             <a 
-                              href={application.crowdstrikeLink} 
+                              href={application.crowdstrikeUrl} 
                               target="_blank" 
                               rel="noopener noreferrer"
                             >
@@ -788,9 +788,9 @@ export default function ServiceDetail() {
                             </div>
                             <h5 className="font-semibold text-gray-800">Escape</h5>
                           </div>
-                          {application.escapeLink ? (
+                          {application.escapeUrl ? (
                             <a 
-                              href={application.escapeLink} 
+                              href={application.escapeUrl} 
                               target="_blank" 
                               rel="noopener noreferrer"
                             >
@@ -1247,6 +1247,68 @@ export default function ServiceDetail() {
                       onChange={(e) => setEditingService({...editingService, description: e.target.value})}
                     />
                   </div>
+                  
+                  <div className="space-y-4 border-t pt-4">
+                    <Label className="text-sm font-medium text-gray-700">Scanner URLs</Label>
+                    <div>
+                      <Label htmlFor="mendUrl">Mend Scanner URL</Label>
+                      <Input
+                        id="mendUrl"
+                        placeholder="https://mend.company.com/..."
+                        value={editingService?.mendUrl || ""}
+                        onChange={(e) => setEditingService({...editingService, mendUrl: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="crowdstrikeUrl">Crowdstrike URL</Label>
+                      <Input
+                        id="crowdstrikeUrl"
+                        placeholder="https://crowdstrike.company.com/..."
+                        value={editingService?.crowdstrikeUrl || ""}
+                        onChange={(e) => setEditingService({...editingService, crowdstrikeUrl: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="escapeUrl">Escape Scanner URL</Label>
+                      <Input
+                        id="escapeUrl"
+                        placeholder="https://escape.company.com/..."
+                        value={editingService?.escapeUrl || ""}
+                        onChange={(e) => setEditingService({...editingService, escapeUrl: e.target.value})}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 border-t pt-4">
+                    <Label className="text-sm font-medium text-gray-700">External Links</Label>
+                    <div>
+                      <Label htmlFor="githubRepo">GitHub Repository</Label>
+                      <Input
+                        id="githubRepo"
+                        placeholder="https://github.com/company/repo"
+                        value={editingService?.githubRepo || ""}
+                        onChange={(e) => setEditingService({...editingService, githubRepo: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="jiraProject">Jira Project</Label>
+                      <Input
+                        id="jiraProject"
+                        placeholder="https://company.atlassian.net/..."
+                        value={editingService?.jiraProject || ""}
+                        onChange={(e) => setEditingService({...editingService, jiraProject: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="slackChannel">Slack Channel</Label>
+                      <Input
+                        id="slackChannel"
+                        placeholder="https://company.slack.com/channels/..."
+                        value={editingService?.slackChannel || ""}
+                        onChange={(e) => setEditingService({...editingService, slackChannel: e.target.value})}
+                      />
+                    </div>
+                  </div>
                 </div>
                 
                 <div>
@@ -1364,38 +1426,7 @@ export default function ServiceDetail() {
                     onChange={(e) => setEditingService({...editingService, slackChannel: e.target.value})}
                   />
                 </div>
-                
-                {/* Security Scanner Links */}
-                <div className="space-y-4 pt-4 border-t">
-                  <h4 className="font-medium text-gray-900">Security Scanner Links</h4>
-                  <div>
-                    <Label htmlFor="mendLink">Mend Scanner Link</Label>
-                    <Input
-                      id="mendLink"
-                      placeholder="https://mend.company.com/project/..."
-                      value={editingService?.mendLink || ""}
-                      onChange={(e) => setEditingService({...editingService, mendLink: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="crowdstrikeLink">Crowdstrike Scanner Link</Label>
-                    <Input
-                      id="crowdstrikeLink"
-                      placeholder="https://falcon.crowdstrike.com/investigate/..."
-                      value={editingService?.crowdstrikeLink || ""}
-                      onChange={(e) => setEditingService({...editingService, crowdstrikeLink: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="escapeLink">Escape Scanner Link</Label>
-                    <Input
-                      id="escapeLink"
-                      placeholder="https://escape.company.com/dashboard/..."
-                      value={editingService?.escapeLink || ""}
-                      onChange={(e) => setEditingService({...editingService, escapeLink: e.target.value})}
-                    />
-                  </div>
-                </div>
+
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>

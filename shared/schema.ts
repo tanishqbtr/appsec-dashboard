@@ -21,6 +21,10 @@ export const applications = pgTable("applications", {
   serviceOwner: text("service_owner"),
   slackChannel: text("slack_channel"),
   description: text("description"),
+  // Scanner URLs
+  mendUrl: text("mend_url"),
+  crowdstrikeUrl: text("crowdstrike_url"),
+  escapeUrl: text("escape_url"),
 });
 
 // Mend SCA findings table
