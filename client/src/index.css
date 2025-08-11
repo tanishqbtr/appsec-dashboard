@@ -32,26 +32,26 @@
 }
 
 .dark {
-  /* Cybersecurity-themed dark mode palette */
-  --background: hsl(210, 11%, 8%); /* Deep navy blue background */
-  --foreground: hsl(195, 20%, 88%); /* Light cyan-white text */
-  --muted: hsl(210, 15%, 12%); /* Darker blue-gray */
-  --muted-foreground: hsl(195, 10%, 65%); /* Medium cyan-gray */
-  --popover: hsl(210, 12%, 10%); /* Very dark blue */
-  --popover-foreground: hsl(195, 20%, 90%); /* Light cyan */
-  --card: hsl(210, 13%, 9%); /* Dark blue card background */
-  --card-foreground: hsl(195, 18%, 85%); /* Light cyan text */
-  --border: hsl(210, 20%, 18%); /* Dark blue-gray border */
-  --input: hsl(210, 18%, 15%); /* Dark input background */
-  --primary: hsl(180, 100%, 25%); /* Bright teal/cyan primary */
-  --primary-foreground: hsl(210, 11%, 8%); /* Dark text on primary */
-  --secondary: hsl(210, 18%, 14%); /* Dark secondary */
-  --secondary-foreground: hsl(195, 15%, 75%); /* Light secondary text */
-  --accent: hsl(195, 100%, 15%); /* Dark cyan accent */
-  --accent-foreground: hsl(195, 20%, 85%); /* Light cyan on accent */
+  /* Professional blue-gray dark mode palette */
+  --background: hsl(220, 15%, 12%); /* Dark blue-gray background */
+  --foreground: hsl(220, 10%, 88%); /* Light gray text */
+  --muted: hsl(220, 12%, 18%); /* Slightly lighter blue-gray */
+  --muted-foreground: hsl(220, 8%, 65%); /* Medium gray */
+  --popover: hsl(220, 14%, 15%); /* Dark blue popover */
+  --popover-foreground: hsl(220, 10%, 90%); /* Light gray */
+  --card: hsl(220, 18%, 20%); /* Medium blue-gray card background */
+  --card-foreground: hsl(220, 8%, 85%); /* Light gray text */
+  --border: hsl(220, 15%, 25%); /* Medium blue-gray border */
+  --input: hsl(220, 16%, 22%); /* Medium input background */
+  --primary: hsl(157, 100%, 20%); /* Keep the green primary */
+  --primary-foreground: hsl(0, 0%, 100%); /* White text on primary */
+  --secondary: hsl(220, 16%, 24%); /* Medium secondary */
+  --secondary-foreground: hsl(220, 8%, 75%); /* Light secondary text */
+  --accent: hsl(220, 18%, 26%); /* Medium blue accent */
+  --accent-foreground: hsl(220, 8%, 85%); /* Light gray on accent */
   --destructive: hsl(0, 85%, 55%); /* Bright red for destructive */
   --destructive-foreground: hsl(0, 0%, 98%); /* White on destructive */
-  --ring: hsl(180, 70%, 40%); /* Cyan focus ring */
+  --ring: hsl(220, 40%, 50%); /* Blue focus ring */
   --radius: 0.5rem;
   
   /* Enhanced cybersecurity dashboard colors for dark mode */
