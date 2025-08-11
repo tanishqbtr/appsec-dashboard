@@ -698,7 +698,7 @@ export default function AdminPanel() {
                   {/* Search and Controls */}
                   <Card>
                     <CardContent className="p-6">
-                      <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                      <div className="flex items-center gap-4">
                         <div className="relative flex-1 max-w-sm">
                           <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
                           <Input
