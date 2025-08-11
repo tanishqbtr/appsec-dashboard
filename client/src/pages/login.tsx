@@ -69,17 +69,19 @@ export default function Login() {
 
   return (
     <div className="min-h-screen relative flex">
-      {/* Background Image - Full Screen */}
+      {/* Background Image - Positioned from 40% left */}
       <div className="absolute inset-0">
-        <img
-          src={securityOfficeImage}
-          alt="Security Office"
-          className="w-full h-full object-cover"
-        />
+        <div className="w-full h-full relative">
+          <img
+            src={securityOfficeImage}
+            alt="Security Office"
+            className="absolute right-0 top-0 w-3/5 h-full object-cover object-left"
+          />
+        </div>
       </div>
       
-      {/* Left Panel - Login Form with Gradient to Transparent */}
-      <div className="flex-1 flex items-center justify-center p-8 lg:p-12 relative z-10 bg-gradient-to-r from-slate-900/85 via-blue-900/60 to-transparent">
+      {/* Left Panel - Login Form with Extended Gradient */}
+      <div className="flex-1 flex items-center justify-center p-8 lg:p-12 relative z-10 bg-gradient-to-r from-slate-900/90 via-slate-800/75 via-blue-900/50 to-transparent">
         <div className="w-full max-w-md">
           {/* Back to Home Link */}
           <button className="flex items-center text-slate-300 hover:text-white mb-8 transition-colors duration-200">
