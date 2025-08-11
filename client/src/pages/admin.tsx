@@ -610,96 +610,16 @@ export default function AdminPanel() {
                     </Card>
                   </div>
 
-                  {/* Header with Add User Button */}
+                  {/* Header */}
                   <div className="flex justify-between items-center">
                     <h2 className="text-xl font-semibold">User Management</h2>
-                    <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-                      <DialogTrigger asChild>
-                        <Button className="bg-green-600 hover:bg-green-700">
-                          <UserPlus className="h-4 w-4 mr-2" />
-                          Add User
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Create New User</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="name">Full Name</Label>
-                            <Input
-                              id="name"
-                              placeholder="Enter full name"
-                              value={newUser.name}
-                              onChange={(e) => handleInputChange("name", e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="username">Username (Email)</Label>
-                            <Input
-                              id="username"
-                              type="email"
-                              placeholder="user@hingehealth.com"
-                              value={newUser.username}
-                              onChange={(e) => handleInputChange("username", e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
-                            <Input
-                              id="password"
-                              type="password"
-                              placeholder="Enter password"
-                              value={newUser.password}
-                              onChange={(e) => handleInputChange("password", e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="type">User Type</Label>
-                            <Select value={newUser.type} onValueChange={(value) => handleInputChange("type", value)}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="User">User</SelectItem>
-                                <SelectItem value="Admin">Admin</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="status">Status</Label>
-                            <Select value={newUser.status} onValueChange={(value) => handleInputChange("status", value)}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Active">Active</SelectItem>
-                                <SelectItem value="Inactive">Inactive</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
-                            Cancel
-                          </Button>
-                          <Button 
-                            onClick={() => createUserMutation.mutate(newUser)}
-                            disabled={createUserMutation.isPending || !newUser.name || !newUser.username || !newUser.password}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            {createUserMutation.isPending ? "Creating..." : "Create User"}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
                   </div>
 
                   {/* Search and Controls */}
                   <Card>
                     <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        <div className="relative flex-1 max-w-sm">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="relative max-w-sm">
                           <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
                           <Input
                             placeholder="Search users..."
@@ -709,17 +629,97 @@ export default function AdminPanel() {
                           />
                         </div>
                         <div className="flex items-center gap-2">
-                          {selectedUsers.size > 0 && (
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={handleBulkDelete}
-                              disabled={bulkDeleteUsersMutation.isPending}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete {selectedUsers.size} Users
-                            </Button>
-                          )}
+                          <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+                            <DialogTrigger asChild>
+                              <Button className="bg-green-600 hover:bg-green-700">
+                                <UserPlus className="h-4 w-4 mr-2" />
+                                Add User
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Create New User</DialogTitle>
+                              </DialogHeader>
+                              <div className="grid gap-4 py-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor="name">Full Name</Label>
+                                  <Input
+                                    id="name"
+                                    placeholder="Enter full name"
+                                    value={newUser.name}
+                                    onChange={(e) => handleInputChange("name", e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="username">Username (Email)</Label>
+                                  <Input
+                                    id="username"
+                                    type="email"
+                                    placeholder="user@hingehealth.com"
+                                    value={newUser.username}
+                                    onChange={(e) => handleInputChange("username", e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="password">Password</Label>
+                                  <Input
+                                    id="password"
+                                    type="password"
+                                    placeholder="Enter password"
+                                    value={newUser.password}
+                                    onChange={(e) => handleInputChange("password", e.target.value)}
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="type">User Type</Label>
+                                  <Select value={newUser.type} onValueChange={(value) => handleInputChange("type", value)}>
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="User">User</SelectItem>
+                                      <SelectItem value="Admin">Admin</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="status">Status</Label>
+                                  <Select value={newUser.status} onValueChange={(value) => handleInputChange("status", value)}>
+                                    <SelectTrigger>
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="Active">Active</SelectItem>
+                                      <SelectItem value="Inactive">Inactive</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              <DialogFooter>
+                                <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
+                                  Cancel
+                                </Button>
+                                <Button 
+                                  onClick={() => createUserMutation.mutate(newUser)}
+                                  disabled={createUserMutation.isPending || !newUser.name || !newUser.username || !newUser.password}
+                                  className="bg-green-600 hover:bg-green-700"
+                                >
+                                  {createUserMutation.isPending ? "Creating..." : "Create User"}
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                          
+                          <Button
+                            variant={selectedUsers.size > 0 ? "destructive" : "outline"}
+                            size="sm"
+                            onClick={handleBulkDelete}
+                            disabled={selectedUsers.size === 0 || bulkDeleteUsersMutation.isPending}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            {selectedUsers.size > 0 ? `Delete Selected (${selectedUsers.size})` : "Remove Users"}
+                          </Button>
+                          
                           <Button
                             variant="outline"
                             size="sm"
