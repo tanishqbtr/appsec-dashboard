@@ -525,6 +525,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoints
+  app.get("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ error: "Failed to fetch users" });
+    }
+  });
+
+  app.get("/api/admin/metrics", requireAdmin, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const users = await storage.getAllUsers();
+      const applications = await storage.getApplications();
+      
+      const metrics = {
+        totalUsers: users.length,
+        activeUsers: users.filter(u => u.status === 'Active').length,
+        adminUsers: users.filter(u => u.type === 'Admin').length,
+        totalServices: applications.length,
+        totalFindings: 0, // Could be calculated from all findings
+        criticalFindings: 0, // Could be calculated from all findings
+        systemHealth: 'healthy' as const
+      };
+      
+      res.json(metrics);
+    } catch (error) {
+      console.error("Error fetching metrics:", error);
+      res.status(500).json({ error: "Failed to fetch metrics" });
+    }
+  });
+
+  app.post("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const userData = req.body;
+      const storage = await getStorage();
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(userData.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+      
+      const user = await storage.createUser(userData);
+      res.json(user);
+    } catch (error) {
+      console.error("Error creating user:", error);
+      res.status(500).json({ error: "Failed to create user" });
+    }
+  });
+
+  app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const updates = req.body;
+      const storage = await getStorage();
+      
+      const user = await storage.updateUser(userId, updates);
+      res.json(user);
+    } catch (error) {
+      console.error("Error updating user:", error);
+      res.status(500).json({ error: "Failed to update user" });
+    }
+  });
+
+  app.delete("/api/admin/users/:id", requireAdmin, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const storage = await getStorage();
+      
+      await storage.deleteUser(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ error: "Failed to delete user" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

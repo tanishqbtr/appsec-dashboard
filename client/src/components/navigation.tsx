@@ -16,13 +16,14 @@ import {
   BarChart,
   AlertTriangle,
   TrendingUp,
-
+  Settings,
   HelpCircle,
   User,
   RotateCcw,
 } from "lucide-react";
 import HingeLogo from "./hinge-logo";
 import hingeHealthLogoPath from "@assets/ChatGPT Image Jul 17, 2025, 07_08_44 PM_1752760077600.png";
+import { useAuth } from "@/hooks/useAuth";
 
 interface NavigationProps {
   onLogout: () => void;
@@ -33,6 +34,7 @@ interface NavigationProps {
 export default function Navigation({ onLogout, currentPage, onRestartTutorial }: NavigationProps) {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [location] = useLocation();
+  const { isAdmin } = useAuth();
   
   // Determine current page from URL if not explicitly provided
   const getCurrentPage = () => {
@@ -42,6 +44,7 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
     if (location.includes('/reports')) return 'reports';
     if (location.includes('/alerts')) return 'alerts';
     if (location.includes('/risk-scoring')) return 'risk-scoring';
+    if (location.includes('/admin')) return 'admin';
     return 'services'; // default
   };
   
@@ -109,6 +112,18 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
                   Risk Scoring
                 </Button>
               </Link>
+
+              {isAdmin && (
+                <Link href="/admin">
+                  <Button 
+                    variant="ghost" 
+                    className={`nav-item text-white hover:text-gray-200 px-3 py-2 text-sm font-medium btn-smooth ${activePage === 'admin' ? 'bg-green-700 hover:bg-green-600' : 'hover:bg-green-800'}`}
+                  >
+                    <Settings className="h-4 w-4 mr-2 transition-transform duration-200 group-hover:scale-110" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
           
