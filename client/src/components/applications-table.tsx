@@ -31,6 +31,8 @@ import { useQuery } from "@tanstack/react-query";
 import type { Application } from "@shared/schema";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
+import { useAuth } from "@/hooks/useAuth";
+import { RoleProtectedButton } from "./role-protected-button";
 
 // Extend jsPDF type to include autoTable
 declare module 'jspdf' {
@@ -175,6 +177,7 @@ function LoadingSkeleton() {
 }
 
 export default function ApplicationsTable({ applications, isLoading, searchTerm, onSearchChange, selectedEngine, selectedLabels, selectedTags }: ApplicationsTableProps) {
+  const { isAdmin } = useAuth();
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);
@@ -658,33 +661,34 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
           />
         </div>
         
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <RoleProtectedButton 
-                variant="outline" 
-                size="sm" 
-                className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" 
-                data-tutorial="export-controls"
-                requiredRole="admin"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </RoleProtectedButton>
-            </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={exportToCSV}>
-              Export as CSV
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={exportToXLSX}>
-              Export as XLSX
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={exportToPDF}>
-              Export as PDF
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        {isAdmin && (
+          <div className="flex gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" 
+                  data-tutorial="export-controls"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={exportToCSV}>
+                Export as CSV
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportToXLSX}>
+                Export as XLSX
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportToPDF}>
+                Export as PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
       </div>
 
       <div className="overflow-x-auto">
