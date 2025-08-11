@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: appsec-postgres
+    environment:
+      POSTGRES_USER: appsec_user
+      POSTGRES_PASSWORD: appsec_password
+      POSTGRES_DB: appsec_dashboard
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - appsec-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appsec_user -d appsec_dashboard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # AppSec Dashboard Application
+  app:
+    build: .
+    container_name: appsec-dashboard
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=postgresql://appsec_user:appsec_password@postgres:5432/appsec_dashboard
+      - SESSION_SECRET=super-secret-session-key-change-in-production
+    ports:
+      - "3000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - appsec-network
+    volumes:
+      - ./attached_assets:/app/attached_assets:ro
+
+volumes:
+  postgres_data:
+
+networks:
+  appsec-network:
+    driver: bridge

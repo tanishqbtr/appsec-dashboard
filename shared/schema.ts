@@ -26,7 +26,7 @@ export const applications = pgTable("applications", {
 // Mend SCA findings table
 export const mendScaFindings = pgTable("mend_sca_findings", {
   id: serial("id").primaryKey(),
-  serviceName: text("service_name").notNull(),
+  serviceName: text("service_name").notNull().unique(),
   scanDate: text("scan_date").notNull(),
   critical: integer("critical").notNull().default(0),
   high: integer("high").notNull().default(0),
@@ -37,7 +37,7 @@ export const mendScaFindings = pgTable("mend_sca_findings", {
 // Mend SAST findings table
 export const mendSastFindings = pgTable("mend_sast_findings", {
   id: serial("id").primaryKey(),
-  serviceName: text("service_name").notNull(),
+  serviceName: text("service_name").notNull().unique(),
   scanDate: text("scan_date").notNull(),
   critical: integer("critical").notNull().default(0),
   high: integer("high").notNull().default(0),
@@ -48,7 +48,7 @@ export const mendSastFindings = pgTable("mend_sast_findings", {
 // Mend Containers findings table
 export const mendContainersFindings = pgTable("mend_containers_findings", {
   id: serial("id").primaryKey(),
-  serviceName: text("service_name").notNull(),
+  serviceName: text("service_name").notNull().unique(),
   scanDate: text("scan_date").notNull(),
   critical: integer("critical").notNull().default(0),
   high: integer("high").notNull().default(0),
@@ -59,7 +59,7 @@ export const mendContainersFindings = pgTable("mend_containers_findings", {
 // Escape Web Applications findings table
 export const escapeWebAppsFindings = pgTable("escape_webapps_findings", {
   id: serial("id").primaryKey(),
-  serviceName: text("service_name").notNull(),
+  serviceName: text("service_name").notNull().unique(),
   scanDate: text("scan_date").notNull(),
   critical: integer("critical").notNull().default(0),
   high: integer("high").notNull().default(0),
@@ -70,7 +70,7 @@ export const escapeWebAppsFindings = pgTable("escape_webapps_findings", {
 // Escape APIs findings table
 export const escapeApisFindings = pgTable("escape_apis_findings", {
   id: serial("id").primaryKey(),
-  serviceName: text("service_name").notNull(),
+  serviceName: text("service_name").notNull().unique(),
   scanDate: text("scan_date").notNull(),
   critical: integer("critical").notNull().default(0),
   high: integer("high").notNull().default(0),
@@ -81,7 +81,7 @@ export const escapeApisFindings = pgTable("escape_apis_findings", {
 // Crowdstrike Images findings table
 export const crowdstrikeImagesFindings = pgTable("crowdstrike_images_findings", {
   id: serial("id").primaryKey(),
-  serviceName: text("service_name").notNull(),
+  serviceName: text("service_name").notNull().unique(),
   scanDate: text("scan_date").notNull(),
   critical: integer("critical").notNull().default(0),
   high: integer("high").notNull().default(0),
@@ -92,7 +92,7 @@ export const crowdstrikeImagesFindings = pgTable("crowdstrike_images_findings", 
 // Crowdstrike Containers findings table
 export const crowdstrikeContainersFindings = pgTable("crowdstrike_containers_findings", {
   id: serial("id").primaryKey(),
-  serviceName: text("service_name").notNull(),
+  serviceName: text("service_name").notNull().unique(),
   scanDate: text("scan_date").notNull(),
   critical: integer("critical").notNull().default(0),
   high: integer("high").notNull().default(0),
