@@ -34,7 +34,7 @@ interface NavigationProps {
 export default function Navigation({ onLogout, currentPage, onRestartTutorial }: NavigationProps) {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [location] = useLocation();
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   
   // Determine current page from URL if not explicitly provided
   const getCurrentPage = () => {
@@ -156,12 +156,14 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="text-white hover:text-gray-200 ml-3 text-sm font-medium btn-smooth hover:bg-green-800">
                   <User className="h-4 w-4 mr-2" />
-                  tanishq.bhatnagar
+                  {user?.name || user?.username || "User"}
                   <ChevronDown className="h-3 w-3 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <Link href="/profile">
+                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                </Link>
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onLogout}>Sign out</DropdownMenuItem>

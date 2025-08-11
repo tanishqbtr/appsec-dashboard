@@ -63,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json({ id: user.id, username: user.username, type: user.type });
+      res.json({ id: user.id, name: user.name, username: user.username, type: user.type });
     } catch (error) {
       console.error("Get user error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -79,6 +79,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json({ success: true, message: "Logged out successfully" });
     } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Profile endpoints
+  app.get("/api/profile", requireAuth, async (req: any, res) => {
+    try {
+      const storage = await getStorage();
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      res.json({ id: user.id, name: user.name, username: user.username, type: user.type });
+    } catch (error) {
+      console.error("Get profile error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.patch("/api/profile", requireAuth, async (req: any, res) => {
+    try {
+      const { name, username, currentPassword, newPassword } = req.body;
+      
+      if (!name || !username) {
+        return res.status(400).json({ message: "Name and username are required" });
+      }
+
+      const storage = await getStorage();
+      const user = await storage.getUser(req.session.userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // If password change is requested, verify current password
+      if (newPassword) {
+        if (!currentPassword) {
+          return res.status(400).json({ message: "Current password is required to change password" });
+        }
+        if (user.password !== currentPassword) {
+          return res.status(401).json({ message: "Current password is incorrect" });
+        }
+        if (newPassword.length < 6) {
+          return res.status(400).json({ message: "New password must be at least 6 characters long" });
+        }
+      }
+
+      // Check if username is already taken by another user
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser && existingUser.id !== user.id) {
+        return res.status(400).json({ message: "Username is already taken" });
+      }
+
+      // Update user
+      const updateData: any = { name, username };
+      if (newPassword) {
+        updateData.password = newPassword;
+      }
+
+      const updatedUser = await storage.updateUser(user.id, updateData);
+      
+      // Update session if username changed
+      if (username !== user.username) {
+        req.session.username = username;
+      }
+
+      res.json({ 
+        id: updatedUser.id, 
+        name: updatedUser.name, 
+        username: updatedUser.username, 
+        type: updatedUser.type 
+      });
+    } catch (error) {
+      console.error("Update profile error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });

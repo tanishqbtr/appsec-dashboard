@@ -15,6 +15,7 @@ import Reports from "@/pages/reports";
 import Alerts from "@/pages/alerts";
 import RiskScoring from "@/pages/risk-scoring";
 import AdminPanel from "@/pages/admin";
+import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/reports" component={Reports} />
       <Route path="/alerts" component={Alerts} />
       <Route path="/risk-scoring" component={RiskScoring} />
+      <Route path="/profile" component={Profile} />
       <Route path="/admin" component={AdminPanel} />
       <Route component={NotFound} />
     </Switch>
