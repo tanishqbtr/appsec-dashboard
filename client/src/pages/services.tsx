@@ -439,13 +439,13 @@ export default function Services() {
                 <DialogTitle>Confirm Deletion</DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Are you sure you want to delete {selectedServices.size} service(s)? This action cannot be undone.
                 </p>
                 {selectedServices.size > 0 && (
                   <div className="mt-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Services to be deleted:</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
+                    <h4 className="font-medium text-foreground mb-2">Services to be deleted:</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
                       {sortedApplications
                         .filter(app => selectedServices.has(app.id))
                         .map(app => (
@@ -482,10 +482,10 @@ export default function Services() {
               {sortedApplications.length === 0 ? (
                 <div className="text-center py-8">
                   <Shield className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  <h3 className="mt-2 text-sm font-medium text-foreground">
                     {searchTerm ? "No services found" : "No services available"}
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {searchTerm ? "Try adjusting your search terms." : "Services will appear here once configured."}
                   </p>
                 </div>
@@ -493,7 +493,7 @@ export default function Services() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead data-tutorial="table-headers">
-                      <tr className="border-b border-gray-200">
+                      <tr className="border-b border-border">
                         {isDeleteMode && (
                           <th className="text-left py-3 px-4 w-12">
                             <Checkbox
@@ -507,7 +507,7 @@ export default function Services() {
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("name")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-start btn-smooth"
+                            className="flex items-center gap-1 font-medium text-foreground hover:text-accent-foreground justify-start btn-smooth"
                           >
                             Service Name
                             {sortField === "name" && (
@@ -519,7 +519,7 @@ export default function Services() {
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("riskScore")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full btn-smooth"
+                            className="flex items-center gap-1 font-medium text-foreground hover:text-accent-foreground justify-center w-full btn-smooth"
                           >
                             Risk Score
                             {sortField === "riskScore" && (
@@ -531,7 +531,7 @@ export default function Services() {
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("percentile")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full btn-smooth"
+                            className="flex items-center gap-1 font-medium text-foreground hover:text-accent-foreground justify-center w-full btn-smooth"
                           >
                             Percentile Ranking
                             {sortField === "percentile" && (
@@ -547,7 +547,7 @@ export default function Services() {
                         return (
                           <tr 
                             key={app.id} 
-                            className="stagger-item border-b border-gray-100 hover:bg-gray-50 card-hover transition-all duration-200"
+                            className="stagger-item border-b border-border hover:bg-muted/50 card-hover transition-all duration-200"
                             data-tutorial={index === 0 ? "service-row" : undefined}
                           >
                             {isDeleteMode && (
@@ -566,7 +566,7 @@ export default function Services() {
                                     <Shield className="h-5 w-5 text-green-600" />
                                   </div>
                                   <div>
-                                    <h3 className="font-medium text-gray-900">
+                                    <h3 className="font-medium text-foreground">
                                       {app.name}
                                     </h3>
                                   </div>
@@ -578,7 +578,7 @@ export default function Services() {
                                       <Shield className="h-5 w-5 text-green-600" />
                                     </div>
                                     <div>
-                                      <h3 className="font-medium text-gray-900 group-hover:text-green-600 transition-colors">
+                                      <h3 className="font-medium text-foreground group-hover:text-green-600 transition-colors">
                                         {app.name}
                                       </h3>
                                     </div>
@@ -587,7 +587,7 @@ export default function Services() {
                               )}
                             </td>
                             <td className="py-4 px-4 text-center">
-                              <span className="text-lg font-semibold text-gray-900">
+                              <span className="text-lg font-semibold text-foreground">
                                 {app.displayRiskScore}
                               </span>
                             </td>
