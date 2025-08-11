@@ -75,8 +75,8 @@ export default function Login() {
         />
       </div>
       
-      {/* Gradient Overlay - Opaque (0-25%), Fade (25-40%), Transparent (40-100%) */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#070f1b] from-0% via-[#070f1b] via-25% via-[#070f1b]/50 via-32% to-transparent to-40%"></div>
+      {/* Overlay - Completely opaque left side */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#070f1b] from-0% to-[#070f1b] to-25% via-transparent via-100%"></div>
       
       {/* Login Form Container */}
       <div className="relative z-10 min-h-screen flex items-center justify-start p-6 sm:p-8 lg:p-12">
@@ -85,7 +85,7 @@ export default function Login() {
           <div className="mb-8">
             <div className="flex items-center text-slate-300 mb-6">
               <Shield className="h-5 w-5 mr-2" />
-              <span className="text-sm">Hinge Health AppSec team</span>
+              <span className="text-sm">Hinge Health AppSec Team</span>
             </div>
             <h1 className="text-3xl font-bold text-white mb-2">
               Security Dashboard
@@ -140,6 +140,25 @@ export default function Login() {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+
+          {/* Okta Sign In Option */}
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-slate-600" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-[#070f1b] px-2 text-slate-400">Or</span>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-12 mt-4 bg-slate-700/30 border-slate-600 text-slate-300 hover:bg-slate-600/50 hover:text-white transition-all duration-200"
+            >
+              Sign in with Okta
+            </Button>
+          </div>
         </div>
       </div>
 
