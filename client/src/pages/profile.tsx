@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Mail, Lock, Save, ArrowLeft, Clock, Check, X, Eye, EyeOff, ChevronDown } from "lucide-react";
+
+import { User, Mail, Lock, Save, ArrowLeft, Clock, Check, X, Eye, EyeOff } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,7 +25,6 @@ export default function Profile() {
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
-    sessionTimeout: "30", // Default 30 minutes
   });
 
   const [showPasswords, setShowPasswords] = useState({
@@ -70,7 +69,6 @@ export default function Profile() {
         ...prev,
         name: profileUser.name || "",
         username: profileUser.username || "",
-        sessionTimeout: profileUser.sessionTimeout || "30",
       }));
     }
   }, [profileUser]);
@@ -149,7 +147,6 @@ export default function Profile() {
     const updateData: any = {
       name: profileData.name,
       username: profileData.username,
-      sessionTimeout: profileData.sessionTimeout,
     };
 
     if (profileData.newPassword) {
@@ -463,26 +460,12 @@ export default function Profile() {
                 {/* Session Timeout */}
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="sessionTimeout" className="text-base font-medium">Session Timeout</Label>
+                    <Label className="text-base font-medium">Session Timeout</Label>
                     <p className="text-sm text-gray-600 mt-1">Automatic logout after inactivity</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={profileData.sessionTimeout}
-                      onValueChange={(value) => handleInputChange("sessionTimeout", value)}
-                      disabled={!isEditing}
-                    >
-                      <SelectTrigger className="w-32">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="5">5 minutes</SelectItem>
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
-                        <SelectItem value="60">60 minutes</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <Badge variant="secondary" className="bg-gray-100 text-gray-800">
+                    30 minutes
+                  </Badge>
                 </div>
 
                 {/* Password Policy */}
