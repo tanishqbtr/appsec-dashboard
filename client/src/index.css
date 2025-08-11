@@ -32,32 +32,33 @@
 }
 
 .dark {
-  --background: hsl(240, 10%, 3.9%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5%, 64.9%);
-  --popover: hsl(240, 10%, 3.9%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
-  --primary: hsl(157, 100%, 20%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(240, 3.7%, 15.9%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(240, 3.7%, 15.9%);
-  --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
+  /* Cybersecurity-themed dark mode palette */
+  --background: hsl(210, 11%, 8%); /* Deep navy blue background */
+  --foreground: hsl(195, 20%, 88%); /* Light cyan-white text */
+  --muted: hsl(210, 15%, 12%); /* Darker blue-gray */
+  --muted-foreground: hsl(195, 10%, 65%); /* Medium cyan-gray */
+  --popover: hsl(210, 12%, 10%); /* Very dark blue */
+  --popover-foreground: hsl(195, 20%, 90%); /* Light cyan */
+  --card: hsl(210, 13%, 9%); /* Dark blue card background */
+  --card-foreground: hsl(195, 18%, 85%); /* Light cyan text */
+  --border: hsl(210, 20%, 18%); /* Dark blue-gray border */
+  --input: hsl(210, 18%, 15%); /* Dark input background */
+  --primary: hsl(180, 100%, 25%); /* Bright teal/cyan primary */
+  --primary-foreground: hsl(210, 11%, 8%); /* Dark text on primary */
+  --secondary: hsl(210, 18%, 14%); /* Dark secondary */
+  --secondary-foreground: hsl(195, 15%, 75%); /* Light secondary text */
+  --accent: hsl(195, 100%, 15%); /* Dark cyan accent */
+  --accent-foreground: hsl(195, 20%, 85%); /* Light cyan on accent */
+  --destructive: hsl(0, 85%, 55%); /* Bright red for destructive */
+  --destructive-foreground: hsl(0, 0%, 98%); /* White on destructive */
+  --ring: hsl(180, 70%, 40%); /* Cyan focus ring */
   --radius: 0.5rem;
   
-  /* Custom security dashboard colors for dark mode */
-  --critical: hsl(0, 73%, 41%);
-  --high: hsl(25, 85%, 53%);
-  --medium: hsl(43, 89%, 38%);
-  --low: hsl(142, 76%, 36%);
+  /* Enhanced cybersecurity dashboard colors for dark mode */
+  --critical: hsl(0, 85%, 60%); /* Bright red for critical */
+  --high: hsl(25, 95%, 65%); /* Bright orange for high */
+  --medium: hsl(45, 95%, 70%); /* Bright yellow for medium */
+  --low: hsl(120, 80%, 55%); /* Bright green for low */
 }
 
 @layer base {

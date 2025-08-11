@@ -20,10 +20,13 @@ import {
   HelpCircle,
   User,
   RotateCcw,
+  Moon,
+  Sun,
 } from "lucide-react";
 import HingeLogo from "./hinge-logo";
 import hingeHealthLogoPath from "@assets/ChatGPT Image Jul 17, 2025, 07_08_44 PM_1752760077600.png";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface NavigationProps {
   onLogout: () => void;
@@ -35,6 +38,7 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [location] = useLocation();
   const { isAdmin, user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   
   // Determine current page from URL if not explicitly provided
   const getCurrentPage = () => {
@@ -138,6 +142,20 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
                 <RotateCcw className="h-5 w-5 transition-transform duration-200 hover:rotate-180" />
               </Button>
             )}
+            
+            {/* Theme Toggle Button */}
+            <Button 
+              variant="ghost" 
+              className="text-white hover:text-gray-200 p-2 btn-smooth hover:bg-green-800 ml-2"
+              onClick={toggleTheme}
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            >
+              {theme === 'light' ? (
+                <Moon className="h-5 w-5 transition-transform duration-200 hover:scale-110" />
+              ) : (
+                <Sun className="h-5 w-5 transition-transform duration-200 hover:scale-110" />
+              )}
+            </Button>
             <a 
               href="https://hingehealth.atlassian.net/wiki/spaces/SAI/pages/388562946/Application+Security+Homepage" 
               target="_blank" 
