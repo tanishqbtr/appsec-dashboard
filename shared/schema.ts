@@ -4,9 +4,13 @@ import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
+  name: text("name").notNull(),
+  username: text("username").notNull().unique(), // This will be the email
+  status: text("status").notNull().default("Active"), // Active, Inactive
+  type: text("type").notNull().default("User"), // User, Admin
   password: text("password").notNull(),
-  role: text("role").notNull().default("user"), // 'admin' or 'user'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const applications = pgTable("applications", {
@@ -132,9 +136,10 @@ export const riskAssessments = pgTable("risk_assessments", {
   updatedBy: text("updated_by"),
 });
 
-export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
-  password: true,
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertApplicationSchema = createInsertSchema(applications).omit({
@@ -174,8 +179,8 @@ export const insertRiskAssessmentSchema = createInsertSchema(riskAssessments).om
   lastUpdated: true,
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Application = typeof applications.$inferSelect;
 export type InsertApplication = z.infer<typeof insertApplicationSchema>;
 export type MendScaFinding = typeof mendScaFindings.$inferSelect;

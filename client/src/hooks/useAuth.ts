@@ -25,8 +25,8 @@ export function useAuth() {
     user,
     isLoading,
     isAuthenticated: !!user && !isError,
-    isAdmin: user?.role === 'admin',
-    isUser: user?.role === 'user',
+    isAdmin: user?.type === 'Admin',
+    isUser: user?.type === 'User',
     logout,
   };
 }

@@ -16,7 +16,7 @@ const requireAdmin = (req: any, res: any, next: any) => {
   if (!req.session || !req.session.userId) {
     return res.status(401).json({ message: "Authentication required" });
   }
-  if (req.session.role !== 'admin') {
+  if (req.session.type !== 'Admin') {
     return res.status(403).json({ message: "Admin access required" });
   }
   next();
@@ -46,9 +46,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set session
       req.session.userId = user.id;
       req.session.username = user.username;
-      req.session.role = user.role;
-      console.log("Session set:", { userId: req.session.userId, username: req.session.username, role: req.session.role });
-      res.json({ success: true, user: { id: user.id, username: user.username, role: user.role } });
+      req.session.type = user.type;
+      console.log("Session set:", { userId: req.session.userId, username: req.session.username, type: req.session.type });
+      res.json({ success: true, user: { id: user.id, username: user.username, type: user.type } });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -63,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json({ id: user.id, username: user.username, role: user.role });
+      res.json({ id: user.id, username: user.username, type: user.type });
     } catch (error) {
       console.error("Get user error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -74,7 +74,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/logout", async (req, res) => {
     try {
       // Clear session
-      req.session.destroy();
+      req.session.destroy((err) => {
+        if (err) console.error("Session destroy error:", err);
+      });
       res.json({ success: true, message: "Logged out successfully" });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
