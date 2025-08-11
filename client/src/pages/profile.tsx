@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, Lock, Save, ArrowLeft, Clock } from "lucide-react";
+import { User, Mail, Lock, Save, ArrowLeft, Clock, Check, X } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +25,24 @@ export default function Profile() {
     newPassword: "",
     confirmPassword: "",
   });
+
+  // Password strength validation
+  const validatePassword = (password: string) => {
+    const requirements = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      numbers: /\d/.test(password),
+      special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
+    };
+    
+    const score = Object.values(requirements).filter(Boolean).length;
+    const strength = score <= 2 ? "weak" : score <= 3 ? "medium" : score <= 4 ? "strong" : "excellent";
+    
+    return { requirements, score, strength };
+  };
+
+  const passwordValidation = validatePassword(profileData.newPassword);
 
   // Fetch user profile data
   const { data: profileUser, isLoading } = useQuery({
@@ -102,10 +120,11 @@ export default function Profile() {
         });
         return;
       }
-      if (profileData.newPassword.length < 6) {
+      // Validate password strength
+      if (passwordValidation.score < 5) {
         toast({
-          title: "Validation Error",
-          description: "New password must be at least 6 characters long.",
+          title: "Password Too Weak",
+          description: "Please ensure your password meets all security requirements.",
           variant: "destructive",
         });
         return;
@@ -264,6 +283,70 @@ export default function Profile() {
                       onChange={(e) => handleInputChange("newPassword", e.target.value)}
                       placeholder="Enter new password (leave blank to keep current)"
                     />
+                    
+                    {/* Password Strength Indicator */}
+                    {profileData.newPassword && (
+                      <div className="space-y-3 mt-2">
+                        {/* Strength Bar */}
+                        <div className="space-y-1">
+                          <div className="flex justify-between text-sm">
+                            <span>Password Strength</span>
+                            <span className={`font-medium capitalize ${
+                              passwordValidation.strength === "weak" ? "text-red-600" :
+                              passwordValidation.strength === "medium" ? "text-orange-500" :
+                              passwordValidation.strength === "strong" ? "text-blue-600" :
+                              "text-green-600"
+                            }`}>
+                              {passwordValidation.strength}
+                            </span>
+                          </div>
+                          <div className="flex gap-1 h-2">
+                            {[1, 2, 3, 4, 5].map((bar) => (
+                              <div
+                                key={bar}
+                                className={`flex-1 rounded-full transition-colors duration-300 ${
+                                  bar <= passwordValidation.score
+                                    ? passwordValidation.strength === "weak" ? "bg-red-500" :
+                                      passwordValidation.strength === "medium" ? "bg-orange-500" :
+                                      passwordValidation.strength === "strong" ? "bg-blue-500" :
+                                      "bg-green-500"
+                                    : "bg-gray-200"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {/* Requirements Checklist */}
+                        <div className="space-y-2 text-sm">
+                          <p className="font-medium text-gray-700">Requirements:</p>
+                          <div className="grid gap-1">
+                            {[
+                              { key: "length", text: "At least 8 characters" },
+                              { key: "uppercase", text: "One uppercase letter (A-Z)" },
+                              { key: "lowercase", text: "One lowercase letter (a-z)" },
+                              { key: "numbers", text: "One number (0-9)" },
+                              { key: "special", text: "One special character (!@#$%^&*)" },
+                            ].map((req) => (
+                              <div key={req.key} className="flex items-center gap-2">
+                                {passwordValidation.requirements[req.key as keyof typeof passwordValidation.requirements] ? (
+                                  <Check className="h-4 w-4 text-green-600" />
+                                ) : (
+                                  <X className="h-4 w-4 text-red-500" />
+                                )}
+                                <span className={
+                                  passwordValidation.requirements[req.key as keyof typeof passwordValidation.requirements]
+                                    ? "text-green-700"
+                                    : "text-gray-600"
+                                }>
+                                  {req.text}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="grid gap-2">
                     <Label htmlFor="confirmPassword">Confirm New Password</Label>
