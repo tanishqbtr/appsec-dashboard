@@ -69,22 +69,22 @@ export default function Login() {
 
   return (
     <div className="min-h-screen relative flex">
-      {/* Background Image - Positioned from 40% left */}
+      {/* Background Image - Positioned from 35% left */}
       <div className="absolute inset-0">
         <div className="w-full h-full relative">
           <img
             src={securityOfficeImage}
             alt="Security Office"
-            className="absolute right-0 top-0 w-3/5 h-full object-cover object-left"
+            className="absolute right-0 top-0 w-full lg:w-[65%] h-full object-cover object-left"
           />
         </div>
       </div>
       
       {/* Left Panel - Login Form with Wall Color */}
-      <div className="flex-1 flex items-center justify-center p-8 lg:p-12 relative z-10 bg-slate-800">
+      <div className="w-full lg:w-[35%] flex items-center justify-center p-6 sm:p-8 lg:p-12 relative z-10 bg-slate-800">
         <div className="w-full max-w-md">
           {/* Back to Home Link */}
-          <button className="flex items-center text-slate-300 hover:text-white mb-8 transition-colors duration-200">
+          <button className="flex items-center text-slate-300 hover:text-white mb-6 lg:mb-8 transition-colors duration-200">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to home
           </button>
@@ -176,7 +176,7 @@ export default function Login() {
       </div>
 
       {/* Right Panel - Continues the background image */}
-      <div className="hidden lg:flex flex-1 relative z-10"></div>
+      <div className="hidden lg:block w-[65%] relative z-10"></div>
 
       {/* Animated Error Popup Modal */}
       <Dialog open={showErrorModal} onOpenChange={setShowErrorModal}>
