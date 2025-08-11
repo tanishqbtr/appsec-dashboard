@@ -731,14 +731,35 @@ async function initializeStorage(): Promise<IStorage> {
     // Check if we need to seed data
     console.log("🔍 Checking for existing data...");
     const existingApps = await dbStorage.getApplications();
-    const existingUsers = await dbStorage.getUserByUsername("admin");
+    const existingAdminUser = await dbStorage.getUserByUsername("admin@hingehealth.com");
+    const existingDemoUser = await dbStorage.getUserByUsername("demo@hingehealth.com");
     
-    if (!existingUsers) {
+    if (!existingAdminUser) {
       console.log("👤 Creating admin user...");
-      await dbStorage.createUser({ username: "admin", password: "password@hh" });
+      await dbStorage.createUser({ 
+        name: "Admin User", 
+        username: "admin@hingehealth.com", 
+        password: "password@hh",
+        status: "Active",
+        type: "Admin"
+      });
       console.log("✅ Admin user created");
     } else {
       console.log("👤 Admin user already exists");
+    }
+    
+    if (!existingDemoUser) {
+      console.log("👤 Creating demo user...");
+      await dbStorage.createUser({ 
+        name: "Demo User", 
+        username: "demo@hingehealth.com", 
+        password: "password",
+        status: "Active",
+        type: "User"
+      });
+      console.log("✅ Demo user created");
+    } else {
+      console.log("👤 Demo user already exists");
     }
     
     if (existingApps.length === 0) {
