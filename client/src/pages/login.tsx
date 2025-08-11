@@ -75,8 +75,8 @@ export default function Login() {
         />
       </div>
       
-      {/* Overlay - Completely opaque left side */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#070f1b] from-0% to-[#070f1b] to-25% via-transparent via-100%"></div>
+      {/* Overlay - Solid color left side */}
+      <div className="absolute inset-0 bg-[#070f1b] w-[25%]"></div>
       
       {/* Login Form Container */}
       <div className="relative z-10 min-h-screen flex items-center justify-start p-6 sm:p-8 lg:p-12">
