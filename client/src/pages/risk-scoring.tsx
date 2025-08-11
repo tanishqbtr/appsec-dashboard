@@ -392,7 +392,7 @@ export default function RiskScoring() {
   if (isLoading) {
     return (
       <PageWrapper loadingMessage="Loading Risk Scoring...">
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background">
           <Navigation onLogout={logout} currentPage="risk-scoring" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="animate-pulse">
@@ -408,15 +408,15 @@ export default function RiskScoring() {
 
   return (
     <PageWrapper loadingMessage="Loading Risk Scoring...">
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="risk-scoring" />
         
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 page-enter page-enter-active">
           <div className="mb-8 stagger-item">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Risk Scoring</h1>
-                <p className="mt-2 text-gray-600">
+                <h1 className="text-3xl font-bold text-foreground">Risk Scoring</h1>
+                <p className="mt-2 text-muted-foreground">
                   Security risk assessment and scoring management for all services
                 </p>
               </div>
@@ -438,7 +438,7 @@ export default function RiskScoring() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Critical Risk</p>
+                    <p className="text-sm font-medium text-muted-foreground">Critical Risk</p>
                     <p className="text-3xl font-bold text-red-600">
                       {applications.filter(app => parseFloat(app.riskScore) >= 8).length}
                     </p>
@@ -454,7 +454,7 @@ export default function RiskScoring() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">High Risk</p>
+                    <p className="text-sm font-medium text-muted-foreground">High Risk</p>
                     <p className="text-3xl font-bold text-orange-600">
                       {applications.filter(app => {
                         const score = parseFloat(app.riskScore);
@@ -473,7 +473,7 @@ export default function RiskScoring() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Medium Risk</p>
+                    <p className="text-sm font-medium text-muted-foreground">Medium Risk</p>
                     <p className="text-3xl font-bold text-yellow-600">
                       {applications.filter(app => {
                         const score = parseFloat(app.riskScore);
@@ -492,7 +492,7 @@ export default function RiskScoring() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Low Risk</p>
+                    <p className="text-sm font-medium text-muted-foreground">Low Risk</p>
                     <p className="text-3xl font-bold text-green-600">
                       {applications.filter(app => parseFloat(app.riskScore) < 4).length}
                     </p>

@@ -150,8 +150,8 @@ export default function Reports() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Security Findings</h1>
-              <p className="mt-2 text-gray-600">
+              <h1 className="text-3xl font-bold text-foreground">Security Findings</h1>
+              <p className="mt-2 text-muted-foreground">
                 Manage and monitor your services across different security tools.
               </p>
             </div>
@@ -173,7 +173,7 @@ export default function Reports() {
             <div>
               {/* Scan Engine Selection */}
               <div data-tutorial="scan-engines">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Scan Engine</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Scan Engine</h3>
                 <div className="flex gap-2">
                   {["Mend", "Escape", "Crowdstrike"].map((engine) => (
                     <Button
@@ -196,7 +196,7 @@ export default function Reports() {
               {/* Labels Selection - Only show when engine is selected */}
               {selectedEngine && (
                 <div className="mt-4" data-tutorial="engine-labels">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
                     {selectedEngine} Labels
                   </h3>
                   <div className="flex flex-wrap gap-2">
@@ -222,7 +222,7 @@ export default function Reports() {
 
             {/* Right Side - Tags Selection */}
             <div data-tutorial="compliance-tags">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Compliance Tags</h3>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Compliance Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {["HITRUST", "ISO 27001", "SOC 2", "HIPAA", "PCI DSS"].map((tag) => (
                   <Button

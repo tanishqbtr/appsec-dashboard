@@ -262,7 +262,7 @@ export default function Services() {
 
   return (
     <PageWrapper loadingMessage="Loading Services...">
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="services" />
         
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -270,8 +270,8 @@ export default function Services() {
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Services</h1>
-                <p className="mt-2 text-sm text-gray-600">
+                <h1 className="text-3xl font-bold text-foreground">Services</h1>
+                <p className="mt-2 text-sm text-muted-foreground">
                   Manage and monitor security risk scores for all services
                 </p>
               </div>

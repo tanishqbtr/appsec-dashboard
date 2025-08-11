@@ -394,8 +394,8 @@ export default function AdminPanel() {
           {/* Left Sidebar */}
           <div className="w-64 bg-card shadow-lg border-r min-h-screen">
             <div className="p-6">
-              <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
-              <p className="text-sm text-gray-600 mt-1">System Management</p>
+              <h1 className="text-xl font-bold text-foreground">Admin Panel</h1>
+              <p className="text-sm text-muted-foreground mt-1">System Management</p>
             </div>
             
             <nav className="px-3 pb-6">
@@ -407,8 +407,8 @@ export default function AdminPanel() {
                     onClick={() => setActiveSection(item.id)}
                     className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md mb-1 transition-colors ${
                       activeSection === item.id
-                        ? 'bg-green-50 text-green-700 border-r-2 border-green-500'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 border-r-2 border-green-500'
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                     }`}
                   >
                     <Icon className={`mr-3 h-5 w-5 ${
