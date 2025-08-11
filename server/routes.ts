@@ -3,11 +3,25 @@ import { createServer, type Server } from "http";
 import { getStorage } from "./storage";
 import { insertUserSchema } from "@shared/schema";
 
-// Authentication middleware
-const requireAuth = (req: any, res: any, next: any) => {
+// Authentication middleware with dynamic session timeout
+const requireAuth = async (req: any, res: any, next: any) => {
   if (!req.session || !req.session.userId) {
     return res.status(401).json({ message: "Authentication required" });
   }
+  
+  // Update session timeout based on user's preference
+  try {
+    const storage = await getStorage();
+    const user = await storage.getUser(req.session.userId);
+    if (user && user.sessionTimeout) {
+      const timeoutMinutes = parseInt(user.sessionTimeout);
+      const timeoutMs = timeoutMinutes * 60 * 1000; // Convert to milliseconds
+      req.session.cookie.maxAge = timeoutMs;
+    }
+  } catch (error) {
+    console.error("Error updating session timeout:", error);
+  }
+  
   next();
 };
 
@@ -100,7 +114,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json({ id: user.id, name: user.name, username: user.username, type: user.type });
+      res.json({ 
+        id: user.id, 
+        name: user.name, 
+        username: user.username, 
+        type: user.type,
+        sessionTimeout: user.sessionTimeout || "30"
+      });
     } catch (error) {
       console.error("Get profile error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -109,7 +129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.patch("/api/profile", requireAuth, async (req: any, res) => {
     try {
-      const { name, username, currentPassword, newPassword } = req.body;
+      const { name, username, currentPassword, newPassword, sessionTimeout } = req.body;
       
       if (!name || !username) {
         return res.status(400).json({ message: "Name and username are required" });
@@ -144,6 +164,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updateData: any = { name, username };
       if (newPassword) {
         updateData.password = newPassword;
+      }
+      if (sessionTimeout) {
+        updateData.sessionTimeout = sessionTimeout;
       }
 
       const updatedUser = await storage.updateUser(user.id, updateData);

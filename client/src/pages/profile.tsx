@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, Lock, Save, ArrowLeft, Clock, Check, X, Eye, EyeOff } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { User, Mail, Lock, Save, ArrowLeft, Clock, Check, X, Eye, EyeOff, ChevronDown } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,6 +25,7 @@ export default function Profile() {
     currentPassword: "",
     newPassword: "",
     confirmPassword: "",
+    sessionTimeout: "30", // Default 30 minutes
   });
 
   const [showPasswords, setShowPasswords] = useState({
@@ -68,6 +70,7 @@ export default function Profile() {
         ...prev,
         name: profileUser.name || "",
         username: profileUser.username || "",
+        sessionTimeout: profileUser.sessionTimeout || "30",
       }));
     }
   }, [profileUser]);
@@ -146,6 +149,7 @@ export default function Profile() {
     const updateData: any = {
       name: profileData.name,
       username: profileData.username,
+      sessionTimeout: profileData.sessionTimeout,
     };
 
     if (profileData.newPassword) {
@@ -446,27 +450,61 @@ export default function Profile() {
             </Card>
           )}
 
-          {/* Email Notification Preferences */}
+          {/* Security Configuration */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
-                Email Notification Preferences
+                <Lock className="h-5 w-5" />
+                Security Configuration
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center py-12">
-                <div className="text-center space-y-4">
-                  <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-r from-blue-100 to-blue-50 shadow-lg">
-                    <Clock className="h-8 w-8 text-blue-600 animate-pulse" />
-                  </div>
+            <CardContent className="space-y-6">
+              <div className="grid gap-6">
+                {/* Session Timeout */}
+                <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">Coming Soon!</h3>
-                    <p className="text-gray-600 max-w-md">
-                      Email notification preferences will be available in an upcoming release. 
-                      You'll be able to customize alerts for security findings, scan results, and system updates.
-                    </p>
+                    <Label htmlFor="sessionTimeout" className="text-base font-medium">Session Timeout</Label>
+                    <p className="text-sm text-gray-600 mt-1">Automatic logout after inactivity</p>
                   </div>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={profileData.sessionTimeout}
+                      onValueChange={(value) => handleInputChange("sessionTimeout", value)}
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="5">5 minutes</SelectItem>
+                        <SelectItem value="15">15 minutes</SelectItem>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                        <SelectItem value="60">60 minutes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Password Policy */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-base font-medium">Password Policy</Label>
+                    <p className="text-sm text-gray-600 mt-1">Minimum security requirements</p>
+                  </div>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    Enforced
+                  </Badge>
+                </div>
+
+                {/* Audit Logging */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-base font-medium">Audit Logging</Label>
+                    <p className="text-sm text-gray-600 mt-1">Track user activities</p>
+                  </div>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">
+                    Enabled
+                  </Badge>
                 </div>
               </div>
             </CardContent>

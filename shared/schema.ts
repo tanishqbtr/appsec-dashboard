@@ -9,6 +9,7 @@ export const users = pgTable("users", {
   status: text("status").notNull().default("Active"), // Active, Disabled
   type: text("type").notNull().default("User"), // User, Admin
   password: text("password").notNull(),
+  sessionTimeout: text("session_timeout").notNull().default("30"), // Session timeout in minutes
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
