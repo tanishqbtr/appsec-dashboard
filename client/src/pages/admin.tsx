@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Table,
   TableBody,
@@ -47,7 +47,9 @@ import {
   BarChart3,
   AlertTriangle,
   CheckCircle,
-  Clock
+  Clock,
+  FileText,
+  History
 } from "lucide-react";
 
 interface User {
@@ -70,8 +72,18 @@ interface SystemMetrics {
   systemHealth: 'healthy' | 'warning' | 'critical';
 }
 
+interface ActivityLog {
+  id: number;
+  userId: number;
+  username: string;
+  action: string;
+  serviceName?: string;
+  details?: string;
+  timestamp: string;
+}
+
 export default function AdminPanel() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeSection, setActiveSection] = useState("overview");
   const [isAddUserOpen, setIsAddUserOpen] = useState(false);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -84,23 +96,11 @@ export default function AdminPanel() {
   });
 
   const { toast } = useToast();
-  const { logout, user } = useAuth();
+  const { user, logout } = useAuth();
   const queryClient = useQueryClient();
 
-  // Redirect non-admins
-  useEffect(() => {
-    if (user && user.type !== 'Admin') {
-      toast({
-        title: "Access Denied",
-        description: "Admin access required to view this page.",
-        variant: "destructive",
-      });
-      window.location.href = "/";
-    }
-  }, [user, toast]);
-
-  // Queries
-  const { data: users = [], isLoading: isLoadingUsers } = useQuery<User[]>({
+  // Fetch data
+  const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ["/api/admin/users"],
   });
 
@@ -110,6 +110,11 @@ export default function AdminPanel() {
 
   const { data: applications = [] } = useQuery({
     queryKey: ["/api/applications"],
+  });
+
+  const { data: activityLogs = [] } = useQuery<ActivityLog[]>({
+    queryKey: ["/api/admin/activity-logs"],
+    enabled: activeSection === "logs"
   });
 
   // Mutations
@@ -221,7 +226,6 @@ export default function AdminPanel() {
   };
 
   const getStatusBadge = (status: string) => {
-    const variant = status === 'Active' ? 'default' : 'secondary';
     const color = status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
     return (
       <Badge className={color}>
@@ -239,6 +243,32 @@ export default function AdminPanel() {
         {type}
       </Badge>
     );
+  };
+
+  // Sidebar navigation items
+  const sidebarItems = [
+    { id: "overview", label: "Overview", icon: BarChart3 },
+    { id: "users", label: "Users", icon: Users },
+    { id: "logs", label: "Activity Logs", icon: History },
+    { id: "system", label: "System", icon: Database },
+    { id: "settings", label: "Settings", icon: Settings },
+  ];
+
+  const formatActivityAction = (action: string) => {
+    switch (action) {
+      case 'CREATE_SERVICE': return 'Created service';
+      case 'DELETE_SERVICE': return 'Deleted service';
+      case 'UPDATE_RISK_SCORE': return 'Updated risk score';
+      case 'EXPORT_DATA': return 'Exported data';
+      case 'CREATE_USER': return 'Created user';
+      case 'UPDATE_USER': return 'Updated user';
+      case 'DELETE_USER': return 'Deleted user';
+      default: return action.replace(/_/g, ' ').toLowerCase();
+    }
+  };
+
+  const formatTimestamp = (timestamp: string) => {
+    return new Date(timestamp).toLocaleString();
   };
 
   if (!user || user.type !== 'Admin') {
@@ -265,464 +295,528 @@ export default function AdminPanel() {
       <div className="min-h-screen bg-gray-50">
         <Navigation onLogout={logout} currentPage="admin" />
         
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 page-enter page-enter-active">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Admin Panel</h1>
-            <p className="mt-2 text-gray-600">
-              System administration and user management
-            </p>
+        <div className="flex">
+          {/* Left Sidebar */}
+          <div className="w-64 bg-white shadow-lg border-r min-h-screen">
+            <div className="p-6">
+              <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+              <p className="text-sm text-gray-600 mt-1">System Management</p>
+            </div>
+            
+            <nav className="px-3 pb-6">
+              {sidebarItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveSection(item.id)}
+                    className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-md mb-1 transition-colors ${
+                      activeSection === item.id
+                        ? 'bg-green-50 text-green-700 border-r-2 border-green-500'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    <Icon className={`mr-3 h-5 w-5 ${
+                      activeSection === item.id ? 'text-green-500' : 'text-gray-400'
+                    }`} />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </nav>
           </div>
 
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="users">Users</TabsTrigger>
-              <TabsTrigger value="system">System</TabsTrigger>
-              <TabsTrigger value="settings">Settings</TabsTrigger>
-            </TabsList>
+          {/* Main Content */}
+          <div className="flex-1 p-8">
+            <div className="max-w-7xl mx-auto page-enter page-enter-active">
 
-            {/* Overview Tab */}
-            <TabsContent value="overview" className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Total Users</p>
-                        <p className="text-3xl font-bold text-blue-600">
-                          {metrics?.totalUsers || users.length}
-                        </p>
-                      </div>
-                      <Users className="h-8 w-8 text-blue-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Active Users</p>
-                        <p className="text-3xl font-bold text-green-600">
-                          {metrics?.activeUsers || users.filter(u => u.status === 'Active').length}
-                        </p>
-                      </div>
-                      <CheckCircle className="h-8 w-8 text-green-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Total Services</p>
-                        <p className="text-3xl font-bold text-purple-600">
-                          {applications.length}
-                        </p>
-                      </div>
-                      <Database className="h-8 w-8 text-purple-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">System Health</p>
-                        <p className="text-lg font-bold text-green-600">Healthy</p>
-                      </div>
-                      <Activity className="h-8 w-8 text-green-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">System initialized successfully</p>
-                          <p className="text-xs text-gray-500">Database connection established</p>
+              {/* Overview Section */}
+              {activeSection === "overview" && (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">Total Users</p>
+                            <p className="text-3xl font-bold text-blue-600">
+                              {metrics?.totalUsers || users.length}
+                            </p>
+                          </div>
+                          <Users className="h-8 w-8 text-blue-500" />
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">User authentication active</p>
-                          <p className="text-xs text-gray-500">Role-based access control enabled</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">Active Users</p>
+                            <p className="text-3xl font-bold text-green-600">
+                              {metrics?.activeUsers || users.filter(u => u.status === 'Active').length}
+                            </p>
+                          </div>
+                          <CheckCircle className="h-8 w-8 text-green-500" />
                         </div>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                        <div className="flex-1">
-                          <p className="text-sm font-medium">Security scanners operational</p>
-                          <p className="text-xs text-gray-500">All engines reporting data</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">Total Services</p>
+                            <p className="text-3xl font-bold text-purple-600">
+                              {applications.length}
+                            </p>
+                          </div>
+                          <Database className="h-8 w-8 text-purple-500" />
                         </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>User Distribution</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Admin Users</span>
-                        <span className="font-medium">
-                          {users.filter(u => u.type === 'Admin').length}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Regular Users</span>
-                        <span className="font-medium">
-                          {users.filter(u => u.type === 'User').length}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Active Users</span>
-                        <span className="font-medium text-green-600">
-                          {users.filter(u => u.status === 'Active').length}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Inactive Users</span>
-                        <span className="font-medium text-red-600">
-                          {users.filter(u => u.status === 'Inactive').length}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Users Tab */}
-            <TabsContent value="users" className="space-y-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold">User Management</h2>
-                <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-green-600 hover:bg-green-700">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Add User
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Create New User</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="name">Full Name</Label>
-                        <Input
-                          id="name"
-                          placeholder="Enter full name"
-                          value={newUser.name}
-                          onChange={(e) => handleInputChange("name", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="username">Username (Email)</Label>
-                        <Input
-                          id="username"
-                          type="email"
-                          placeholder="user@hingehealth.com"
-                          value={newUser.username}
-                          onChange={(e) => handleInputChange("username", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                          id="password"
-                          type="password"
-                          placeholder="Enter password"
-                          value={newUser.password}
-                          onChange={(e) => handleInputChange("password", e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="type">User Type</Label>
-                        <Select value={newUser.type} onValueChange={(value) => handleInputChange("type", value)}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="User">User</SelectItem>
-                            <SelectItem value="Admin">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="status">Status</Label>
-                        <Select value={newUser.status} onValueChange={(value) => handleInputChange("status", value)}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Active">Active</SelectItem>
-                            <SelectItem value="Inactive">Inactive</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button 
-                        onClick={() => createUserMutation.mutate(newUser)}
-                        disabled={createUserMutation.isPending || !newUser.name || !newUser.username || !newUser.password}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        {createUserMutation.isPending ? "Creating..." : "Create User"}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              <Card>
-                <CardContent className="p-0">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Username</TableHead>
-                        <TableHead>Type</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {isLoadingUsers ? (
-                        <TableRow>
-                          <TableCell colSpan={5} className="text-center py-8">
-                            Loading users...
-                          </TableCell>
-                        </TableRow>
-                      ) : users.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={5} className="text-center py-8">
-                            No users found
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        users.map((user) => (
-                          <TableRow key={user.id}>
-                            <TableCell className="font-medium">{user.name}</TableCell>
-                            <TableCell>{user.username}</TableCell>
-                            <TableCell>{getTypeBadge(user.type)}</TableCell>
-                            <TableCell>{getStatusBadge(user.status)}</TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleEditUser(user)}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleDeleteUser(user.id)}
-                                  className="text-red-600 hover:text-red-700"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            {/* System Tab */}
-            <TabsContent value="system" className="space-y-6">
-              <h2 className="text-xl font-semibold">System Information</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Database Status</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span>Connection Status</span>
-                        <Badge className="bg-green-100 text-green-800">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Connected
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Database Type</span>
-                        <span className="font-medium">PostgreSQL</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Total Tables</span>
-                        <span className="font-medium">8</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Application Status</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span>Server Status</span>
-                        <Badge className="bg-green-100 text-green-800">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Running
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Authentication</span>
-                        <Badge className="bg-green-100 text-green-800">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Active
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Security Scanners</span>
-                        <Badge className="bg-green-100 text-green-800">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Operational
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            {/* Settings Tab */}
-            <TabsContent value="settings" className="space-y-6">
-              <h2 className="text-xl font-semibold">System Settings</h2>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Security Settings</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">Role-Based Access Control</p>
-                        <p className="text-sm text-gray-600">Enforce user role permissions</p>
-                      </div>
-                      <Badge className="bg-green-100 text-green-800">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Enabled
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">Session Management</p>
-                        <p className="text-sm text-gray-600">Secure session handling</p>
-                      </div>
-                      <Badge className="bg-green-100 text-green-800">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Active
-                      </Badge>
-                    </div>
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-600">System Health</p>
+                            <p className="text-lg font-bold text-green-600">Healthy</p>
+                          </div>
+                          <Activity className="h-8 w-8 text-green-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
 
-          {/* Edit User Dialog */}
-          <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit User</DialogTitle>
-              </DialogHeader>
-              {editingUser && (
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-name">Full Name</Label>
-                    <Input
-                      id="edit-name"
-                      value={editingUser.name}
-                      onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-username">Username (Read Only)</Label>
-                    <Input
-                      id="edit-username"
-                      value={editingUser.username}
-                      disabled
-                      className="bg-gray-100"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-type">User Type</Label>
-                    <Select 
-                      value={editingUser.type} 
-                      onValueChange={(value) => setEditingUser({ ...editingUser, type: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="User">User</SelectItem>
-                        <SelectItem value="Admin">Admin</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-status">Status</Label>
-                    <Select 
-                      value={editingUser.status} 
-                      onValueChange={(value) => setEditingUser({ ...editingUser, status: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Active">Active</SelectItem>
-                        <SelectItem value="Inactive">Inactive</SelectItem>
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Recent Activity</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">System initialized successfully</p>
+                              <p className="text-xs text-gray-500">Database connection established</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">User authentication active</p>
+                              <p className="text-xs text-gray-500">Role-based access control enabled</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">Security scanners operational</p>
+                              <p className="text-xs text-gray-500">All engines reporting data</p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>User Distribution</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Admin Users</span>
+                            <span className="font-medium">
+                              {users.filter(u => u.type === 'Admin').length}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Regular Users</span>
+                            <span className="font-medium">
+                              {users.filter(u => u.type === 'User').length}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Active Users</span>
+                            <span className="font-medium text-green-600">
+                              {users.filter(u => u.status === 'Active').length}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm">Inactive Users</span>
+                            <span className="font-medium text-red-600">
+                              {users.filter(u => u.status === 'Inactive').length}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </div>
               )}
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsEditUserOpen(false)}>
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleUpdateUser}
-                  disabled={updateUserMutation.isPending}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  {updateUserMutation.isPending ? "Updating..." : "Update User"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+
+              {/* Users Section */}
+              {activeSection === "users" && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-semibold">User Management</h2>
+                    <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
+                      <DialogTrigger asChild>
+                        <Button className="bg-green-600 hover:bg-green-700">
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Add User
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Create New User</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="name">Full Name</Label>
+                            <Input
+                              id="name"
+                              placeholder="Enter full name"
+                              value={newUser.name}
+                              onChange={(e) => handleInputChange("name", e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="username">Username (Email)</Label>
+                            <Input
+                              id="username"
+                              type="email"
+                              placeholder="user@hingehealth.com"
+                              value={newUser.username}
+                              onChange={(e) => handleInputChange("username", e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="password">Password</Label>
+                            <Input
+                              id="password"
+                              type="password"
+                              placeholder="Enter password"
+                              value={newUser.password}
+                              onChange={(e) => handleInputChange("password", e.target.value)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="type">User Type</Label>
+                            <Select value={newUser.type} onValueChange={(value) => handleInputChange("type", value)}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="User">User</SelectItem>
+                                <SelectItem value="Admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="status">Status</Label>
+                            <Select value={newUser.status} onValueChange={(value) => handleInputChange("status", value)}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Active">Active</SelectItem>
+                                <SelectItem value="Inactive">Inactive</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setIsAddUserOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button 
+                            onClick={() => createUserMutation.mutate(newUser)}
+                            disabled={createUserMutation.isPending || !newUser.name || !newUser.username || !newUser.password}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            {createUserMutation.isPending ? "Creating..." : "Create User"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+
+                  <Card>
+                    <CardContent className="p-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>User</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Created</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {users.map((user: User) => (
+                            <TableRow key={user.id}>
+                              <TableCell>
+                                <div>
+                                  <p className="font-medium">{user.name}</p>
+                                  <p className="text-sm text-gray-500">{user.username}</p>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {getStatusBadge(user.status)}
+                              </TableCell>
+                              <TableCell>
+                                {getTypeBadge(user.type)}
+                              </TableCell>
+                              <TableCell className="text-sm text-gray-500">
+                                {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex space-x-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleEditUser(user)}
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleDeleteUser(user.id)}
+                                    className="text-red-600 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+
+                  {/* Edit User Dialog */}
+                  <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Edit User</DialogTitle>
+                      </DialogHeader>
+                      {editingUser && (
+                        <div className="grid gap-4 py-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-name">Full Name</Label>
+                            <Input
+                              id="edit-name"
+                              value={editingUser.name}
+                              onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-username">Username (Read Only)</Label>
+                            <Input
+                              id="edit-username"
+                              value={editingUser.username}
+                              disabled
+                              className="bg-gray-100"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-type">User Type</Label>
+                            <Select 
+                              value={editingUser.type} 
+                              onValueChange={(value) => setEditingUser({ ...editingUser, type: value })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="User">User</SelectItem>
+                                <SelectItem value="Admin">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-status">Status</Label>
+                            <Select 
+                              value={editingUser.status} 
+                              onValueChange={(value) => setEditingUser({ ...editingUser, status: value })}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Active">Active</SelectItem>
+                                <SelectItem value="Inactive">Inactive</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      )}
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsEditUserOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={handleUpdateUser}
+                          disabled={updateUserMutation.isPending}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          {updateUserMutation.isPending ? "Updating..." : "Update User"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              )}
+
+              {/* Activity Logs Section */}
+              {activeSection === "logs" && (
+                <div className="space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-semibold">Activity Logs</h2>
+                    <Button
+                      variant="outline"
+                      onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/admin/activity-logs"] })}
+                    >
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh
+                    </Button>
+                  </div>
+
+                  <Card>
+                    <CardContent className="p-0">
+                      {activityLogs.length === 0 ? (
+                        <div className="p-8 text-center text-gray-500">
+                          <History className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                          <p>No activity logs found</p>
+                          <p className="text-sm">User actions will appear here</p>
+                        </div>
+                      ) : (
+                        <ScrollArea className="h-96">
+                          <div className="p-4 space-y-4">
+                            {activityLogs.map((log) => (
+                              <div key={log.id} className="flex items-start space-x-4 p-3 bg-gray-50 rounded-md">
+                                <div className="flex-shrink-0">
+                                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between">
+                                    <p className="text-sm font-medium text-gray-900">
+                                      <span className="font-semibold">{log.username}</span> {formatActivityAction(log.action)}
+                                      {log.serviceName && (
+                                        <span className="text-blue-600"> "{log.serviceName}"</span>
+                                      )}
+                                    </p>
+                                    <p className="text-xs text-gray-500 flex-shrink-0">
+                                      {formatTimestamp(log.timestamp)}
+                                    </p>
+                                  </div>
+                                  {log.details && (
+                                    <p className="text-sm text-gray-600 mt-1">{log.details}</p>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+              {/* System Section */}
+              {activeSection === "system" && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold">System Status</h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Database Status</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm text-gray-600">Connection</p>
+                            <p className="font-medium text-green-600">Healthy</p>
+                          </div>
+                          <CheckCircle className="h-8 w-8 text-green-500" />
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Security Scanners</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">Mend Scanner</span>
+                            <Badge className="bg-green-100 text-green-800">Active</Badge>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">Escape Scanner</span>
+                            <Badge className="bg-green-100 text-green-800">Active</Badge>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">Crowdstrike Scanner</span>
+                            <Badge className="bg-green-100 text-green-800">Active</Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              )}
+
+              {/* Settings Section */}
+              {activeSection === "settings" && (
+                <div className="space-y-6">
+                  <h2 className="text-xl font-semibold">System Settings</h2>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Security Configuration</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">Session Timeout</p>
+                            <p className="text-sm text-gray-600">Automatic logout after inactivity</p>
+                          </div>
+                          <Badge>30 minutes</Badge>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">Password Policy</p>
+                            <p className="text-sm text-gray-600">Minimum security requirements</p>
+                          </div>
+                          <Badge className="bg-green-100 text-green-800">Enforced</Badge>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-medium">Audit Logging</p>
+                            <p className="text-sm text-gray-600">Track user activities</p>
+                          </div>
+                          <Badge className="bg-green-100 text-green-800">Enabled</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+
+            </div>
+          </div>
         </div>
       </div>
     </PageWrapper>

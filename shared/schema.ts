@@ -136,6 +136,17 @@ export const riskAssessments = pgTable("risk_assessments", {
   updatedBy: text("updated_by"),
 });
 
+// Activity logs table for tracking user actions
+export const activityLogs = pgTable("activity_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  username: text("username").notNull(),
+  action: text("action").notNull(), // CREATE_SERVICE, DELETE_SERVICE, EXPORT_DATA, UPDATE_RISK_SCORE, etc.
+  serviceName: text("service_name"), // Optional - for service-related actions
+  details: text("details"), // Additional context or data
+  timestamp: timestamp("timestamp").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -179,6 +190,11 @@ export const insertRiskAssessmentSchema = createInsertSchema(riskAssessments).om
   lastUpdated: true,
 });
 
+export const insertActivityLogSchema = createInsertSchema(activityLogs).omit({
+  id: true,
+  timestamp: true,
+});
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Application = typeof applications.$inferSelect;
@@ -199,6 +215,8 @@ export type CrowdstrikeContainersFinding = typeof crowdstrikeContainersFindings.
 export type InsertCrowdstrikeContainersFinding = z.infer<typeof insertCrowdstrikeContainersFindingsSchema>;
 export type RiskAssessment = typeof riskAssessments.$inferSelect;
 export type InsertRiskAssessment = z.infer<typeof insertRiskAssessmentSchema>;
+export type ActivityLog = typeof activityLogs.$inferSelect;
+export type InsertActivityLog = z.infer<typeof insertActivityLogSchema>;
 
 // Analytics and reporting types
 export interface SecurityMetrics {

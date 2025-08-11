@@ -606,6 +606,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Activity logs endpoint for admin panel
+  app.get("/api/admin/activity-logs", requireAdmin, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      
+      const logs = await storage.getActivityLogs(limit);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching activity logs:", error);
+      res.status(500).json({ error: "Failed to fetch activity logs" });
+    }
+  });
+
+  // Helper function to log user activities (used by other endpoints)
+  const logActivity = async (userId: number, username: string, action: string, serviceName?: string, details?: string) => {
+    try {
+      const storage = await getStorage();
+      await storage.createActivityLog({
+        userId,
+        username,
+        action,
+        serviceName,
+        details
+      });
+    } catch (error) {
+      console.error("Failed to log activity:", error);
+    }
+  };
+
   const httpServer = createServer(app);
   return httpServer;
 }

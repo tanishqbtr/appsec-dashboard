@@ -9,6 +9,7 @@ import {
   crowdstrikeImagesFindings,
   crowdstrikeContainersFindings,
   riskAssessments,
+  activityLogs,
   type User, 
   type InsertUser, 
   type Application, 
@@ -28,7 +29,9 @@ import {
   type CrowdstrikeContainersFinding,
   type InsertCrowdstrikeContainersFinding,
   type RiskAssessment,
-  type InsertRiskAssessment
+  type InsertRiskAssessment,
+  type ActivityLog,
+  type InsertActivityLog
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
@@ -66,6 +69,9 @@ export interface IStorage {
   getRiskAssessment(serviceName: string): Promise<RiskAssessment | undefined>;
   createOrUpdateRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment>;
   getAllRiskAssessments(): Promise<RiskAssessment[]>;
+  // Activity log methods
+  createActivityLog(log: InsertActivityLog): Promise<ActivityLog>;
+  getActivityLogs(limit?: number): Promise<ActivityLog[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -463,6 +469,16 @@ export class MemStorage implements IStorage {
     // Not implemented in memory storage - will use database storage for persistence
     return [];
   }
+
+  async createActivityLog(log: InsertActivityLog): Promise<ActivityLog> {
+    // Not implemented in memory storage - will use database storage for persistence
+    throw new Error("Activity logs not implemented in memory storage");
+  }
+
+  async getActivityLogs(limit?: number): Promise<ActivityLog[]> {
+    // Not implemented in memory storage - will use database storage for persistence
+    return [];
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -754,6 +770,22 @@ export class DatabaseStorage implements IStorage {
 
   async getAllRiskAssessments(): Promise<RiskAssessment[]> {
     return await db.select().from(riskAssessments);
+  }
+
+  async createActivityLog(log: InsertActivityLog): Promise<ActivityLog> {
+    const [created] = await db
+      .insert(activityLogs)
+      .values(log)
+      .returning();
+    return created;
+  }
+
+  async getActivityLogs(limit: number = 100): Promise<ActivityLog[]> {
+    return await db
+      .select()
+      .from(activityLogs)
+      .orderBy(desc(activityLogs.timestamp))
+      .limit(limit);
   }
 }
 
