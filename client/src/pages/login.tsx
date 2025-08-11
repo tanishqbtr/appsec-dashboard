@@ -84,7 +84,6 @@ export default function Login() {
       {/* Login Form Container */}
       <div className="relative z-10 min-h-screen flex items-center justify-start p-6 sm:p-8 lg:p-12">
         <div className="w-full max-w-md">
-        <div className="w-full max-w-md">
           {/* Back to Home Link */}
           <button className="flex items-center text-slate-300 hover:text-white mb-6 lg:mb-8 transition-colors duration-200">
             <ArrowLeft className="h-4 w-4 mr-2" />
@@ -149,7 +148,7 @@ export default function Login() {
               <Checkbox
                 id="terms"
                 checked={agreeToTerms}
-                onCheckedChange={setAgreeToTerms}
+                onCheckedChange={(checked) => setAgreeToTerms(checked === true)}
                 className="border-slate-500 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
               />
               <Label htmlFor="terms" className="text-sm text-slate-300">
