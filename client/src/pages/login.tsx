@@ -68,20 +68,22 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen relative flex">
-      {/* Background Image - Positioned from 30% left */}
+    <div className="min-h-screen relative">
+      {/* Base Background Image - Starts from 25% */}
       <div className="absolute inset-0">
-        <div className="w-full h-full relative">
-          <img
-            src={securityOfficeImage}
-            alt="Security Office"
-            className="absolute right-0 top-0 w-full lg:w-[70%] h-full object-cover object-left"
-          />
-        </div>
+        <img
+          src={securityOfficeImage}
+          alt="Security Office"
+          className="absolute left-[25%] top-0 w-[75%] h-full object-cover"
+        />
       </div>
       
-      {/* Left Panel - Extended with Gradient Overlay */}
-      <div className="w-full lg:w-[50%] flex items-center justify-center p-6 sm:p-8 lg:p-12 relative z-10 bg-[#070f1b] lg:bg-gradient-to-r lg:from-[#070f1b] lg:from-75% lg:via-[#070f1b]/75 lg:via-85% lg:via-[#070f1b]/40 lg:via-92% lg:to-transparent">
+      {/* Gradient Overlay - Opaque (0-25%), Fade (25-40%), Transparent (40-100%) */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#070f1b] from-0% via-[#070f1b] via-25% via-[#070f1b]/50 via-32% to-transparent to-40%"></div>
+      
+      {/* Login Form Container */}
+      <div className="relative z-10 min-h-screen flex items-center justify-start p-6 sm:p-8 lg:p-12">
+        <div className="w-full max-w-md">
         <div className="w-full max-w-md">
           {/* Back to Home Link */}
           <button className="flex items-center text-slate-300 hover:text-white mb-6 lg:mb-8 transition-colors duration-200">
