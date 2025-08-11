@@ -1,3 +1,4 @@
+import React from "react";
 import Navigation from "@/components/navigation";
 import PageWrapper from "@/components/page-wrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

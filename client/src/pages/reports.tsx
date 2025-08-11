@@ -1,5 +1,5 @@
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import Navigation from "@/components/navigation";
 import ApplicationsTable from "@/components/applications-table";
 import ReportsTutorial from "@/components/reports-tutorial";
