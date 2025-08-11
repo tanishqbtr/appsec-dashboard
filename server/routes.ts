@@ -11,6 +11,17 @@ const requireAuth = (req: any, res: any, next: any) => {
   next();
 };
 
+// Admin role middleware
+const requireAdmin = (req: any, res: any, next: any) => {
+  if (!req.session || !req.session.userId) {
+    return res.status(401).json({ message: "Authentication required" });
+  }
+  if (req.session.role !== 'admin') {
+    return res.status(403).json({ message: "Admin access required" });
+  }
+  next();
+};
+
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Login endpoint
@@ -35,8 +46,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set session
       req.session.userId = user.id;
       req.session.username = user.username;
-      console.log("Session set:", { userId: req.session.userId, username: req.session.username });
-      res.json({ success: true, user: { id: user.id, username: user.username } });
+      req.session.role = user.role;
+      console.log("Session set:", { userId: req.session.userId, username: req.session.username, role: req.session.role });
+      res.json({ success: true, user: { id: user.id, username: user.username, role: user.role } });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -51,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      res.json({ id: user.id, username: user.username });
+      res.json({ id: user.id, username: user.username, role: user.role });
     } catch (error) {
       console.error("Get user error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -80,8 +92,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update application endpoint
-  app.patch("/api/applications/:id", requireAuth, async (req, res) => {
+  // Update application endpoint - Admin only
+  app.patch("/api/applications/:id", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -100,8 +112,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add application endpoint
-  app.post("/api/applications", requireAuth, async (req, res) => {
+  // Add application endpoint - Admin only
+  app.post("/api/applications", requireAdmin, async (req, res) => {
     try {
       const newApplication = req.body;
       
@@ -114,8 +126,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete application endpoint
-  app.delete("/api/applications/:id", requireAuth, async (req, res) => {
+  // Delete application endpoint - Admin only
+  app.delete("/api/applications/:id", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       

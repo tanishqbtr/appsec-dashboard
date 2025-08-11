@@ -32,6 +32,7 @@ Percentile calculation standardization: Implemented consistent percentile calcul
 Total findings API endpoint: Created /api/services-total-findings endpoint that aggregates findings across all scan engines (Mend SCA/SAST/Containers, Escape WebApps/APIs, Crowdstrike Images/Containers) for accurate percentile calculations (updated July 18, 2025)
 Comprehensive animation system: Added smooth page transitions, micro-interactions, and hover animations across all pages with CSS keyframes, staggered list animations, chart entrance effects, and enhanced button interactions (updated July 18, 2025)
 Professional UI enhancement: Replaced boring plain text severity indicators with beautiful icon-based system (AlertOctagon, Zap, AlertCircle, Info) in color-coded cards, implemented proper camel-case formatting for all values, added animated pulse dots, gradient backgrounds, and enhanced visual hierarchy across Risk Assessment Details section (updated August 11, 2025)
+Role-based access control system: Implemented comprehensive admin/user role system with database schema updates, demo user creation (demo/password), role-protected buttons with "Admin access required" tooltips, protected API endpoints for admin-only operations (create/update/delete), and enhanced authentication hooks with role checking capabilities (updated August 11, 2025)
 
 
 ## System Architecture

@@ -51,6 +51,7 @@ import { useState } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { RoleProtectedButton } from "@/components/role-protected-button";
 import type { Application } from "@shared/schema";
 
 // Function to format lowercase values to proper case
@@ -982,15 +983,16 @@ export default function ServiceDetail() {
                         <Shield className="h-5 w-5 text-green-600" />
                         <h4 className="text-lg font-semibold text-gray-900">Risk Assessment Details</h4>
                       </div>
-                      <Button 
+                      <RoleProtectedButton 
                         size="sm"
                         variant="outline"
                         onClick={() => window.location.href = '/risk-scoring'}
                         className="flex items-center gap-1 text-green-600 border-green-200 hover:bg-green-50"
+                        requiredRole="admin"
                       >
                         <Edit3 className="h-3 w-3" />
                         {riskAssessmentData ? "Edit" : "Create"}
-                      </Button>
+                      </RoleProtectedButton>
                     </div>
                     
                     {riskAssessmentData ? (
