@@ -16,6 +16,7 @@ import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
+import { RoleProtectedButton } from "@/components/role-protected-button";
 import type { Application } from "@shared/schema";
 
 type SortField = "name" | "riskScore" | "percentile";
@@ -40,7 +41,7 @@ export default function Services() {
   });
 
   const { toast } = useToast();
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: applications = [], isLoading } = useQuery<Application[]>({
@@ -324,14 +325,15 @@ export default function Services() {
                   <>
                     <Dialog open={isAddServiceOpen} onOpenChange={setIsAddServiceOpen}>
                       <DialogTrigger asChild>
-                        <Button 
+                        <RoleProtectedButton 
                           size="sm" 
                           className="bg-green-600 hover:bg-green-700 text-white flex-shrink-0 btn-smooth"
                           data-tutorial="add-service"
+                          requiredRole="admin"
                         >
                           <Plus className="h-4 w-4 mr-1" />
                           Add Service
-                        </Button>
+                        </RoleProtectedButton>
                       </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
@@ -412,16 +414,17 @@ export default function Services() {
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
-                    <Button
+                    <RoleProtectedButton
                       size="sm"
                       variant="outline"
                       onClick={handleDeleteMode}
                       className="flex-shrink-0 btn-smooth"
                       data-tutorial="remove-services"
+                      requiredRole="admin"
                     >
                       <Trash2 className="h-4 w-4 mr-1" />
                       Remove Services
-                    </Button>
+                    </RoleProtectedButton>
                   </>
                 )}
               </div>

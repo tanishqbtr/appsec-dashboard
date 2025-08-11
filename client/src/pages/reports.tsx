@@ -6,6 +6,7 @@ import ReportsTutorial from "@/components/reports-tutorial";
 import PageWrapper from "@/components/page-wrapper";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { RoleProtectedButton } from "@/components/role-protected-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +35,7 @@ export default function Reports() {
   });
 
   const { toast } = useToast();
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
 
   const handleStartTutorial = () => {
     setShowTutorial(true);

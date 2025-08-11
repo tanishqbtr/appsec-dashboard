@@ -177,7 +177,7 @@ function LoadingSkeleton() {
 }
 
 export default function ApplicationsTable({ applications, isLoading, searchTerm, onSearchChange, selectedEngine, selectedLabels, selectedTags }: ApplicationsTableProps) {
-  const { isAdmin } = useAuth();
+  const { isAdmin, user } = useAuth();
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [currentPage, setCurrentPage] = useState(1);

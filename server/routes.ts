@@ -240,7 +240,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/risk-assessments", requireAuth, async (req, res) => {
+  app.post("/api/risk-assessments", requireAdmin, async (req, res) => {
     try {
       const assessmentData = req.body;
       const storage = await getStorage();
