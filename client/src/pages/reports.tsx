@@ -286,7 +286,12 @@ export default function Reports() {
         {/* Applications Table */}
         <Card data-tutorial="services-table">
           <CardHeader>
-            <CardTitle>Services ({filteredApplications.length})</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Services ({filteredApplications.length})</CardTitle>
+              <div className="text-sm text-muted-foreground italic">
+                Updates take up to 12 hours and may not reflect the latest data
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <ApplicationsTable 
