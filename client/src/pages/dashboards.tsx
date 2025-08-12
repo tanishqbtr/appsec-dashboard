@@ -224,61 +224,81 @@ export default function Dashboards() {
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" data-tutorial="key-metrics">
-            <Card className="stagger-item card-hover">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 hover:-translate-y-1 border-l-4 border-l-blue-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Total Applications</p>
-                    <p className="text-3xl font-bold text-foreground">{totalApplications}</p>
-                    <p className="text-sm text-green-600">+2 this week</p>
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors duration-200">Total Applications</p>
+                    <p className="text-3xl font-bold text-foreground transition-all duration-300 group-hover:text-blue-700 dark:group-hover:text-blue-300">{totalApplications}</p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-green-600">+2 this week</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Shield className="h-6 w-6 text-blue-600" />
+                  <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors duration-200">
+                    <Shield className="h-6 w-6 text-blue-600 transition-all duration-300 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-blue-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-red-500/20 hover:-translate-y-1 border-l-4 border-l-red-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Critical Findings</p>
-                    <p className="text-3xl font-bold text-red-600">{criticalFindings}</p>
-                    <p className="text-sm text-red-600">Requires immediate attention</p>
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors duration-200">Critical Findings</p>
+                    <p className="text-3xl font-bold text-red-600 transition-all duration-300 group-hover:text-red-700 dark:group-hover:text-red-300">{criticalFindings}</p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-red-600">Requires immediate attention</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                  <div className="h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-red-200 dark:group-hover:bg-red-900/50 transition-colors duration-200">
+                    <AlertTriangle className="h-6 w-6 text-red-600 transition-all duration-300 group-hover:scale-110 group-hover:animate-pulse" />
+                    <div className="absolute inset-0 bg-red-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20 hover:-translate-y-1 border-l-4 border-l-orange-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">High Findings</p>
-                    <p className="text-3xl font-bold text-orange-600">{highFindings}</p>
-                    <p className="text-sm text-orange-600">Needs attention</p>
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-orange-700 dark:group-hover:text-orange-300 transition-colors duration-200">High Findings</p>
+                    <p className="text-3xl font-bold text-orange-600 transition-all duration-300 group-hover:text-orange-700 dark:group-hover:text-orange-300">{highFindings}</p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-orange-600">Needs attention</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <AlertTriangle className="h-6 w-6 text-orange-600" />
+                  <div className="h-12 w-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors duration-200">
+                    <AlertTriangle className="h-6 w-6 text-orange-600 transition-all duration-300 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-orange-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/20 hover:-translate-y-1 border-l-4 border-l-amber-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Avg Risk Score</p>
-                    <p className="text-3xl font-bold text-orange-600">{averageRiskScore}</p>
-                    <p className="text-sm text-orange-600">Medium risk level</p>
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors duration-200">Avg Risk Score</p>
+                    <p className="text-3xl font-bold text-orange-600 transition-all duration-300 group-hover:text-amber-700 dark:group-hover:text-amber-300">{averageRiskScore}</p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-amber-600">Medium risk level</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-orange-600" />
+                  <div className="h-12 w-12 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-amber-200 dark:group-hover:bg-amber-900/50 transition-colors duration-200">
+                    <TrendingUp className="h-6 w-6 text-amber-600 transition-all duration-300 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-amber-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
