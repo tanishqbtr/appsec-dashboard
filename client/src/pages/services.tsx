@@ -328,7 +328,7 @@ export default function Services() {
                       <DialogTrigger asChild>
                         <RoleProtectedButton 
                           size="sm" 
-                          className="bg-green-600 hover:bg-green-700 text-white flex-shrink-0 btn-smooth"
+                          className="bg-green-600 hover:bg-green-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white flex-shrink-0 btn-smooth"
                           data-tutorial="add-service"
                           requiredRole="admin"
                         >
@@ -408,7 +408,7 @@ export default function Services() {
                     <Button 
                       onClick={handleAddService}
                       disabled={createServiceMutation.isPending || !newService.name.trim()}
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-green-600 hover:bg-green-700 dark:bg-blue-600 dark:hover:bg-blue-700"
                     >
                       {createServiceMutation.isPending ? "Adding..." : "Add Service"}
                     </Button>
@@ -419,7 +419,7 @@ export default function Services() {
                       size="sm"
                       variant="outline"
                       onClick={handleDeleteMode}
-                      className="flex-shrink-0 btn-smooth"
+                      className="flex-shrink-0 btn-smooth border-gray-300 dark:border-blue-500 dark:text-blue-400 dark:hover:bg-blue-500/10"
                       data-tutorial="remove-services"
                       requiredRole="admin"
                     >
