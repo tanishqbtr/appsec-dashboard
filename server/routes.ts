@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import rateLimit from "express-rate-limit";
 import { getStorage } from "./storage";
+import { hashPassword, verifyPassword, verifyPlaintextPassword, needsRehash } from "./auth/passwords";
 import { insertUserSchema } from "@shared/schema";
 
 // Authentication middleware
@@ -24,8 +26,31 @@ const requireAdmin = (req: any, res: any, next: any) => {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Login endpoint
-  app.post("/api/login", async (req, res) => {
+  // Rate limiting for authentication endpoints
+  const authRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 requests per windowMs for auth endpoints
+    message: { message: "Too many authentication attempts, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => process.env.NODE_ENV === 'development', // Skip in development
+  });
+
+  // Rate limiting for general API endpoints
+  const apiRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs for general endpoints
+    message: { message: "Too many requests, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => process.env.NODE_ENV === 'development', // Skip in development
+  });
+
+  // Apply general rate limiting to all API routes
+  app.use('/api', apiRateLimit);
+  
+  // Login endpoint with enhanced security
+  app.post("/api/login", authRateLimit, async (req, res) => {
     try {
       const { username, password } = req.body;
       console.log("Login attempt:", { username, password: password ? "***" : "missing" });
@@ -38,8 +63,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUserByUsername(username);
       console.log("User found:", user ? { id: user.id, username: user.username } : "not found");
       
-      if (!user || user.password !== password) {
-        console.log("Invalid credentials - expected:", user?.password, "got:", password);
+      if (!user) {
+        // Use consistent error message to prevent username enumeration
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Check password (supports both legacy plaintext and new hashed passwords)
+      let isValidPassword = false;
+      
+      if (user.passwordHash) {
+        // User has migrated to hashed password
+        isValidPassword = await verifyPassword(user.passwordHash, password);
+        
+        // Check if password needs rehashing with stronger parameters
+        if (isValidPassword && needsRehash(user.passwordHash)) {
+          console.log("Password verified but needs rehashing for user:", user.username);
+          try {
+            const newHash = await hashPassword(password);
+            await storage.updateUser(user.id, {
+              passwordHash: newHash,
+              passwordAlgo: 'argon2id',
+              passwordUpdatedAt: new Date(),
+            });
+            console.log("Password rehashed successfully for user:", user.username);
+          } catch (rehashError) {
+            console.error("Failed to rehash password for user:", user.username, rehashError);
+            // Don't fail login if rehashing fails
+          }
+        }
+      } else if (user.password) {
+        // User still has legacy plaintext password - verify and migrate
+        isValidPassword = verifyPlaintextPassword(user.password, password);
+        
+        if (isValidPassword) {
+          console.log("Migrating plaintext password to hash for user:", user.username);
+          try {
+            const newHash = await hashPassword(password);
+            await storage.updateUser(user.id, {
+              passwordHash: newHash,
+              passwordAlgo: 'argon2id',
+              passwordUpdatedAt: new Date(),
+            });
+            console.log("Password migrated successfully for user:", user.username);
+          } catch (migrationError) {
+            console.error("Failed to migrate password for user:", user.username, migrationError);
+            // Don't fail login if migration fails
+          }
+        }
+      }
+      
+      if (!isValidPassword) {
+        console.log("Invalid credentials for user:", user.username);
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
@@ -88,6 +162,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json({ success: true, message: "Logged out successfully" });
     } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Change password endpoint
+  app.post("/api/auth/change-password", requireAuth, authRateLimit, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current password and new password are required" });
+      }
+      
+      if (newPassword.length < 8) {
+        return res.status(400).json({ message: "New password must be at least 8 characters long" });
+      }
+      
+      const storage = await getStorage();
+      const user = await storage.getUser(req.session.userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Verify current password
+      let isValidCurrentPassword = false;
+      
+      if (user.passwordHash) {
+        isValidCurrentPassword = await verifyPassword(user.passwordHash, currentPassword);
+      } else if (user.password) {
+        isValidCurrentPassword = verifyPlaintextPassword(user.password, currentPassword);
+      }
+      
+      if (!isValidCurrentPassword) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+      
+      // Hash new password
+      const newPasswordHash = await hashPassword(newPassword);
+      
+      // Update user password
+      await storage.updateUser(user.id, {
+        passwordHash: newPasswordHash,
+        passwordAlgo: 'argon2id',
+        passwordUpdatedAt: new Date(),
+      });
+      
+      console.log(`Password changed successfully for user: ${user.username}`);
+      res.json({ success: true, message: "Password changed successfully" });
+      
+    } catch (error) {
+      console.error("Change password error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
