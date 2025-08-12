@@ -148,6 +148,10 @@ export default function Dashboards() {
     queryKey: ["/api/dashboard/top-applications-crowdstrike"],
   });
 
+  const { data: riskHeatmapData = [], isLoading: isRiskHeatmapLoading } = useQuery({
+    queryKey: ["/api/dashboard/risk-score-heatmap"],
+  });
+
 
 
   const COLORS = {
@@ -161,7 +165,7 @@ export default function Dashboards() {
 
 
 
-  if (isLoading || isMetricsLoading || isScanEngineLoading || isRiskDistributionLoading || isTopAppsTotalLoading || isTopAppsMendLoading || isTopAppsEscapeLoading || isTopAppsCrowdstrikeLoading) {
+  if (isLoading || isMetricsLoading || isScanEngineLoading || isRiskDistributionLoading || isTopAppsTotalLoading || isTopAppsMendLoading || isTopAppsEscapeLoading || isTopAppsCrowdstrikeLoading || isRiskHeatmapLoading) {
     return (
       <PageWrapper loadingMessage="Loading Dashboard..." minLoadingTime={30}>
         <div className="min-h-screen bg-background">
@@ -525,6 +529,104 @@ export default function Dashboards() {
                       </div>
                     </div>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Risk Score Heat Map Section */}
+          <div className="mb-8">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/20 dark:to-indigo-900/30 border border-purple-200 dark:border-purple-800 hover:from-purple-100 hover:to-indigo-200 dark:hover:from-purple-900/30 dark:hover:to-indigo-900/40 hover:border-purple-300 dark:hover:border-purple-700 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-purple-600" />
+                  Services by Risk Score Heat Map
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                  {(riskHeatmapData as any[]).map((service) => (
+                    <div
+                      key={service.id}
+                      className={`
+                        relative p-4 rounded-lg border transition-all duration-200 hover:scale-105 hover:shadow-md cursor-pointer
+                        ${service.riskLevel === 'Critical' 
+                          ? 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 hover:bg-red-200 dark:hover:bg-red-900/40' 
+                          : service.riskLevel === 'High'
+                          ? 'bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700 hover:bg-orange-200 dark:hover:bg-orange-900/40'
+                          : service.riskLevel === 'Medium'
+                          ? 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 hover:bg-yellow-200 dark:hover:bg-yellow-900/40'
+                          : 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 hover:bg-green-200 dark:hover:bg-green-900/40'
+                        }
+                      `}
+                      title={`${service.name} - Risk Score: ${service.riskScore}/10`}
+                    >
+                      <div className="text-center">
+                        <div className={`
+                          text-xs font-medium mb-1
+                          ${service.riskLevel === 'Critical' 
+                            ? 'text-red-700 dark:text-red-300' 
+                            : service.riskLevel === 'High'
+                            ? 'text-orange-700 dark:text-orange-300'
+                            : service.riskLevel === 'Medium'
+                            ? 'text-yellow-700 dark:text-yellow-300'
+                            : 'text-green-700 dark:text-green-300'
+                          }
+                        `}>
+                          {service.riskLevel}
+                        </div>
+                        <div className="font-semibold text-sm text-foreground truncate" title={service.name}>
+                          {service.name}
+                        </div>
+                        <div className={`
+                          text-lg font-bold mt-1
+                          ${service.riskLevel === 'Critical' 
+                            ? 'text-red-600 dark:text-red-400' 
+                            : service.riskLevel === 'High'
+                            ? 'text-orange-600 dark:text-orange-400'
+                            : service.riskLevel === 'Medium'
+                            ? 'text-yellow-600 dark:text-yellow-400'
+                            : 'text-green-600 dark:text-green-400'
+                          }
+                        `}>
+                          {service.riskScore.toFixed(1)}
+                        </div>
+                      </div>
+                      
+                      {/* Risk level indicator dot */}
+                      <div className={`
+                        absolute top-2 right-2 w-3 h-3 rounded-full
+                        ${service.riskLevel === 'Critical' 
+                          ? 'bg-red-500 animate-pulse' 
+                          : service.riskLevel === 'High'
+                          ? 'bg-orange-500'
+                          : service.riskLevel === 'Medium'
+                          ? 'bg-yellow-500'
+                          : 'bg-green-500'
+                        }
+                      `} />
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Legend */}
+                <div className="mt-6 flex items-center justify-center gap-6 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                    <span className="text-muted-foreground">Critical (8.0+)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                    <span className="text-muted-foreground">High (6.0-7.9)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <span className="text-muted-foreground">Medium (4.0-5.9)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <span className="text-muted-foreground">Low (0-3.9)</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

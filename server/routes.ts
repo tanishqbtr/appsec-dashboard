@@ -1048,6 +1048,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Risk score heat map endpoint
+  app.get("/api/dashboard/risk-score-heatmap", requireAuth, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const riskAssessments = await storage.getRiskAssessments();
+      
+      // Get all services with their risk scores
+      const services = riskAssessments.map(assessment => ({
+        id: assessment.id,
+        name: assessment.serviceName,
+        riskScore: assessment.finalRiskScore || 0,
+        riskLevel: assessment.finalRiskScore >= 8 ? 'Critical' :
+                  assessment.finalRiskScore >= 6 ? 'High' :
+                  assessment.finalRiskScore >= 4 ? 'Medium' : 'Low'
+      }));
+      
+      // Sort by risk score (highest first)
+      services.sort((a, b) => b.riskScore - a.riskScore);
+      
+      res.json(services);
+    } catch (error) {
+      console.error("Risk score heatmap error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Helper function to log user activities (used by other endpoints)
   const logActivity = async (userId: number, username: string, action: string, serviceName?: string, details?: string) => {
     try {
