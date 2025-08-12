@@ -546,7 +546,7 @@ export default function Dashboards() {
               <CardContent>
                 {/* Perfect Honeycomb Tessellation */}
                 <div className="p-6 overflow-x-auto">
-                  <div style={{ position: 'relative', minWidth: '900px', minHeight: '400px' }}>
+                  <div style={{ position: 'relative', minWidth: '700px', minHeight: '300px' }}>
                     {(() => {
                       const services = riskHeatmapData as any[];
                       const hexRadius = 50; // Radius of hexagon
@@ -558,14 +558,17 @@ export default function Dashboards() {
                       const verticalSpacing = hexHeight; // Full height for vertical spacing
                       
                       return services.map((service, index) => {
-                        // Calculate row and column for honeycomb pattern
-                        const cols = 8; // Number of hexagons per row
+                        // Honeycomb grid pattern calculation
+                        const cols = 6; // Hexagons per row for proper honeycomb
                         const row = Math.floor(index / cols);
                         const col = index % cols;
                         
-                        // Calculate exact position for honeycomb tessellation
-                        const x = col * horizontalSpacing + (row % 2) * (horizontalSpacing / 2);
-                        const y = row * (verticalSpacing * 0.75); // Rows overlap by 25%
+                        // True honeycomb tessellation positioning
+                        // Horizontal: each hex is 75px apart (75% of width for 25% overlap)
+                        // Vertical: each row is 65px apart (75% of height for 25% overlap)
+                        // Offset: odd rows shift right by 37.5px (half the horizontal spacing)
+                        const x = col * 75 + (row % 2) * 37.5;
+                        const y = row * 65;
                         
                         return (
                           <div
