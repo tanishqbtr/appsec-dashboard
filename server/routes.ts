@@ -1052,42 +1052,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/dashboard/risk-score-heatmap", requireAuth, async (req, res) => {
     try {
       const storage = await getStorage();
-      const applications = await storage.getApplications();
+      const riskAssessments = await storage.getAllRiskAssessments();
       
-      // Calculate risk score based on findings data (similar to existing logic)
-      const services = applications.map(app => {
-        // Calculate risk score based on critical and high findings
-        const criticalWeight = 4;
-        const highWeight = 2;
-        const mediumWeight = 1;
-        const lowWeight = 0.1;
+      // Get all services with their actual risk scores from risk assessments
+      const services = riskAssessments.map(assessment => ({
+        id: assessment.id,
+        name: assessment.serviceName,
+        riskScore: assessment.finalRiskScore || 0,
+        riskLevel: assessment.finalRiskScore >= 8 ? 'Critical' :
+                  assessment.finalRiskScore >= 6 ? 'High' :
+                  assessment.finalRiskScore >= 4 ? 'Medium' : 'Low'
+      }));
+      
+      // Calculate percentile rankings
+      const sortedByRisk = [...services].sort((a, b) => a.riskScore - b.riskScore);
+      const servicesWithPercentiles = services.map(service => {
+        const rank = sortedByRisk.findIndex(s => s.id === service.id) + 1;
+        const percentile = ((rank - 1) / (sortedByRisk.length - 1)) * 100;
         
-        const totalFindings = (app.criticalFindings || 0) + (app.highFindings || 0) + 
-                             (app.mediumFindings || 0) + (app.lowFindings || 0);
+        let percentileCategory = 'Top 10%';
+        let percentileColor = 'green';
         
-        const weightedScore = ((app.criticalFindings || 0) * criticalWeight + 
-                              (app.highFindings || 0) * highWeight + 
-                              (app.mediumFindings || 0) * mediumWeight + 
-                              (app.lowFindings || 0) * lowWeight);
-        
-        // Normalize to 0-10 scale
-        const maxPossibleScore = totalFindings * criticalWeight;
-        const riskScore = maxPossibleScore > 0 ? (weightedScore / maxPossibleScore) * 10 : 0;
+        if (percentile >= 90) {
+          percentileCategory = 'Bottom 10%';
+          percentileColor = 'red';
+        } else if (percentile >= 75) {
+          percentileCategory = 'Bottom 25%';
+          percentileColor = 'orange';
+        } else if (percentile >= 50) {
+          percentileCategory = 'Bottom 50%';
+          percentileColor = 'yellow';
+        } else if (percentile >= 25) {
+          percentileCategory = 'Top 50%';
+          percentileColor = 'blue';
+        } else {
+          percentileCategory = 'Top 25%';
+          percentileColor = 'green';
+        }
         
         return {
-          id: app.id,
-          name: app.name,
-          riskScore: Math.min(riskScore, 10),
-          riskLevel: riskScore >= 8 ? 'Critical' :
-                    riskScore >= 6 ? 'High' :
-                    riskScore >= 4 ? 'Medium' : 'Low'
+          ...service,
+          percentile: Math.round(percentile),
+          percentileCategory,
+          percentileColor
         };
       });
       
-      // Sort by risk score (highest first)
-      services.sort((a, b) => b.riskScore - a.riskScore);
+      // Sort by risk score (highest first) for display
+      servicesWithPercentiles.sort((a, b) => b.riskScore - a.riskScore);
       
-      res.json(services);
+      res.json(servicesWithPercentiles);
     } catch (error) {
       console.error("Risk score heatmap error:", error);
       res.status(500).json({ message: "Internal server error" });

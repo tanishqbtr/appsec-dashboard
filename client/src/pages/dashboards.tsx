@@ -544,88 +544,147 @@ export default function Dashboards() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                  {(riskHeatmapData as any[]).map((service) => (
+                {/* Hexagonal Honeycomb Layout */}
+                <div className="flex flex-wrap justify-center gap-4 p-6">
+                  {(riskHeatmapData as any[]).map((service, index) => (
                     <div
                       key={service.id}
-                      className={`
-                        relative p-4 rounded-lg border transition-all duration-200 hover:scale-105 hover:shadow-md cursor-pointer
-                        ${service.riskLevel === 'Critical' 
-                          ? 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 hover:bg-red-200 dark:hover:bg-red-900/40' 
-                          : service.riskLevel === 'High'
-                          ? 'bg-orange-100 dark:bg-orange-900/30 border-orange-300 dark:border-orange-700 hover:bg-orange-200 dark:hover:bg-orange-900/40'
-                          : service.riskLevel === 'Medium'
-                          ? 'bg-yellow-100 dark:bg-yellow-900/30 border-yellow-300 dark:border-yellow-700 hover:bg-yellow-200 dark:hover:bg-yellow-900/40'
-                          : 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 hover:bg-green-200 dark:hover:bg-green-900/40'
-                        }
-                      `}
-                      title={`${service.name} - Risk Score: ${service.riskScore}/10`}
+                      className="relative"
+                      style={{
+                        marginTop: index % 2 === 1 ? '30px' : '0px',
+                      }}
                     >
-                      <div className="text-center">
-                        <div className={`
-                          text-xs font-medium mb-1
-                          ${service.riskLevel === 'Critical' 
-                            ? 'text-red-700 dark:text-red-300' 
-                            : service.riskLevel === 'High'
-                            ? 'text-orange-700 dark:text-orange-300'
-                            : service.riskLevel === 'Medium'
-                            ? 'text-yellow-700 dark:text-yellow-300'
-                            : 'text-green-700 dark:text-green-300'
-                          }
-                        `}>
-                          {service.riskLevel}
-                        </div>
-                        <div className="font-semibold text-sm text-foreground truncate" title={service.name}>
-                          {service.name}
-                        </div>
-                        <div className={`
-                          text-lg font-bold mt-1
-                          ${service.riskLevel === 'Critical' 
-                            ? 'text-red-600 dark:text-red-400' 
-                            : service.riskLevel === 'High'
-                            ? 'text-orange-600 dark:text-orange-400'
-                            : service.riskLevel === 'Medium'
-                            ? 'text-yellow-600 dark:text-yellow-400'
-                            : 'text-green-600 dark:text-green-400'
-                          }
-                        `}>
+                      {/* Hexagonal SVG Container */}
+                      <svg
+                        width="120"
+                        height="140"
+                        viewBox="0 0 120 140"
+                        className="transition-all duration-300 hover:scale-110 cursor-pointer drop-shadow-md hover:drop-shadow-lg"
+                        title={`${service.name} - Risk Score: ${service.riskScore}/10 - ${service.percentileCategory}`}
+                      >
+                        {/* Hexagon Shape with Risk Score Border */}
+                        <polygon
+                          points="60,10 105,35 105,85 60,110 15,85 15,35"
+                          className={`
+                            transition-all duration-200
+                            ${service.percentileColor === 'green' 
+                              ? 'fill-green-100 dark:fill-green-900/30' 
+                              : service.percentileColor === 'blue'
+                              ? 'fill-blue-100 dark:fill-blue-900/30'
+                              : service.percentileColor === 'yellow'
+                              ? 'fill-yellow-100 dark:fill-yellow-900/30'
+                              : service.percentileColor === 'orange'
+                              ? 'fill-orange-100 dark:fill-orange-900/30'
+                              : 'fill-red-100 dark:fill-red-900/30'
+                            }
+                          `}
+                          stroke={service.riskLevel === 'Critical' ? '#dc2626' : 
+                                 service.riskLevel === 'High' ? '#ea580c' :
+                                 service.riskLevel === 'Medium' ? '#ca8a04' : '#16a34a'}
+                          strokeWidth={service.riskLevel === 'Critical' ? '4' : 
+                                      service.riskLevel === 'High' ? '3' : '2'}
+                        />
+                        
+                        {/* Service Name */}
+                        <text
+                          x="60"
+                          y="45"
+                          textAnchor="middle"
+                          className="fill-foreground text-xs font-semibold"
+                          style={{ fontSize: '10px' }}
+                        >
+                          <tspan x="60" dy="0">{service.name.length > 12 ? service.name.substring(0, 12) + '...' : service.name}</tspan>
+                        </text>
+                        
+                        {/* Risk Score */}
+                        <text
+                          x="60"
+                          y="70"
+                          textAnchor="middle"
+                          className={`
+                            text-2xl font-bold
+                            ${service.riskLevel === 'Critical' 
+                              ? 'fill-red-600 dark:fill-red-400' 
+                              : service.riskLevel === 'High'
+                              ? 'fill-orange-600 dark:fill-orange-400'
+                              : service.riskLevel === 'Medium'
+                              ? 'fill-yellow-600 dark:fill-yellow-400'
+                              : 'fill-green-600 dark:fill-green-400'
+                            }
+                          `}
+                          style={{ fontSize: '18px' }}
+                        >
                           {service.riskScore.toFixed(1)}
-                        </div>
-                      </div>
+                        </text>
+                        
+                        {/* Percentile Category */}
+                        <text
+                          x="60"
+                          y="90"
+                          textAnchor="middle"
+                          className="fill-muted-foreground text-xs"
+                          style={{ fontSize: '8px' }}
+                        >
+                          {service.percentileCategory}
+                        </text>
+                      </svg>
                       
-                      {/* Risk level indicator dot */}
-                      <div className={`
-                        absolute top-2 right-2 w-3 h-3 rounded-full
-                        ${service.riskLevel === 'Critical' 
-                          ? 'bg-red-500 animate-pulse' 
-                          : service.riskLevel === 'High'
-                          ? 'bg-orange-500'
-                          : service.riskLevel === 'Medium'
-                          ? 'bg-yellow-500'
-                          : 'bg-green-500'
-                        }
-                      `} />
+                      {/* Pulsing indicator for critical services */}
+                      {service.riskLevel === 'Critical' && (
+                        <div className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                      )}
                     </div>
                   ))}
                 </div>
                 
-                {/* Legend */}
-                <div className="mt-6 flex items-center justify-center gap-6 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <span className="text-muted-foreground">Critical (8.0+)</span>
+                {/* Updated Legend */}
+                <div className="mt-6 space-y-4">
+                  <div className="text-center">
+                    <h4 className="font-semibold text-sm mb-2">Risk Score Outline</h4>
+                    <div className="flex items-center justify-center gap-6 text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-1 bg-red-600" style={{borderWidth: '2px'}}></div>
+                        <span className="text-muted-foreground">Critical (8.0+)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-1 bg-orange-600" style={{borderWidth: '2px'}}></div>
+                        <span className="text-muted-foreground">High (6.0-7.9)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-1 bg-yellow-600" style={{borderWidth: '2px'}}></div>
+                        <span className="text-muted-foreground">Medium (4.0-5.9)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-1 bg-green-600" style={{borderWidth: '2px'}}></div>
+                        <span className="text-muted-foreground">Low (0-3.9)</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                    <span className="text-muted-foreground">High (6.0-7.9)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                    <span className="text-muted-foreground">Medium (4.0-5.9)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-muted-foreground">Low (0-3.9)</span>
+                  
+                  <div className="text-center">
+                    <h4 className="font-semibold text-sm mb-2">Percentile Ranking (Fill Color)</h4>
+                    <div className="flex items-center justify-center gap-6 text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-green-200 rounded-full border border-green-300"></div>
+                        <span className="text-muted-foreground">Top 25%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-blue-200 rounded-full border border-blue-300"></div>
+                        <span className="text-muted-foreground">Top 50%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-yellow-200 rounded-full border border-yellow-300"></div>
+                        <span className="text-muted-foreground">Bottom 50%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-orange-200 rounded-full border border-orange-300"></div>
+                        <span className="text-muted-foreground">Bottom 25%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-red-200 rounded-full border border-red-300"></div>
+                        <span className="text-muted-foreground">Bottom 10%</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
