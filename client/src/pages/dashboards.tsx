@@ -33,17 +33,13 @@ import {
   PieChart as RechartsPieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
-  Area,
-  AreaChart,
   Legend
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { format, subDays } from "date-fns";
+
 import type { Application } from "@shared/schema";
 
 // Analytics data processing functions
@@ -136,24 +132,7 @@ export default function Dashboards() {
     queryKey: ["/api/dashboard/risk-distribution"],
   });
 
-  const analytics = processAnalyticsData(applications);
 
-  // Weekly trend data - simulate 7 days of findings by severity
-  const weeklyTrend = Array.from({ length: 7 }, (_, i) => {
-    const date = subDays(new Date(), 6 - i);
-    const critical = Math.floor(Math.random() * 8) + 2;
-    const high = Math.floor(Math.random() * 15) + 5;
-    const medium = Math.floor(Math.random() * 25) + 10;
-    const low = Math.floor(Math.random() * 30) + 15;
-    return {
-      date: format(date, 'MMM dd'),
-      Critical: critical,
-      High: high,
-      Medium: medium,
-      Low: low,
-      total: critical + high + medium + low
-    };
-  });
 
   const COLORS = {
     critical: '#dc2626',
@@ -287,59 +266,6 @@ export default function Dashboards() {
 
           {/* Charts Row 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Weekly Findings by Severity */}
-            <Card className="chart-enter card-hover" data-tutorial="weekly-trends">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Weekly Findings by Severity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={weeklyTrend}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="Critical" 
-                      stroke="#dc2626" 
-                      strokeWidth={3}
-                      name="Critical"
-                      dot={{ fill: '#dc2626', strokeWidth: 2, r: 4 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="High" 
-                      stroke="#ea580c" 
-                      strokeWidth={3}
-                      name="High"
-                      dot={{ fill: '#ea580c', strokeWidth: 2, r: 4 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="Medium" 
-                      stroke="#d97706" 
-                      strokeWidth={3}
-                      name="Medium"
-                      dot={{ fill: '#d97706', strokeWidth: 2, r: 4 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="Low" 
-                      stroke="#65a30d" 
-                      strokeWidth={3}
-                      name="Low"
-                      dot={{ fill: '#65a30d', strokeWidth: 2, r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
             {/* Risk Distribution */}
             <Card className="chart-enter card-hover" data-tutorial="risk-distribution">
               <CardHeader>
@@ -398,74 +324,10 @@ export default function Dashboards() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-
-            {/* Compliance Overview */}
-            <Card className="chart-enter card-hover" data-tutorial="compliance-coverage">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Compliance Standards Coverage
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  {Object.entries(analytics.complianceMetrics).map(([tag, count]) => {
-                    const percentage = (count / applications.length) * 100;
-                    return (
-                      <div key={tag} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700">
-                              {tag}
-                            </Badge>
-                            <span className="text-sm text-gray-600">
-                              {count} of {applications.length} apps
-                            </span>
-                          </div>
-                          <span className="text-sm font-medium text-gray-900">
-                            {percentage.toFixed(0)}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div 
-                            className="bg-green-600 h-3 rounded-full transition-all duration-500 ease-out"
-                            style={{ width: `${percentage}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Recent Activity & Quick Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Findings Trend */}
-            <Card className="transition-all duration-200 hover:shadow-lg" data-tutorial="findings-trend-area">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Findings Trend (7 Days)
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={weeklyTrend}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Area type="monotone" dataKey="Critical" stackId="1" stroke={COLORS.critical} fill={COLORS.critical} name="Critical" />
-                    <Area type="monotone" dataKey="High" stackId="1" stroke={COLORS.high} fill={COLORS.high} name="High" />
-                    <Area type="monotone" dataKey="Medium" stackId="1" stroke={COLORS.medium} fill={COLORS.medium} name="Medium" />
-                    <Area type="monotone" dataKey="Low" stackId="1" stroke={COLORS.low} fill={COLORS.low} name="Low" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
 
             {/* Quick Stats */}
             <Card className="transition-all duration-200 hover:shadow-lg" data-tutorial="security-summary">
