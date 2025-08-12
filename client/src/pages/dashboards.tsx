@@ -544,165 +544,166 @@ export default function Dashboards() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {/* True Honeycomb Tessellation Layout */}
+                {/* Perfect Honeycomb Tessellation */}
                 <div className="p-6 overflow-x-auto">
-                  <div className="honeycomb-container" style={{ minWidth: '800px' }}>
+                  <div style={{ position: 'relative', minWidth: '900px', minHeight: '400px' }}>
                     {(() => {
                       const services = riskHeatmapData as any[];
-                      const hexWidth = 100;
-                      const hexHeight = 86.6; // sqrt(3)/2 * 100
-                      const rows = [];
-                      let serviceIndex = 0;
+                      const hexRadius = 50; // Radius of hexagon
+                      const hexWidth = hexRadius * 2; // 100px
+                      const hexHeight = hexRadius * Math.sqrt(3); // ~86.6px
                       
-                      // Create rows with proper honeycomb pattern
-                      const maxCols = 8;
-                      while (serviceIndex < services.length) {
-                        const remaining = services.length - serviceIndex;
-                        const rowSize = Math.min(remaining, maxCols);
-                        rows.push(services.slice(serviceIndex, serviceIndex + rowSize));
-                        serviceIndex += rowSize;
-                      }
+                      // Honeycomb spacing calculations for perfect tessellation
+                      const horizontalSpacing = hexWidth * 0.75; // 75px - hexagons overlap by 25%
+                      const verticalSpacing = hexHeight; // Full height for vertical spacing
                       
-                      return (
-                        <div className="relative">
-                          {rows.map((row, rowIndex) => (
-                            <div 
-                              key={rowIndex}
-                              className="flex justify-center"
-                              style={{
-                                position: 'relative',
-                                top: rowIndex * hexHeight * 0.75,
-                                left: rowIndex % 2 === 1 ? hexWidth * 0.5 : 0,
+                      return services.map((service, index) => {
+                        // Calculate row and column for honeycomb pattern
+                        const cols = 8; // Number of hexagons per row
+                        const row = Math.floor(index / cols);
+                        const col = index % cols;
+                        
+                        // Calculate exact position for honeycomb tessellation
+                        const x = col * horizontalSpacing + (row % 2) * (horizontalSpacing / 2);
+                        const y = row * (verticalSpacing * 0.75); // Rows overlap by 25%
+                        
+                        return (
+                          <div
+                            key={service.id}
+                            className="absolute"
+                            style={{
+                              left: `${x}px`,
+                              top: `${y}px`,
+                              width: `${hexWidth}px`,
+                              height: `${hexHeight}px`,
+                            }}
+                          >
+                            <svg
+                              width={hexWidth}
+                              height={hexHeight}
+                              viewBox="0 0 100 86.6"
+                              className="transition-all duration-300 hover:scale-110 cursor-pointer"
+                              style={{ 
+                                filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.1))',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0
                               }}
+                              title={`${service.name} - Risk Score: ${service.riskScore}/10 - ${service.percentileCategory}`}
                             >
-                              {row.map((service, colIndex) => (
-                                <div 
-                                  key={service.id} 
-                                  className="relative"
-                                  style={{
-                                    marginLeft: colIndex > 0 ? '-1px' : '0px', // Overlap slightly for seamless connection
-                                  }}
-                                >
-                                  {/* Hexagonal SVG Container */}
-                                  <svg
-                                    width={hexWidth}
-                                    height={hexWidth}
-                                    viewBox="0 0 100 100"
-                                    className="transition-all duration-300 hover:scale-110 cursor-pointer"
-                                    style={{ 
-                                      filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.1))',
-                                      zIndex: 1
-                                    }}
-                                    title={`${service.name} - Risk Score: ${service.riskScore}/10 - ${service.percentileCategory}`}
-                                  >
-                                    {/* Perfect Hexagon with exact mathematical proportions */}
-                                    <polygon
-                                      points="50,2 86.6,25 86.6,75 50,98 13.4,75 13.4,25"
-                                      className={`
-                                        transition-all duration-200
-                                        ${service.percentileColor === 'green' 
-                                          ? 'fill-green-100 dark:fill-green-900/30' 
-                                          : service.percentileColor === 'blue'
-                                          ? 'fill-blue-100 dark:fill-blue-900/30'
-                                          : service.percentileColor === 'yellow'
-                                          ? 'fill-yellow-100 dark:fill-yellow-900/30'
-                                          : service.percentileColor === 'orange'
-                                          ? 'fill-orange-100 dark:fill-orange-900/30'
-                                          : 'fill-red-100 dark:fill-red-900/30'
-                                        }
-                                      `}
-                                      stroke={service.riskLevel === 'Critical' ? '#dc2626' : 
-                                             service.riskLevel === 'High' ? '#ea580c' :
-                                             service.riskLevel === 'Medium' ? '#ca8a04' : '#16a34a'}
-                                      strokeWidth={service.riskLevel === 'Critical' ? '3' : 
-                                                  service.riskLevel === 'High' ? '2.5' : '2'}
-                                    />
-                                    
-                                    {/* Service Name - Optimized for hexagon */}
-                                    <text
-                                      x="50"
-                                      y="35"
-                                      textAnchor="middle"
-                                      className="fill-foreground font-semibold"
-                                      style={{ fontSize: '8px' }}
-                                    >
-                                      {(() => {
-                                        const words = service.name.split(' ');
-                                        if (words.length === 1) {
-                                          if (service.name.length > 10) {
-                                            return (
-                                              <>
-                                                <tspan x="50" dy="0">{service.name.substring(0, 7)}</tspan>
-                                                <tspan x="50" dy="10">{service.name.substring(7)}</tspan>
-                                              </>
-                                            );
-                                          } else {
-                                            return <tspan x="50" dy="0">{service.name}</tspan>;
-                                          }
-                                        } else if (words.length === 2) {
-                                          return (
-                                            <>
-                                              <tspan x="50" dy="0">{words[0]}</tspan>
-                                              <tspan x="50" dy="10">{words[1]}</tspan>
-                                            </>
-                                          );
-                                        } else {
-                                          const midPoint = Math.ceil(words.length / 2);
-                                          const line1 = words.slice(0, midPoint).join(' ');
-                                          const line2 = words.slice(midPoint).join(' ');
-                                          return (
-                                            <>
-                                              <tspan x="50" dy="0">{line1.length > 10 ? line1.substring(0, 10) + '...' : line1}</tspan>
-                                              <tspan x="50" dy="10">{line2.length > 10 ? line2.substring(0, 10) + '...' : line2}</tspan>
-                                            </>
-                                          );
-                                        }
-                                      })()}
-                                    </text>
-                                    
-                                    {/* Risk Score */}
-                                    <text
-                                      x="50"
-                                      y="60"
-                                      textAnchor="middle"
-                                      className={`
-                                        font-bold
-                                        ${service.riskLevel === 'Critical' 
-                                          ? 'fill-red-600 dark:fill-red-400' 
-                                          : service.riskLevel === 'High'
-                                          ? 'fill-orange-600 dark:fill-orange-400'
-                                          : service.riskLevel === 'Medium'
-                                          ? 'fill-yellow-600 dark:fill-yellow-400'
-                                          : 'fill-green-600 dark:fill-green-400'
-                                        }
-                                      `}
-                                      style={{ fontSize: '14px' }}
-                                    >
-                                      {service.riskScore.toFixed(1)}
-                                    </text>
-                                    
-                                    {/* Percentile Category */}
-                                    <text
-                                      x="50"
-                                      y="75"
-                                      textAnchor="middle"
-                                      className="fill-muted-foreground"
-                                      style={{ fontSize: '6px' }}
-                                    >
-                                      {service.percentileCategory}
-                                    </text>
-                                  </svg>
-                                  
-                                  {/* Pulsing indicator for critical services */}
-                                  {service.riskLevel === 'Critical' && (
-                                    <div className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" style={{ zIndex: 2 }}></div>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-                      );
+                              {/* Perfect hexagon that tessellates */}
+                              <polygon
+                                points="50,0 93.3,21.65 93.3,64.95 50,86.6 6.7,64.95 6.7,21.65"
+                                className={`
+                                  transition-all duration-200
+                                  ${service.percentileColor === 'green' 
+                                    ? 'fill-green-100 dark:fill-green-900/30' 
+                                    : service.percentileColor === 'blue'
+                                    ? 'fill-blue-100 dark:fill-blue-900/30'
+                                    : service.percentileColor === 'yellow'
+                                    ? 'fill-yellow-100 dark:fill-yellow-900/30'
+                                    : service.percentileColor === 'orange'
+                                    ? 'fill-orange-100 dark:fill-orange-900/30'
+                                    : 'fill-red-100 dark:fill-red-900/30'
+                                  }
+                                `}
+                                stroke={service.riskLevel === 'Critical' ? '#dc2626' : 
+                                       service.riskLevel === 'High' ? '#ea580c' :
+                                       service.riskLevel === 'Medium' ? '#ca8a04' : '#16a34a'}
+                                strokeWidth={service.riskLevel === 'Critical' ? '3' : 
+                                            service.riskLevel === 'High' ? '2.5' : '2'}
+                                strokeLinejoin="round"
+                              />
+                              
+                              {/* Service Name */}
+                              <text
+                                x="50"
+                                y="30"
+                                textAnchor="middle"
+                                className="fill-foreground font-semibold"
+                                style={{ fontSize: '7px' }}
+                              >
+                                {(() => {
+                                  const words = service.name.split(' ');
+                                  if (words.length === 1) {
+                                    if (service.name.length > 10) {
+                                      return (
+                                        <>
+                                          <tspan x="50" dy="0">{service.name.substring(0, 7)}</tspan>
+                                          <tspan x="50" dy="8">{service.name.substring(7)}</tspan>
+                                        </>
+                                      );
+                                    } else {
+                                      return <tspan x="50" dy="0">{service.name}</tspan>;
+                                    }
+                                  } else if (words.length === 2) {
+                                    return (
+                                      <>
+                                        <tspan x="50" dy="0">{words[0]}</tspan>
+                                        <tspan x="50" dy="8">{words[1]}</tspan>
+                                      </>
+                                    );
+                                  } else {
+                                    const midPoint = Math.ceil(words.length / 2);
+                                    const line1 = words.slice(0, midPoint).join(' ');
+                                    const line2 = words.slice(midPoint).join(' ');
+                                    return (
+                                      <>
+                                        <tspan x="50" dy="0">{line1.length > 9 ? line1.substring(0, 9) + '...' : line1}</tspan>
+                                        <tspan x="50" dy="8">{line2.length > 9 ? line2.substring(0, 9) + '...' : line2}</tspan>
+                                      </>
+                                    );
+                                  }
+                                })()}
+                              </text>
+                              
+                              {/* Risk Score */}
+                              <text
+                                x="50"
+                                y="50"
+                                textAnchor="middle"
+                                className={`
+                                  font-bold
+                                  ${service.riskLevel === 'Critical' 
+                                    ? 'fill-red-600 dark:fill-red-400' 
+                                    : service.riskLevel === 'High'
+                                    ? 'fill-orange-600 dark:fill-orange-400'
+                                    : service.riskLevel === 'Medium'
+                                    ? 'fill-yellow-600 dark:fill-yellow-400'
+                                    : 'fill-green-600 dark:fill-green-400'
+                                  }
+                                `}
+                                style={{ fontSize: '12px' }}
+                              >
+                                {service.riskScore.toFixed(1)}
+                              </text>
+                              
+                              {/* Percentile Category */}
+                              <text
+                                x="50"
+                                y="62"
+                                textAnchor="middle"
+                                className="fill-muted-foreground"
+                                style={{ fontSize: '5px' }}
+                              >
+                                {service.percentileCategory}
+                              </text>
+                            </svg>
+                            
+                            {/* Pulsing indicator for critical services */}
+                            {service.riskLevel === 'Critical' && (
+                              <div 
+                                className="absolute w-2 h-2 bg-red-500 rounded-full animate-pulse" 
+                                style={{ 
+                                  top: '5px', 
+                                  right: '5px', 
+                                  zIndex: 10 
+                                }}
+                              />
+                            )}
+                          </div>
+                        );
+                      });
                     })()}
                   </div>
                 </div>
