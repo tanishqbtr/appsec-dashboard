@@ -881,6 +881,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Top high-risk applications endpoints
+  app.get("/api/dashboard/top-applications-total", requireAuth, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const totalFindings = await storage.getServicesWithTotalFindings();
+      
+      // Sort by total findings and take top 5
+      const topApps = totalFindings
+        .sort((a, b) => b.totalFindings - a.totalFindings)
+        .slice(0, 5)
+        .map(app => ({
+          name: app.name,
+          totalFindings: app.totalFindings,
+          critical: app.critical,
+          high: app.high,
+          medium: app.medium,
+          low: app.low
+        }));
+      
+      res.json(topApps);
+    } catch (error) {
+      console.error("Top applications total error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/dashboard/top-applications-mend", requireAuth, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const [scaFindings, sastFindings, containerFindings] = await Promise.all([
+        storage.getMendScaFindings(),
+        storage.getMendSastFindings(),
+        storage.getMendContainersFindings()
+      ]);
+      
+      // Aggregate Mend findings by service
+      const serviceFindings = new Map();
+      [...scaFindings, ...sastFindings, ...containerFindings].forEach(finding => {
+        const serviceName = finding.serviceName;
+        const existing = serviceFindings.get(serviceName) || { critical: 0, high: 0, medium: 0, low: 0 };
+        serviceFindings.set(serviceName, {
+          critical: existing.critical + (finding.critical || 0),
+          high: existing.high + (finding.high || 0),
+          medium: existing.medium + (finding.medium || 0),
+          low: existing.low + (finding.low || 0)
+        });
+      });
+      
+      const topApps = Array.from(serviceFindings.entries())
+        .map(([name, findings]) => ({
+          name,
+          totalFindings: findings.critical + findings.high + findings.medium + findings.low,
+          ...findings
+        }))
+        .sort((a, b) => b.totalFindings - a.totalFindings)
+        .slice(0, 5);
+      
+      res.json(topApps);
+    } catch (error) {
+      console.error("Top applications Mend error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/dashboard/top-applications-escape", requireAuth, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const [webAppsFindings, apisFindings] = await Promise.all([
+        storage.getEscapeWebAppsFindings(),
+        storage.getEscapeApisFindings()
+      ]);
+      
+      // Aggregate Escape findings by service
+      const serviceFindings = new Map();
+      [...webAppsFindings, ...apisFindings].forEach(finding => {
+        const serviceName = finding.serviceName;
+        const existing = serviceFindings.get(serviceName) || { critical: 0, high: 0, medium: 0, low: 0 };
+        serviceFindings.set(serviceName, {
+          critical: existing.critical + (finding.critical || 0),
+          high: existing.high + (finding.high || 0),
+          medium: existing.medium + (finding.medium || 0),
+          low: existing.low + (finding.low || 0)
+        });
+      });
+      
+      const topApps = Array.from(serviceFindings.entries())
+        .map(([name, findings]) => ({
+          name,
+          totalFindings: findings.critical + findings.high + findings.medium + findings.low,
+          ...findings
+        }))
+        .sort((a, b) => b.totalFindings - a.totalFindings)
+        .slice(0, 5);
+      
+      res.json(topApps);
+    } catch (error) {
+      console.error("Top applications Escape error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/dashboard/top-applications-crowdstrike", requireAuth, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const [imagesFindings, containersFindings] = await Promise.all([
+        storage.getCrowdstrikeImagesFindings(),
+        storage.getCrowdstrikeContainersFindings()
+      ]);
+      
+      // Aggregate Crowdstrike findings by service
+      const serviceFindings = new Map();
+      [...imagesFindings, ...containersFindings].forEach(finding => {
+        const serviceName = finding.serviceName;
+        const existing = serviceFindings.get(serviceName) || { critical: 0, high: 0, medium: 0, low: 0 };
+        serviceFindings.set(serviceName, {
+          critical: existing.critical + (finding.critical || 0),
+          high: existing.high + (finding.high || 0),
+          medium: existing.medium + (finding.medium || 0),
+          low: existing.low + (finding.low || 0)
+        });
+      });
+      
+      const topApps = Array.from(serviceFindings.entries())
+        .map(([name, findings]) => ({
+          name,
+          totalFindings: findings.critical + findings.high + findings.medium + findings.low,
+          ...findings
+        }))
+        .sort((a, b) => b.totalFindings - a.totalFindings)
+        .slice(0, 5);
+      
+      res.json(topApps);
+    } catch (error) {
+      console.error("Top applications Crowdstrike error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Helper function to log user activities (used by other endpoints)
   const logActivity = async (userId: number, username: string, action: string, serviceName?: string, details?: string) => {
     try {

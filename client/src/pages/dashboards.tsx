@@ -132,6 +132,22 @@ export default function Dashboards() {
     queryKey: ["/api/dashboard/risk-distribution"],
   });
 
+  const { data: topAppsTotal = [], isLoading: isTopAppsTotalLoading } = useQuery({
+    queryKey: ["/api/dashboard/top-applications-total"],
+  });
+
+  const { data: topAppsMend = [], isLoading: isTopAppsMendLoading } = useQuery({
+    queryKey: ["/api/dashboard/top-applications-mend"],
+  });
+
+  const { data: topAppsEscape = [], isLoading: isTopAppsEscapeLoading } = useQuery({
+    queryKey: ["/api/dashboard/top-applications-escape"],
+  });
+
+  const { data: topAppsCrowdstrike = [], isLoading: isTopAppsCrowdstrikeLoading } = useQuery({
+    queryKey: ["/api/dashboard/top-applications-crowdstrike"],
+  });
+
 
 
   const COLORS = {
@@ -145,7 +161,7 @@ export default function Dashboards() {
 
 
 
-  if (isLoading || isMetricsLoading || isScanEngineLoading || isRiskDistributionLoading) {
+  if (isLoading || isMetricsLoading || isScanEngineLoading || isRiskDistributionLoading || isTopAppsTotalLoading || isTopAppsMendLoading || isTopAppsEscapeLoading || isTopAppsCrowdstrikeLoading) {
     return (
       <PageWrapper loadingMessage="Loading Dashboard..." minLoadingTime={30}>
         <div className="min-h-screen bg-background">
@@ -296,10 +312,7 @@ export default function Dashboards() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Charts Row 2 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Findings by Engine */}
             <Card className="chart-enter card-hover" data-tutorial="engine-findings">
               <CardHeader>
@@ -312,13 +325,16 @@ export default function Dashboards() {
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart 
                     data={(scanEngineFindings as any) || []}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="engine" 
                       tick={{ fontSize: 12 }}
                       interval={0}
+                      angle={0}
+                      textAnchor="middle"
+                      height={60}
                     />
                     <YAxis />
                     <Tooltip />
@@ -333,7 +349,136 @@ export default function Dashboards() {
             </Card>
           </div>
 
+          {/* Top High-Risk Applications Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+            {/* Top 5 Applications by Total Findings */}
+            <Card className="chart-enter card-hover">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  Top 5 High-Risk Applications by Total Findings
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {(topAppsTotal as any[]).slice(0, 5).map((app, index) => (
+                    <div key={app.name} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm text-foreground truncate max-w-[120px]" title={app.name}>
+                            {app.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            C:{app.critical} H:{app.high} M:{app.medium} L:{app.low}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-lg font-bold text-red-600">{app.totalFindings}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
+            {/* Top 5 Applications in Mend */}
+            <Card className="chart-enter card-hover">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Shield className="h-4 w-4 text-blue-600" />
+                  Top 5 High-Risk Applications in Mend
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {(topAppsMend as any[]).slice(0, 5).map((app, index) => (
+                    <div key={app.name} className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm text-foreground truncate max-w-[120px]" title={app.name}>
+                            {app.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            C:{app.critical} H:{app.high} M:{app.medium} L:{app.low}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-lg font-bold text-blue-600">{app.totalFindings}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Top 5 Applications in Escape */}
+            <Card className="chart-enter card-hover">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Target className="h-4 w-4 text-green-600" />
+                  Top 5 High-Risk Applications in Escape
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {(topAppsEscape as any[]).slice(0, 5).map((app, index) => (
+                    <div key={app.name} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm text-foreground truncate max-w-[120px]" title={app.name}>
+                            {app.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            C:{app.critical} H:{app.high} M:{app.medium} L:{app.low}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-lg font-bold text-green-600">{app.totalFindings}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Top 5 Applications in Crowdstrike */}
+            <Card className="chart-enter card-hover">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-sm">
+                  <Zap className="h-4 w-4 text-orange-600" />
+                  Top 5 High-Risk Applications in Crowdstrike
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {(topAppsCrowdstrike as any[]).slice(0, 5).map((app, index) => (
+                    <div key={app.name} className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 bg-orange-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm text-foreground truncate max-w-[120px]" title={app.name}>
+                            {app.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            C:{app.critical} H:{app.high} M:{app.medium} L:{app.low}
+                          </p>
+                        </div>
+                      </div>
+                      <span className="text-lg font-bold text-orange-600">{app.totalFindings}</span>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
           
           {/* Dashboard Tutorial */}
           <DashboardTutorial
