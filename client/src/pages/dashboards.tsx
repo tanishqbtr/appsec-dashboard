@@ -544,170 +544,125 @@ export default function Dashboards() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {/* Perfect Honeycomb Tessellation */}
-                <div className="p-6 overflow-x-auto">
-                  <div style={{ position: 'relative', minWidth: '700px', minHeight: '300px' }}>
-                    {(() => {
-                      const services = riskHeatmapData as any[];
-                      const hexRadius = 50; // Radius of hexagon
-                      const hexWidth = hexRadius * 2; // 100px
-                      const hexHeight = hexRadius * Math.sqrt(3); // ~86.6px
+                {/* CSS Grid Honeycomb Layout */}
+                <div className="p-6">
+                  <style dangerouslySetInnerHTML={{
+                    __html: `
+                      .honeycomb-grid {
+                        --hex-size: 120px;
+                        --hex-gap: 8px;
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(100px, var(--hex-size)));
+                        gap: var(--hex-gap);
+                        max-width: 900px;
+                        margin: 0 auto;
+                      }
                       
-                      // Honeycomb spacing calculations for perfect tessellation
-                      const horizontalSpacing = hexWidth * 0.75; // 75px - hexagons overlap by 25%
-                      const verticalSpacing = hexHeight; // Full height for vertical spacing
+                      .hex-item {
+                        position: relative;
+                        width: 100%;
+                        aspect-ratio: 1.1547;
+                        clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+                        border-radius: 8px;
+                        overflow: hidden;
+                        transition: transform 0.3s ease, box-shadow 0.3s ease;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                      }
                       
-                      return services.map((service, index) => {
-                        // Honeycomb grid pattern calculation
-                        const cols = 6; // Hexagons per row for proper honeycomb
-                        const row = Math.floor(index / cols);
-                        const col = index % cols;
-                        
-                        // True honeycomb tessellation positioning
-                        // Horizontal: each hex is 75px apart (75% of width for 25% overlap)
-                        // Vertical: each row is 65px apart (75% of height for 25% overlap)
-                        // Offset: odd rows shift right by 37.5px (half the horizontal spacing)
-                        const x = col * 75 + (row % 2) * 37.5;
-                        const y = row * 65;
-                        
-                        return (
-                          <div
-                            key={service.id}
-                            className="absolute"
-                            style={{
-                              left: `${x}px`,
-                              top: `${y}px`,
-                              width: `${hexWidth}px`,
-                              height: `${hexHeight}px`,
-                            }}
-                          >
-                            <svg
-                              width={hexWidth}
-                              height={hexHeight}
-                              viewBox="0 0 100 86.6"
-                              className="transition-all duration-300 hover:scale-110 cursor-pointer"
-                              style={{ 
-                                filter: 'drop-shadow(2px 2px 4px rgba(0,0,0,0.1))',
-                                position: 'absolute',
-                                top: 0,
-                                left: 0
-                              }}
-                              title={`${service.name} - Risk Score: ${service.riskScore}/10 - ${service.percentileCategory}`}
-                            >
-                              {/* Perfect hexagon that tessellates */}
-                              <polygon
-                                points="50,0 93.3,21.65 93.3,64.95 50,86.6 6.7,64.95 6.7,21.65"
-                                className={`
-                                  transition-all duration-200
-                                  ${service.percentileColor === 'green' 
-                                    ? 'fill-green-100 dark:fill-green-900/30' 
-                                    : service.percentileColor === 'blue'
-                                    ? 'fill-blue-100 dark:fill-blue-900/30'
-                                    : service.percentileColor === 'yellow'
-                                    ? 'fill-yellow-100 dark:fill-yellow-900/30'
-                                    : service.percentileColor === 'orange'
-                                    ? 'fill-orange-100 dark:fill-orange-900/30'
-                                    : 'fill-red-100 dark:fill-red-900/30'
-                                  }
-                                `}
-                                stroke={service.riskLevel === 'Critical' ? '#dc2626' : 
-                                       service.riskLevel === 'High' ? '#ea580c' :
-                                       service.riskLevel === 'Medium' ? '#ca8a04' : '#16a34a'}
-                                strokeWidth={service.riskLevel === 'Critical' ? '3' : 
-                                            service.riskLevel === 'High' ? '2.5' : '2'}
-                                strokeLinejoin="round"
-                              />
-                              
-                              {/* Service Name */}
-                              <text
-                                x="50"
-                                y="30"
-                                textAnchor="middle"
-                                className="fill-foreground font-semibold"
-                                style={{ fontSize: '7px' }}
-                              >
-                                {(() => {
-                                  const words = service.name.split(' ');
-                                  if (words.length === 1) {
-                                    if (service.name.length > 10) {
-                                      return (
-                                        <>
-                                          <tspan x="50" dy="0">{service.name.substring(0, 7)}</tspan>
-                                          <tspan x="50" dy="8">{service.name.substring(7)}</tspan>
-                                        </>
-                                      );
-                                    } else {
-                                      return <tspan x="50" dy="0">{service.name}</tspan>;
-                                    }
-                                  } else if (words.length === 2) {
-                                    return (
-                                      <>
-                                        <tspan x="50" dy="0">{words[0]}</tspan>
-                                        <tspan x="50" dy="8">{words[1]}</tspan>
-                                      </>
-                                    );
-                                  } else {
-                                    const midPoint = Math.ceil(words.length / 2);
-                                    const line1 = words.slice(0, midPoint).join(' ');
-                                    const line2 = words.slice(midPoint).join(' ');
-                                    return (
-                                      <>
-                                        <tspan x="50" dy="0">{line1.length > 9 ? line1.substring(0, 9) + '...' : line1}</tspan>
-                                        <tspan x="50" dy="8">{line2.length > 9 ? line2.substring(0, 9) + '...' : line2}</tspan>
-                                      </>
-                                    );
-                                  }
-                                })()}
-                              </text>
-                              
-                              {/* Risk Score */}
-                              <text
-                                x="50"
-                                y="50"
-                                textAnchor="middle"
-                                className={`
-                                  font-bold
-                                  ${service.riskLevel === 'Critical' 
-                                    ? 'fill-red-600 dark:fill-red-400' 
-                                    : service.riskLevel === 'High'
-                                    ? 'fill-orange-600 dark:fill-orange-400'
-                                    : service.riskLevel === 'Medium'
-                                    ? 'fill-yellow-600 dark:fill-yellow-400'
-                                    : 'fill-green-600 dark:fill-green-400'
-                                  }
-                                `}
-                                style={{ fontSize: '12px' }}
-                              >
-                                {service.riskScore.toFixed(1)}
-                              </text>
-                              
-                              {/* Percentile Category */}
-                              <text
-                                x="50"
-                                y="62"
-                                textAnchor="middle"
-                                className="fill-muted-foreground"
-                                style={{ fontSize: '5px' }}
-                              >
-                                {service.percentileCategory}
-                              </text>
-                            </svg>
-                            
-                            {/* Pulsing indicator for critical services */}
-                            {service.riskLevel === 'Critical' && (
-                              <div 
-                                className="absolute w-2 h-2 bg-red-500 rounded-full animate-pulse" 
-                                style={{ 
-                                  top: '5px', 
-                                  right: '5px', 
-                                  zIndex: 10 
-                                }}
-                              />
-                            )}
+                      .hex-item:hover {
+                        transform: translateY(-2px) scale(1.05);
+                        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+                      }
+                      
+                      .hex-content {
+                        position: absolute;
+                        inset: 0;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 16px;
+                        text-align: center;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .hex-item:nth-child(odd) {
+                          margin-top: calc(var(--hex-size) * 0.15);
+                        }
+                        .hex-item:nth-child(even) {
+                          margin-bottom: calc(var(--hex-size) * 0.15);
+                        }
+                      }
+                    `
+                  }} />
+                  
+                  <div className="honeycomb-grid">
+                    {(riskHeatmapData as any[]).map((service) => (
+                      <div
+                        key={service.id}
+                        className={`
+                          hex-item cursor-pointer
+                          ${service.percentileColor === 'green' 
+                            ? 'bg-green-100 dark:bg-green-900/30' 
+                            : service.percentileColor === 'blue'
+                            ? 'bg-blue-100 dark:bg-blue-900/30'
+                            : service.percentileColor === 'yellow'
+                            ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                            : service.percentileColor === 'orange'
+                            ? 'bg-orange-100 dark:bg-orange-900/30'
+                            : 'bg-red-100 dark:bg-red-900/30'
+                          }
+                        `}
+                        style={{
+                          border: `${service.riskLevel === 'Critical' ? '3px' : 
+                                   service.riskLevel === 'High' ? '2.5px' : '2px'} solid ${
+                                   service.riskLevel === 'Critical' ? '#dc2626' : 
+                                   service.riskLevel === 'High' ? '#ea580c' :
+                                   service.riskLevel === 'Medium' ? '#ca8a04' : '#16a34a'
+                                 }`
+                        }}
+                        title={`${service.name} - Risk Score: ${service.riskScore}/10 - ${service.percentileCategory}`}
+                      >
+                        <div className="hex-content">
+                          {/* Service Name */}
+                          <div className="text-xs font-semibold text-foreground mb-1 leading-tight">
+                            {service.name.length > 15 ? 
+                              service.name.split(' ').length > 1 ?
+                                service.name.split(' ').slice(0, 2).join(' ') :
+                                service.name.substring(0, 12) + '...'
+                              : service.name
+                            }
                           </div>
-                        );
-                      });
-                    })()}
+                          
+                          {/* Risk Score */}
+                          <div 
+                            className={`
+                              text-lg font-bold mb-1
+                              ${service.riskLevel === 'Critical' 
+                                ? 'text-red-600 dark:text-red-400' 
+                                : service.riskLevel === 'High'
+                                ? 'text-orange-600 dark:text-orange-400'
+                                : service.riskLevel === 'Medium'
+                                ? 'text-yellow-600 dark:text-yellow-400'
+                                : 'text-green-600 dark:text-green-400'
+                              }
+                            `}
+                          >
+                            {service.riskScore.toFixed(1)}
+                          </div>
+                          
+                          {/* Percentile Category */}
+                          <div className="text-xs text-muted-foreground">
+                            {service.percentileCategory}
+                          </div>
+                        </div>
+                        
+                        {/* Critical service indicator */}
+                        {service.riskLevel === 'Critical' && (
+                          <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                    ))}
                   </div>
                 </div>
                 

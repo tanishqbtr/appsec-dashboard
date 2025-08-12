@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hex Tile Grid</title>
+<style>
+  :root{
+    --gap: 14px;
+    --tile-radius: 18px;           /* rounds the hex corners slightly */
+    --overlay: rgba(0,0,0,.45);    /* text legibility overlay */
+    --overlay-hover: rgba(0,0,0,.25);
+    --text: #fff;
+    --accent: #5bb0e5;             /* page bg */
+  }
+
+  * { box-sizing: border-box; }
+  body{
+    margin:0;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: var(--accent);
+    color: var(--text);
+    display:grid;
+    place-items:center;
+    min-height:100svh;
+    padding: 32px 18px;
+  }
+
+  /* --- Honeycomb container --- */
+  .hexgrid{
+    --col-size: 220px;             /* base width of a hex tile */
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, var(--col-size)));
+    gap: var(--gap);
+    /* create staggered rows by shifting every other item down */
+    /* we’ll handle the stagger with margins using :nth-child below */
+    max-width: 1200px;
+  }
+
+  /* --- Individual hex tile --- */
+  .hex{
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1.1547; /* ~ height = width * 1.1547 for flat-top hex look */
+    /* Background image supplied via CSS variable for convenience */
+    --img: none;
+    background: center/cover no-repeat var(--img);
+    /* clip to a flat-top hexagon */
+    -webkit-clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    /* soften corners a touch (works with clip-path on modern browsers) */
+    border-radius: var(--tile-radius);
+    overflow: hidden;
+    transform: translateZ(0); /* smoother hover on some GPUs */
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+
+  .hex::before{
+    content:"";
+    position:absolute; inset:0;
+    background: var(--overlay);
+    transition: background .2s ease;
+  }
+
+  .hex:hover{
+    transform: translateY(-4px);
+    box-shadow: 0 14px 36px rgba(0,0,0,.35);
+  }
+  .hex:hover::before{ background: var(--overlay-hover); }
+
+  /* --- Centered label --- */
+  .hex > .label{
+    position: absolute; inset: 0;
+    display: grid; place-items: center;
+    padding: 10%;
+    text-align: center;
+    line-height: 1.15;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    font-weight: 800;
+    font-size: clamp(.9rem, 2.3vw, 1.25rem);
+    text-shadow: 0 2px 8px rgba(0,0,0,.6);
+  }
+
+  /* --- Stagger every other column for the honeycomb effect --- */
+  /* Works well because we’re using auto-fit columns of equal width */
+  @media (min-width: 560px){
+    .hex:nth-child(odd){ margin-top: calc(var(--col-size) * .115); }
+    .hex:nth-child(even){ margin-bottom: calc(var(--col-size) * .115); }
+  }
+
+  /* Tighter on very small screens */
+  @media (max-width: 559px){
+    .hexgrid{ --col-size: 180px; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="hexgrid">
+    <a class="hex" href="#" style="--img:url('https://images.unsplash.com/photo-1481349518771-20055b2a7b24?q=80&w=1200')">
+      <div class="label">Codemyui</div>
+    </a>
+
+    <a class="hex" href="#" style="--img:url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=1200')">
+      <div class="label">Impermeables</div>
+    </a>
+
+    <a class="hex" href="#" style="--img:url('https://images.unsplash.com/photo-1471958680802-1345a694ba6d?q=80&w=1200')">
+      <div class="label">Tablero<br/>Doble Cara</div>
+    </a>
+
+    <a class="hex" href="#" style="--img:url('https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?q=80&w=1200')">
+      <div class="label">Maletín de<br/>Empaque</div>
+    </a>
+
+    <a class="hex" href="#" style="--img:url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1200')">
+      <div class="label">Antirrefle<span style="letter-spacing:0">ctivo</span><br/><small style="font-weight:700;opacity:.9">No vidrio</small></div>
+    </a>
+
+    <a class="hex" href="#" style="--img:url('https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=1200')">
+      <div class="label">6 Fichas<br/><small style="font-weight:700;opacity:.9">1 de repuesto</small></div>
+    </a>
+
+    <a class="hex" href="#" style="--img:url('https://images.unsplash.com/photo-1504384764586-bb4cdc1707b0?q=80&w=1200')">
+      <div class="label">Tablero<br/>Magnético</div>
+    </a>
+  </div>
+
+</body>
+</html>
