@@ -134,8 +134,8 @@ export default function Reports() {
     return (
       <PageWrapper loadingMessage="Loading Reports...">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-300 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-300 rounded"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
+          <div className="h-64 bg-muted rounded"></div>
         </div>
       </PageWrapper>
     );
@@ -183,8 +183,8 @@ export default function Reports() {
                       onClick={() => handleEngineSelect(engine)}
                       className={`transition-all duration-200 hover:scale-105 ${
                         selectedEngine === engine && filterMode === "labels"
-                          ? "bg-green-600 text-white hover:bg-green-700" 
-                          : "hover:bg-green-50 hover:border-green-300"
+                          ? "bg-green-600 text-white hover:bg-green-700 dark:bg-slate-700 dark:hover:bg-slate-600" 
+                          : "hover:bg-green-50 hover:border-green-300 dark:hover:bg-slate-700/20 dark:hover:border-slate-600"
                       }`}
                     >
                       {engine}
@@ -208,8 +208,8 @@ export default function Reports() {
                         onClick={() => handleLabelSelect(label)}
                         className={`transition-all duration-200 hover:scale-105 ${
                           selectedLabels.includes(label) && filterMode === "labels"
-                            ? "bg-green-400 text-white hover:bg-green-500" 
-                            : "hover:bg-green-50 hover:border-green-300"
+                            ? "bg-green-400 text-white hover:bg-green-500 dark:bg-slate-600 dark:hover:bg-slate-500" 
+                            : "hover:bg-green-50 hover:border-green-300 dark:hover:bg-slate-700/20 dark:hover:border-slate-600"
                         }`}
                       >
                         {label}
@@ -232,8 +232,8 @@ export default function Reports() {
                     onClick={() => handleTagSelect(tag)}
                     className={`transition-all duration-200 hover:scale-105 ${
                       selectedTags.includes(tag) && filterMode === "tags"
-                        ? "bg-green-600 text-white hover:bg-green-700" 
-                        : "hover:bg-green-50 hover:border-green-300"
+                        ? "bg-green-600 text-white hover:bg-green-700 dark:bg-slate-700 dark:hover:bg-slate-600" 
+                        : "hover:bg-green-50 hover:border-green-300 dark:hover:bg-slate-700/20 dark:hover:border-slate-600"
                     }`}
                   >
                     {tag}
@@ -245,7 +245,7 @@ export default function Reports() {
 
           {/* Active Filters */}
           {(searchTerm || selectedLabels.length > 0 || selectedTags.length > 0) && (
-            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200" data-tutorial="active-filters">
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border" data-tutorial="active-filters">
               {searchTerm && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   Search: {searchTerm}

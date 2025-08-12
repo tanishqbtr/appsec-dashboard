@@ -90,7 +90,7 @@ interface FindingsData {
 }
 
 function RiskBadge({ level, count }: { level: string; count: number }) {
-  if (count === 0) return <span className="text-xs text-gray-400">0</span>;
+  if (count === 0) return <span className="text-xs text-muted-foreground">0</span>;
 
   const colors = {
     C: "bg-red-600 text-white",
@@ -635,10 +635,10 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
 
   const SortableHeader = ({ field, children }: { field: string; children: React.ReactNode }) => (
     <TableHead 
-      className="font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-all duration-200"
+      className="font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/50 transition-all duration-200"
       onClick={() => handleSort(field)}
     >
-      <div className="flex items-center gap-1 transition-all duration-200 hover:text-gray-700">
+      <div className="flex items-center gap-1 transition-all duration-200 hover:text-foreground">
         {children}
         <ArrowUpDown className="h-3 w-3 transition-transform duration-200 hover:scale-110" />
       </div>
@@ -646,11 +646,11 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
   );
 
   return (
-    <div className="bg-white shadow overflow-hidden sm:rounded-md">
+    <div className="bg-background shadow overflow-hidden sm:rounded-md border border-border">
       {/* Search Bar and Export */}
-      <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+      <div className="px-6 py-4 border-b border-border flex justify-between items-center">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
             type="text"
             placeholder="Search applications..."
@@ -667,7 +667,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               <RoleProtectedButton 
                 variant="outline" 
                 size="sm" 
-                className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300" 
+                className="transition-all duration-200 hover:scale-105 hover:bg-green-50 hover:border-green-300 dark:hover:bg-slate-700/20 dark:hover:border-slate-600" 
                 data-tutorial="export-controls"
                 requiredRole="admin"
               >
@@ -695,7 +695,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50">
+            <TableRow className="bg-muted/30 dark:bg-muted/10">
               <SortableHeader field="name">Service Name</SortableHeader>
               <SortableHeader field="riskScore">Risk Score</SortableHeader>
 
@@ -704,7 +704,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
               <SortableHeader field="highFindings">High Findings</SortableHeader>
               <SortableHeader field="mediumFindings">Medium Findings</SortableHeader>
               <SortableHeader field="lowFindings">Low Findings</SortableHeader>
-              <TableHead className="font-medium text-gray-500 uppercase tracking-wider">
+              <TableHead className="font-medium text-muted-foreground uppercase tracking-wider">
                 Tags
               </TableHead>
             </TableRow>
@@ -717,14 +717,14 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                 <TableCell colSpan={8} className="h-24 text-center">
                   <div className="flex items-center justify-center space-x-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
-                    <span className="text-gray-600">Loading findings data...</span>
+                    <span className="text-muted-foreground">Loading findings data...</span>
                   </div>
                 </TableCell>
               </TableRow>
             ) : !selectedEngine || selectedLabels.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center">
-                  <div className="text-gray-500">
+                  <div className="text-muted-foreground">
                     <div className="text-lg font-medium mb-2">Select a scan engine and labels to view data</div>
                     <div className="text-sm">Choose from Mend, Escape, or Crowdstrike engines and their respective labels</div>
                   </div>
@@ -745,16 +745,16 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                 return (
                   <TableRow 
                     key={app.id} 
-                    className="hover:bg-green-50 cursor-pointer transition-all duration-200 hover:shadow-sm"
+                    className="hover:bg-green-50 dark:hover:bg-muted/50 cursor-pointer transition-all duration-200 hover:shadow-sm"
                     onClick={() => setLocation(`/service/${app.id}`)}
                     data-tutorial-target={index === 0 ? "service-row" : undefined}
                   >
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <div className="text-sm font-medium text-gray-900 hover:text-green-600 transition-colors">
+                        <div className="text-sm font-medium text-foreground hover:text-green-600 transition-colors">
                           {app.name}
                         </div>
-                        <ExternalLink className="h-3 w-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </TableCell>
                     <TableCell>
@@ -762,7 +762,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                     </TableCell>
 
                     <TableCell>
-                      <div className="text-sm font-medium text-gray-900">{totalFindings.total}</div>
+                      <div className="text-sm font-medium text-foreground">{totalFindings.total}</div>
                     </TableCell>
                     <TableCell>
                       <RiskBadge level="C" count={totalFindings.C} />
@@ -779,7 +779,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                     <TableCell>
                       <div className="flex space-x-1">
                         {app.tags?.map((tag, index) => (
-                          <Badge key={index} variant="outline" className="text-xs bg-green-50 border-green-200 text-green-700">
+                          <Badge key={index} variant="outline" className="text-xs bg-green-50 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-700 dark:text-green-400">
                             {tag}
                           </Badge>
                         ))}
@@ -794,7 +794,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
       </div>
       
       {/* Pagination */}
-      <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+      <div className="bg-background px-4 py-3 flex items-center justify-between border-t border-border sm:px-6">
         <div className="flex-1 flex justify-between sm:hidden">
           <Button 
             variant="outline" 
@@ -815,11 +815,11 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
         </div>
         <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-muted-foreground">
               {startIndex + 1} to {Math.min(endIndex, sortedApplications.length)} of {sortedApplications.length}
             </p>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-700">Show:</span>
+              <span className="text-sm text-muted-foreground">Show:</span>
               <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
                 <SelectTrigger className="w-20">
                   <SelectValue />
@@ -830,7 +830,7 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
                   <SelectItem value="100">100</SelectItem>
                 </SelectContent>
               </Select>
-              <span className="text-sm text-gray-700">per page</span>
+              <span className="text-sm text-muted-foreground">per page</span>
             </div>
           </div>
           <div>
