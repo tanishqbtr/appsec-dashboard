@@ -350,33 +350,45 @@ export default function Dashboards() {
           </div>
 
           {/* Top High-Risk Applications Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Top 5 Applications by Total Findings */}
             <Card className="chart-enter card-hover">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
                   Top 5 High-Risk Applications by Total Findings
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {(topAppsTotal as any[]).slice(0, 5).map((app, index) => (
-                    <div key={app.name} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 bg-red-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                           {index + 1}
                         </div>
                         <div>
-                          <p className="font-medium text-sm text-foreground truncate max-w-[120px]" title={app.name}>
-                            {app.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            C:{app.critical} H:{app.high} M:{app.medium} L:{app.low}
-                          </p>
+                          <p className="font-semibold text-foreground">{app.name}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">
+                              Critical: {app.critical}
+                            </span>
+                            <span className="text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-2 py-1 rounded">
+                              High: {app.high}
+                            </span>
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                              Medium: {app.medium}
+                            </span>
+                            <span className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                              Low: {app.low}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <span className="text-lg font-bold text-red-600">{app.totalFindings}</span>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-red-600">{app.totalFindings}</span>
+                        <p className="text-xs text-muted-foreground">Total Findings</p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -386,61 +398,87 @@ export default function Dashboards() {
             {/* Top 5 Applications in Mend */}
             <Card className="chart-enter card-hover">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <Shield className="h-4 w-4 text-blue-600" />
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-blue-600" />
                   Top 5 High-Risk Applications in Mend
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {(topAppsMend as any[]).slice(0, 5).map((app, index) => (
-                    <div key={app.name} className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                           {index + 1}
                         </div>
                         <div>
-                          <p className="font-medium text-sm text-foreground truncate max-w-[120px]" title={app.name}>
-                            {app.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            C:{app.critical} H:{app.high} M:{app.medium} L:{app.low}
-                          </p>
+                          <p className="font-semibold text-foreground">{app.name}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">
+                              Critical: {app.critical}
+                            </span>
+                            <span className="text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-2 py-1 rounded">
+                              High: {app.high}
+                            </span>
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                              Medium: {app.medium}
+                            </span>
+                            <span className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                              Low: {app.low}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <span className="text-lg font-bold text-blue-600">{app.totalFindings}</span>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-blue-600">{app.totalFindings}</span>
+                        <p className="text-xs text-muted-foreground">Total Findings</p>
+                      </div>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
+          </div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Top 5 Applications in Escape */}
             <Card className="chart-enter card-hover">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <Target className="h-4 w-4 text-green-600" />
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-green-600" />
                   Top 5 High-Risk Applications in Escape
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {(topAppsEscape as any[]).slice(0, 5).map((app, index) => (
-                    <div key={app.name} className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                           {index + 1}
                         </div>
                         <div>
-                          <p className="font-medium text-sm text-foreground truncate max-w-[120px]" title={app.name}>
-                            {app.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            C:{app.critical} H:{app.high} M:{app.medium} L:{app.low}
-                          </p>
+                          <p className="font-semibold text-foreground">{app.name}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">
+                              Critical: {app.critical}
+                            </span>
+                            <span className="text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-2 py-1 rounded">
+                              High: {app.high}
+                            </span>
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                              Medium: {app.medium}
+                            </span>
+                            <span className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                              Low: {app.low}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <span className="text-lg font-bold text-green-600">{app.totalFindings}</span>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-green-600">{app.totalFindings}</span>
+                        <p className="text-xs text-muted-foreground">Total Findings</p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -450,29 +488,41 @@ export default function Dashboards() {
             {/* Top 5 Applications in Crowdstrike */}
             <Card className="chart-enter card-hover">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-sm">
-                  <Zap className="h-4 w-4 text-orange-600" />
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-orange-600" />
                   Top 5 High-Risk Applications in Crowdstrike
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {(topAppsCrowdstrike as any[]).slice(0, 5).map((app, index) => (
-                    <div key={app.name} className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-6 h-6 bg-orange-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                           {index + 1}
                         </div>
                         <div>
-                          <p className="font-medium text-sm text-foreground truncate max-w-[120px]" title={app.name}>
-                            {app.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            C:{app.critical} H:{app.high} M:{app.medium} L:{app.low}
-                          </p>
+                          <p className="font-semibold text-foreground">{app.name}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">
+                              Critical: {app.critical}
+                            </span>
+                            <span className="text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-2 py-1 rounded">
+                              High: {app.high}
+                            </span>
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                              Medium: {app.medium}
+                            </span>
+                            <span className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                              Low: {app.low}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <span className="text-lg font-bold text-orange-600">{app.totalFindings}</span>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-orange-600">{app.totalFindings}</span>
+                        <p className="text-xs text-muted-foreground">Total Findings</p>
+                      </div>
                     </div>
                   ))}
                 </div>

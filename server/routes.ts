@@ -885,20 +885,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/dashboard/top-applications-total", requireAuth, async (req, res) => {
     try {
       const storage = await getStorage();
-      const totalFindings = await storage.getServicesWithTotalFindings();
       
-      // Sort by total findings and take top 5
-      const topApps = totalFindings
+      // Get findings from all scan engines for all services
+      const [
+        mendScaFindings,
+        mendSastFindings, 
+        mendContainersFindings,
+        escapeWebAppsFindings,
+        escapeApisFindings,
+        crowdstrikeImagesFindings,
+        crowdstrikeContainersFindings
+      ] = await Promise.all([
+        storage.getMendScaFindings(),
+        storage.getMendSastFindings(),
+        storage.getMendContainersFindings(),
+        storage.getEscapeWebAppsFindings(),
+        storage.getEscapeApisFindings(),
+        storage.getCrowdstrikeImagesFindings(),
+        storage.getCrowdstrikeContainersFindings()
+      ]);
+      
+      // Aggregate all findings by service across all engines
+      const serviceFindings = new Map();
+      [...mendScaFindings, ...mendSastFindings, ...mendContainersFindings, 
+       ...escapeWebAppsFindings, ...escapeApisFindings, 
+       ...crowdstrikeImagesFindings, ...crowdstrikeContainersFindings].forEach(finding => {
+        const serviceName = finding.serviceName;
+        const existing = serviceFindings.get(serviceName) || { critical: 0, high: 0, medium: 0, low: 0 };
+        serviceFindings.set(serviceName, {
+          critical: existing.critical + (finding.critical || 0),
+          high: existing.high + (finding.high || 0),
+          medium: existing.medium + (finding.medium || 0),
+          low: existing.low + (finding.low || 0)
+        });
+      });
+      
+      const topApps = Array.from(serviceFindings.entries())
+        .map(([name, findings]) => ({
+          name,
+          totalFindings: findings.critical + findings.high + findings.medium + findings.low,
+          ...findings
+        }))
         .sort((a, b) => b.totalFindings - a.totalFindings)
-        .slice(0, 5)
-        .map(app => ({
-          name: app.name,
-          totalFindings: app.totalFindings,
-          critical: app.critical,
-          high: app.high,
-          medium: app.medium,
-          low: app.low
-        }));
+        .slice(0, 5);
       
       res.json(topApps);
     } catch (error) {
