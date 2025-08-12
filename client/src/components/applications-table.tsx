@@ -163,13 +163,13 @@ function LoadingSkeleton() {
     <>
       {Array.from({ length: 10 }).map((_, i) => (
         <TableRow key={i}>
-          <TableCell><Skeleton className="h-4 w-48" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-12" /></TableCell>
-          <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+          <TableCell><div className="h-4 w-48 bg-muted rounded animate-pulse" /></TableCell>
+          <TableCell><div className="h-4 w-12 bg-muted rounded animate-pulse" /></TableCell>
+          <TableCell><div className="h-4 w-12 bg-muted rounded animate-pulse" /></TableCell>
+          <TableCell><div className="h-4 w-12 bg-muted rounded animate-pulse" /></TableCell>
+          <TableCell><div className="h-4 w-12 bg-muted rounded animate-pulse" /></TableCell>
+          <TableCell><div className="h-4 w-12 bg-muted rounded animate-pulse" /></TableCell>
+          <TableCell><div className="h-4 w-32 bg-muted rounded animate-pulse" /></TableCell>
         </TableRow>
       ))}
     </>
@@ -715,8 +715,11 @@ export default function ApplicationsTable({ applications, isLoading, searchTerm,
             ) : isLoadingFindings && selectedEngine && selectedLabels.length > 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center">
-                  <div className="flex items-center justify-center space-x-2">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="relative w-5 h-5">
+                      <div className="absolute inset-0 border-2 border-muted rounded-full"></div>
+                      <div className="absolute inset-0 border-2 border-green-600 rounded-full animate-spin border-t-transparent"></div>
+                    </div>
                     <span className="text-muted-foreground">Loading findings data...</span>
                   </div>
                 </TableCell>

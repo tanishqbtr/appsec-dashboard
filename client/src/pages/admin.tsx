@@ -956,8 +956,8 @@ export default function AdminPanel() {
                   <Card>
                     <CardContent className="p-0">
                       {activityLogs.length === 0 ? (
-                        <div className="p-8 text-center text-gray-500">
-                          <History className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <div className="p-8 text-center text-muted-foreground">
+                          <History className="h-12 w-12 mx-auto mb-4 text-muted" />
                           <p>No activity logs found</p>
                           <p className="text-sm">User actions will appear here</p>
                         </div>

@@ -530,7 +530,7 @@ export default function RiskScoring() {
                 <TableHeader>
                   <TableRow>
                     <TableHead 
-                      className="cursor-pointer hover:bg-gray-50 select-none btn-smooth"
+                      className="cursor-pointer hover:bg-muted/50 select-none btn-smooth"
                       onClick={() => handleSort("name")}
                     >
                       <div className="flex items-center gap-2">
@@ -542,7 +542,7 @@ export default function RiskScoring() {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-gray-50 select-none btn-smooth"
+                      className="cursor-pointer hover:bg-muted/50 select-none btn-smooth"
                       onClick={() => handleSort("score")}
                     >
                       <div className="flex items-center gap-2">

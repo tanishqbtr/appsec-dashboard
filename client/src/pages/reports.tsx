@@ -132,10 +132,15 @@ export default function Reports() {
 
   if (isLoading) {
     return (
-      <PageWrapper loadingMessage="Loading Reports...">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/4"></div>
-          <div className="h-64 bg-muted rounded"></div>
+      <PageWrapper loadingMessage="Loading Reports..." minLoadingTime={100}>
+        <div className="min-h-screen bg-background">
+          <Navigation onLogout={logout} currentPage="reports" />
+          <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-muted rounded w-1/4"></div>
+              <div className="h-64 bg-muted rounded"></div>
+            </div>
+          </div>
         </div>
       </PageWrapper>
     );

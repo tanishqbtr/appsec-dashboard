@@ -24,8 +24,14 @@ function Router() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-primary">
-        <div className="text-white text-lg">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <div className="relative w-12 h-12 mx-auto">
+            <div className="absolute inset-0 border-4 border-muted rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-green-600 rounded-full animate-spin border-t-transparent"></div>
+          </div>
+          <div className="text-foreground text-lg font-medium">Initializing...</div>
+        </div>
       </div>
     );
   }
