@@ -10,6 +10,7 @@ import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Services from "@/pages/services";
 import ServiceDetail from "@/pages/service-detail";
+import ServiceInventory from "@/pages/service-inventory";
 import ManageApplications from "@/pages/manage-applications";
 import Dashboards from "@/pages/dashboards";
 import Reports from "@/pages/reports";
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboards} />
       <Route path="/services" component={Services} />
       <Route path="/service/:slug" component={ServiceDetail} />
+      <Route path="/service-inventory" component={ServiceInventory} />
       <Route path="/manage-applications" component={ManageApplications} />
       <Route path="/dashboards" component={Dashboards} />
       <Route path="/reports" component={Reports} />

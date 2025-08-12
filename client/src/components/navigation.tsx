@@ -16,6 +16,7 @@ import {
   BarChart,
   AlertTriangle,
   TrendingUp,
+  Package,
   Settings,
   HelpCircle,
   User,
@@ -43,7 +44,8 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
   // Determine current page from URL if not explicitly provided
   const getCurrentPage = () => {
     if (currentPage) return currentPage;
-    if (location.includes('/services')) return 'services';
+    if (location.includes('/services') && !location.includes('/service-inventory')) return 'services';
+    if (location.includes('/service-inventory')) return 'service-inventory';
     if (location.includes('/dashboards')) return 'dashboards';
     if (location.includes('/reports')) return 'reports';
     if (location.includes('/alerts')) return 'alerts';
@@ -84,6 +86,16 @@ export default function Navigation({ onLogout, currentPage, onRestartTutorial }:
                 >
                   <Server className="h-4 w-4 mr-2" />
                   Services
+                </Button>
+              </Link>
+
+              <Link href="/service-inventory">
+                <Button 
+                  variant="ghost" 
+                  className={`nav-item text-white dark:text-slate-200 hover:text-gray-200 dark:hover:text-white px-3 py-2 text-base font-medium btn-smooth ${activePage === 'service-inventory' ? 'bg-green-700 dark:bg-slate-700 hover:bg-green-600 dark:hover:bg-slate-600' : 'hover:bg-green-800 dark:hover:bg-slate-700'}`}
+                >
+                  <Package className="h-4 w-4 mr-2" />
+                  Service Inventory
                 </Button>
               </Link>
               
