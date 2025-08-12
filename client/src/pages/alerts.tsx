@@ -9,7 +9,7 @@ export default function Alerts() {
   const { logout } = useAuth();
 
   return (
-    <PageWrapper loadingMessage="Loading Alerts...">
+    <PageWrapper loadingMessage="Loading Alerts..." minLoadingTime={30}>
       <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="alerts" />
       

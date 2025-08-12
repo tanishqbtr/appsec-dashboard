@@ -168,7 +168,7 @@ export default function Dashboards() {
 
   if (isLoading || isMetricsLoading || isScanEngineLoading || isRiskDistributionLoading) {
     return (
-      <PageWrapper loadingMessage="Loading Dashboard..." minLoadingTime={100}>
+      <PageWrapper loadingMessage="Loading Dashboard..." minLoadingTime={30}>
         <div className="min-h-screen bg-background">
           <Navigation onLogout={logout} currentPage="dashboards" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -194,7 +194,7 @@ export default function Dashboards() {
   const averageRiskScore = (dashboardMetrics as any)?.averageRiskScore ?? 0;
 
   return (
-    <PageWrapper loadingMessage="Loading Dashboard...">
+    <PageWrapper loadingMessage="Loading Dashboard..." minLoadingTime={30}>
       <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="dashboards" />
       

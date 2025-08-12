@@ -132,7 +132,7 @@ export default function Reports() {
 
   if (isLoading) {
     return (
-      <PageWrapper loadingMessage="Loading Reports..." minLoadingTime={100}>
+      <PageWrapper loadingMessage="Loading Reports..." minLoadingTime={30}>
         <div className="min-h-screen bg-background">
           <Navigation onLogout={logout} currentPage="reports" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -147,7 +147,7 @@ export default function Reports() {
   }
 
   return (
-    <PageWrapper loadingMessage="Loading Reports...">
+    <PageWrapper loadingMessage="Loading Reports..." minLoadingTime={30}>
       <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="reports" />
       

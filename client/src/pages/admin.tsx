@@ -368,7 +368,7 @@ export default function AdminPanel() {
 
   if (!user || user.type !== 'Admin') {
     return (
-      <PageWrapper>
+      <PageWrapper minLoadingTime={30}>
         <div className="min-h-screen bg-background flex items-center justify-center">
           <Card className="w-96">
             <CardContent className="p-6 text-center">
@@ -386,7 +386,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <PageWrapper>
+    <PageWrapper minLoadingTime={30}>
       <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="admin" />
         

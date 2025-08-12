@@ -10,7 +10,7 @@ interface PageWrapperProps {
 export default function PageWrapper({ 
   children, 
   loadingMessage = "Loading...",
-  minLoadingTime = 200 
+  minLoadingTime = 30 
 }: PageWrapperProps) {
   const [isLoading, setIsLoading] = useState(true);
 

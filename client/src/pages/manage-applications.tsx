@@ -190,7 +190,7 @@ export default function ManageApplications() {
 
   if (isLoading) {
     return (
-      <PageWrapper loadingMessage="Loading Applications..." minLoadingTime={100}>
+      <PageWrapper loadingMessage="Loading Applications..." minLoadingTime={30}>
         <div className="min-h-screen bg-background">
           <Navigation onLogout={logout} currentPage="services" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -205,8 +205,8 @@ export default function ManageApplications() {
   }
 
   return (
-    <PageWrapper loadingMessage="Loading Applications...">
-      <div className="min-h-screen bg-gray-50">
+    <PageWrapper loadingMessage="Loading Applications..." minLoadingTime={30}>
+      <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="services" />
         
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
