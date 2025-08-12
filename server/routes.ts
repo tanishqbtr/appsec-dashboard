@@ -1052,17 +1052,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/dashboard/risk-score-heatmap", requireAuth, async (req, res) => {
     try {
       const storage = await getStorage();
-      const riskAssessments = await storage.getRiskAssessments();
+      const applications = await storage.getApplications();
       
-      // Get all services with their risk scores
-      const services = riskAssessments.map(assessment => ({
-        id: assessment.id,
-        name: assessment.serviceName,
-        riskScore: assessment.finalRiskScore || 0,
-        riskLevel: assessment.finalRiskScore >= 8 ? 'Critical' :
-                  assessment.finalRiskScore >= 6 ? 'High' :
-                  assessment.finalRiskScore >= 4 ? 'Medium' : 'Low'
-      }));
+      // Calculate risk score based on findings data (similar to existing logic)
+      const services = applications.map(app => {
+        // Calculate risk score based on critical and high findings
+        const criticalWeight = 4;
+        const highWeight = 2;
+        const mediumWeight = 1;
+        const lowWeight = 0.1;
+        
+        const totalFindings = (app.criticalFindings || 0) + (app.highFindings || 0) + 
+                             (app.mediumFindings || 0) + (app.lowFindings || 0);
+        
+        const weightedScore = ((app.criticalFindings || 0) * criticalWeight + 
+                              (app.highFindings || 0) * highWeight + 
+                              (app.mediumFindings || 0) * mediumWeight + 
+                              (app.lowFindings || 0) * lowWeight);
+        
+        // Normalize to 0-10 scale
+        const maxPossibleScore = totalFindings * criticalWeight;
+        const riskScore = maxPossibleScore > 0 ? (weightedScore / maxPossibleScore) * 10 : 0;
+        
+        return {
+          id: app.id,
+          name: app.name,
+          riskScore: Math.min(riskScore, 10),
+          riskLevel: riskScore >= 8 ? 'Critical' :
+                    riskScore >= 6 ? 'High' :
+                    riskScore >= 4 ? 'Medium' : 'Low'
+        };
+      });
       
       // Sort by risk score (highest first)
       services.sort((a, b) => b.riskScore - a.riskScore);
