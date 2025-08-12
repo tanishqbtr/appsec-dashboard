@@ -352,7 +352,7 @@ export default function Dashboards() {
           {/* Top High-Risk Applications Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Top 5 Applications by Total Findings */}
-            <Card className="chart-enter card-hover bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-900/20 dark:to-rose-900/30 border border-red-200 dark:border-red-800">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-900/20 dark:to-rose-900/30 border border-red-200 dark:border-red-800 hover:from-red-100 hover:to-rose-200 dark:hover:from-red-900/30 dark:hover:to-rose-900/40 hover:border-red-300 dark:hover:border-red-700 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-red-600" />
@@ -362,9 +362,9 @@ export default function Dashboards() {
               <CardContent>
                 <div className="space-y-4">
                   {(topAppsTotal as any[]).slice(0, 5).map((app, index) => (
-                    <div key={app.name} className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-700 transition-all duration-200 hover:scale-[1.02] hover:shadow-md cursor-pointer">
                       <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        <div className="w-8 h-8 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-700 rounded-full flex items-center justify-center text-sm font-semibold">
                           {index + 1}
                         </div>
                         <div>
@@ -396,7 +396,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Top 5 Applications in Mend */}
-            <Card className="chart-enter card-hover bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-900/20 dark:to-cyan-900/30 border border-blue-200 dark:border-blue-800">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-900/20 dark:to-cyan-900/30 border border-blue-200 dark:border-blue-800 hover:from-blue-100 hover:to-cyan-200 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/40 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-blue-600" />
@@ -406,9 +406,9 @@ export default function Dashboards() {
               <CardContent>
                 <div className="space-y-4">
                   {(topAppsMend as any[]).slice(0, 5).map((app, index) => (
-                    <div key={app.name} className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200 hover:scale-[1.02] hover:shadow-md cursor-pointer">
                       <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 rounded-full flex items-center justify-center text-sm font-semibold">
                           {index + 1}
                         </div>
                         <div>
@@ -442,7 +442,7 @@ export default function Dashboards() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Top 5 Applications in Escape */}
-            <Card className="chart-enter card-hover bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/30 border border-green-200 dark:border-green-800">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/30 border border-green-200 dark:border-green-800 hover:from-green-100 hover:to-emerald-200 dark:hover:from-green-900/30 dark:hover:to-emerald-900/40 hover:border-green-300 dark:hover:border-green-700 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5 text-green-600" />
@@ -452,9 +452,9 @@ export default function Dashboards() {
               <CardContent>
                 <div className="space-y-4">
                   {(topAppsEscape as any[]).slice(0, 5).map((app, index) => (
-                    <div key={app.name} className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 hover:border-green-300 dark:hover:border-green-700 transition-all duration-200 hover:scale-[1.02] hover:shadow-md cursor-pointer">
                       <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        <div className="w-8 h-8 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-full flex items-center justify-center text-sm font-semibold">
                           {index + 1}
                         </div>
                         <div>
@@ -486,7 +486,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Top 5 Applications in Crowdstrike */}
-            <Card className="chart-enter card-hover bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/20 dark:to-amber-900/30 border border-orange-200 dark:border-orange-800">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/20 dark:to-amber-900/30 border border-orange-200 dark:border-orange-800 hover:from-orange-100 hover:to-amber-200 dark:hover:from-orange-900/30 dark:hover:to-amber-900/40 hover:border-orange-300 dark:hover:border-orange-700 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="h-5 w-5 text-orange-600" />
@@ -496,9 +496,9 @@ export default function Dashboards() {
               <CardContent>
                 <div className="space-y-4">
                   {(topAppsCrowdstrike as any[]).slice(0, 5).map((app, index) => (
-                    <div key={app.name} className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800 hover:bg-orange-100 dark:hover:bg-orange-900/30 hover:border-orange-300 dark:hover:border-orange-700 transition-all duration-200 hover:scale-[1.02] hover:shadow-md cursor-pointer">
                       <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border border-orange-300 dark:border-orange-700 rounded-full flex items-center justify-center text-sm font-semibold">
                           {index + 1}
                         </div>
                         <div>
