@@ -283,7 +283,7 @@ export default function Dashboards() {
           {/* Charts Row 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Risk Distribution */}
-            <Card className="chart-enter card-hover" data-tutorial="risk-distribution">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-800 dark:to-gray-900 border border-slate-200 dark:border-slate-700" data-tutorial="risk-distribution">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <PieChart className="h-5 w-5" />
@@ -314,7 +314,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Findings by Engine */}
-            <Card className="chart-enter card-hover" data-tutorial="engine-findings">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-800" data-tutorial="engine-findings">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
@@ -352,7 +352,7 @@ export default function Dashboards() {
           {/* Top High-Risk Applications Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Top 5 Applications by Total Findings */}
-            <Card className="chart-enter card-hover">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-900/20 dark:to-rose-900/30 border border-red-200 dark:border-red-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-red-600" />
@@ -396,7 +396,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Top 5 Applications in Mend */}
-            <Card className="chart-enter card-hover">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-900/20 dark:to-cyan-900/30 border border-blue-200 dark:border-blue-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Shield className="h-5 w-5 text-blue-600" />
@@ -442,7 +442,7 @@ export default function Dashboards() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Top 5 Applications in Escape */}
-            <Card className="chart-enter card-hover">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/30 border border-green-200 dark:border-green-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5 text-green-600" />
@@ -486,7 +486,7 @@ export default function Dashboards() {
             </Card>
 
             {/* Top 5 Applications in Crowdstrike */}
-            <Card className="chart-enter card-hover">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/20 dark:to-amber-900/30 border border-orange-200 dark:border-orange-800">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Zap className="h-5 w-5 text-orange-600" />
