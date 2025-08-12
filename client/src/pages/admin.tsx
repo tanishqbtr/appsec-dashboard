@@ -562,8 +562,8 @@ export default function AdminPanel() {
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-medium text-gray-600">Total Users</p>
-                            <p className="text-2xl font-bold">{(users as User[]).length}</p>
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
+                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{(users as User[]).length}</p>
                           </div>
                           <Users className="h-8 w-8 text-blue-500" />
                         </div>
@@ -573,8 +573,8 @@ export default function AdminPanel() {
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-medium text-gray-600">Active Users</p>
-                            <p className="text-2xl font-bold text-green-600">
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Users</p>
+                            <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                               {(users as User[]).filter((u: User) => u.status === 'Active').length}
                             </p>
                           </div>
@@ -586,8 +586,8 @@ export default function AdminPanel() {
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-medium text-gray-600">Admin Users</p>
-                            <p className="text-2xl font-bold text-purple-600">
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Admin Users</p>
+                            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
                               {(users as User[]).filter((u: User) => u.type === 'Admin').length}
                             </p>
                           </div>
@@ -599,8 +599,8 @@ export default function AdminPanel() {
                       <CardContent className="p-6">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-medium text-gray-600">Regular Users</p>
-                            <p className="text-2xl font-bold text-blue-600">
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Regular Users</p>
+                            <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                               {(users as User[]).filter((u: User) => u.type === 'User').length}
                             </p>
                           </div>
@@ -612,7 +612,7 @@ export default function AdminPanel() {
 
                   {/* Header */}
                   <div className="flex justify-between items-center">
-                    <h2 className="text-xl font-semibold">User Management</h2>
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white">User Management</h2>
                   </div>
 
                   {/* Search and Controls */}
@@ -620,18 +620,21 @@ export default function AdminPanel() {
                     <CardContent className="p-6">
                       <div className="flex items-center justify-between gap-4">
                         <div className="relative max-w-sm">
-                          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+                          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
                           <Input
                             placeholder="Search users..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-8"
+                            className="pl-8 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400"
                           />
                         </div>
                         <div className="flex items-center gap-2">
                           <Dialog open={isAddUserOpen} onOpenChange={setIsAddUserOpen}>
                             <DialogTrigger asChild>
-                              <Button className="bg-green-600 hover:bg-green-700">
+                              <Button 
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white dark:text-white"
+                              >
                                 <UserPlus className="h-4 w-4 mr-2" />
                                 Add User
                               </Button>
@@ -702,7 +705,7 @@ export default function AdminPanel() {
                                 <Button 
                                   onClick={() => createUserMutation.mutate(newUser)}
                                   disabled={createUserMutation.isPending || !newUser.name || !newUser.username || !newUser.password}
-                                  className="bg-green-600 hover:bg-green-700"
+                                  className="bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 text-white dark:text-white"
                                 >
                                   {createUserMutation.isPending ? "Creating..." : "Create User"}
                                 </Button>
@@ -715,6 +718,10 @@ export default function AdminPanel() {
                             size="sm"
                             onClick={handleBulkDelete}
                             disabled={selectedUsers.size === 0 || bulkDeleteUsersMutation.isPending}
+                            className={selectedUsers.size > 0 
+                              ? "bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 text-white dark:text-white" 
+                              : "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                            }
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
                             {selectedUsers.size > 0 ? `Delete Selected (${selectedUsers.size})` : "Remove Users"}
@@ -723,6 +730,7 @@ export default function AdminPanel() {
                           <Button
                             variant="outline"
                             size="sm"
+                            className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                             onClick={() => {
                               setSearchTerm("");
                               setSelectedUsers(new Set());
@@ -796,19 +804,19 @@ export default function AdminPanel() {
                                 <ArrowUpDown className="ml-2 h-4 w-4" />
                               </Button>
                             </TableHead>
-                            <TableHead>Actions</TableHead>
+                            <TableHead className="text-gray-900 dark:text-white font-semibold">Actions</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           {filteredAndSortedUsers.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                              <TableCell colSpan={6} className="text-center py-8 text-gray-500 dark:text-gray-400">
                                 {searchTerm ? "No users found matching your search." : "No users available."}
                               </TableCell>
                             </TableRow>
                           ) : (
                             filteredAndSortedUsers.map((user: User) => (
-                              <TableRow key={user.id} className={selectedUsers.has(user.id) ? "bg-blue-50" : ""}>
+                              <TableRow key={user.id} className={selectedUsers.has(user.id) ? "bg-blue-50 dark:bg-blue-900/20" : "hover:bg-gray-50 dark:hover:bg-gray-800/50"}>
                                 <TableCell>
                                   <Button
                                     variant="ghost"
@@ -825,8 +833,8 @@ export default function AdminPanel() {
                                 </TableCell>
                                 <TableCell>
                                   <div>
-                                    <p className="font-medium">{user.name}</p>
-                                    <p className="text-sm text-gray-500">{user.username}</p>
+                                    <p className="font-medium text-gray-900 dark:text-white">{user.name}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{user.username}</p>
                                   </div>
                                 </TableCell>
                                 <TableCell>
@@ -835,7 +843,7 @@ export default function AdminPanel() {
                                 <TableCell>
                                   {getTypeBadge(user.type)}
                                 </TableCell>
-                                <TableCell className="text-sm text-gray-500">
+                                <TableCell className="text-sm text-gray-500 dark:text-gray-400">
                                   {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                                 </TableCell>
                                 <TableCell>
@@ -844,6 +852,7 @@ export default function AdminPanel() {
                                       variant="outline"
                                       size="sm"
                                       onClick={() => handleEditUser(user)}
+                                      className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                                     >
                                       <Edit className="h-3 w-3" />
                                     </Button>
@@ -851,7 +860,7 @@ export default function AdminPanel() {
                                       variant="outline"
                                       size="sm"
                                       onClick={() => handleDeleteUser(user.id)}
-                                      className="text-red-600 hover:bg-red-50"
+                                      className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 border-gray-300 dark:border-gray-600"
                                     >
                                       <Trash2 className="h-3 w-3" />
                                     </Button>
