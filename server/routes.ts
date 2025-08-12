@@ -91,25 +91,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Don't fail login if rehashing fails
           }
         }
-      } else if (user.password) {
-        // User still has legacy plaintext password - verify and migrate
-        isValidPassword = verifyPlaintextPassword(user.password, password);
-        
-        if (isValidPassword) {
-          console.log("Migrating plaintext password to hash for user:", user.username);
-          try {
-            const newHash = await hashPassword(password);
-            await storage.updateUser(user.id, {
-              passwordHash: newHash,
-              passwordAlgo: 'argon2id',
-              passwordUpdatedAt: new Date(),
-            });
-            console.log("Password migrated successfully for user:", user.username);
-          } catch (migrationError) {
-            console.error("Failed to migrate password for user:", user.username, migrationError);
-            // Don't fail login if migration fails
-          }
-        }
+      } else {
+        console.log("No password hash found for user:", user.username);
+        return res.status(401).json({ message: "Invalid credentials" });
       }
       
       if (!isValidPassword) {
@@ -191,8 +175,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (user.passwordHash) {
         isValidCurrentPassword = await verifyPassword(user.passwordHash, currentPassword);
-      } else if (user.password) {
-        isValidCurrentPassword = verifyPlaintextPassword(user.password, currentPassword);
       }
       
       if (!isValidCurrentPassword) {
