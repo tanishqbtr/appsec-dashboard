@@ -310,9 +310,16 @@ export default function Dashboards() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={(scanEngineFindings as any) || []}>
+                  <BarChart 
+                    data={(scanEngineFindings as any) || []}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="engine" />
+                    <XAxis 
+                      dataKey="engine" 
+                      tick={{ fontSize: 12 }}
+                      interval={0}
+                    />
                     <YAxis />
                     <Tooltip />
                     <Legend />
@@ -326,55 +333,7 @@ export default function Dashboards() {
             </Card>
           </div>
 
-          {/* Recent Activity & Quick Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-            {/* Quick Stats */}
-            <Card className="transition-all duration-200 hover:shadow-lg" data-tutorial="security-summary">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Security Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Users className="h-8 w-8 text-blue-600" />
-                      <div>
-                        <p className="font-medium text-gray-900">Total Findings</p>
-                        <p className="text-sm text-gray-600">Across all applications</p>
-                      </div>
-                    </div>
-                    <span className="text-2xl font-bold text-blue-600">{criticalFindings + highFindings}</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Target className="h-8 w-8 text-green-600" />
-                      <div>
-                        <p className="font-medium text-gray-900">Compliance Rate</p>
-                        <p className="text-sm text-gray-600">Overall security compliance</p>
-                      </div>
-                    </div>
-                    <span className="text-2xl font-bold text-green-600">92%</span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-8 w-8 text-orange-600" />
-                      <div>
-                        <p className="font-medium text-gray-900">Avg Response Time</p>
-                        <p className="text-sm text-gray-600">Time to resolve critical issues</p>
-                      </div>
-                    </div>
-                    <span className="text-2xl font-bold text-orange-600">2.4d</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
           
           {/* Dashboard Tutorial */}
           <DashboardTutorial
