@@ -364,16 +364,16 @@ export default function ServiceDetail() {
 
   if (isLoading) {
     return (
-      <PageWrapper loadingMessage="Loading Service Details...">
-        <div className="min-h-screen bg-gray-50">
+      <PageWrapper loadingMessage="Loading Service Details..." minLoadingTime={30}>
+        <div className="min-h-screen bg-background">
           <Navigation onLogout={logout} currentPage="services" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-muted rounded w-1/4"></div>
+              <div className="h-4 bg-muted rounded w-1/2"></div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="h-64 bg-gray-200 rounded"></div>
-                <div className="h-64 bg-gray-200 rounded"></div>
+                <div className="h-64 bg-muted rounded"></div>
+                <div className="h-64 bg-muted rounded"></div>
               </div>
             </div>
           </div>
@@ -384,8 +384,8 @@ export default function ServiceDetail() {
 
   if (!application) {
     return (
-      <PageWrapper loadingMessage="Service not found">
-        <div className="min-h-screen bg-gray-50">
+      <PageWrapper loadingMessage="Service not found" minLoadingTime={30}>
+        <div className="min-h-screen bg-background">
           <Navigation onLogout={logout} currentPage="services" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="text-center">
@@ -513,7 +513,7 @@ export default function ServiceDetail() {
   return (
     <PageWrapper loadingMessage="Loading Service Details...">
       <TooltipProvider>
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           <Navigation onLogout={logout} currentPage="services" />
       
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -540,18 +540,18 @@ export default function ServiceDetail() {
             
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">{application.name}</h1>
-                <p className={`mt-2 ${application.description ? "text-gray-600" : "text-gray-400"}`}>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{application.name}</h1>
+                <p className={`mt-2 ${application.description ? "text-gray-600 dark:text-gray-400" : "text-gray-400 dark:text-gray-500"}`}>
                   {application.description || "Description not set"}
                 </p>
               </div>
               
               <div className="text-right">
-                <div className="text-sm text-gray-600">Risk Score</div>
-                <div className="text-3xl font-bold text-orange-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">Risk Score</div>
+                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
                   {riskAssessmentData?.finalRiskScore || application.riskScore || "0.0"}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   {riskAssessmentData?.riskLevel || "Medium Risk"}
                 </div>
               </div>
@@ -573,8 +573,8 @@ export default function ServiceDetail() {
                       <Github className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="font-medium">GitHub Repo</p>
-                      <p className="text-sm text-gray-600">View source code</p>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">GitHub Repo</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">View source code</p>
                     </div>
                     <ExternalLink className="h-4 w-4 ml-auto" />
                   </a>
@@ -675,17 +675,17 @@ export default function ServiceDetail() {
 
           {/* Security Findings */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="transition-all duration-200 hover:shadow-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                  <Shield className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                   Security Findings
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
                   <div>
-                    <h4 className="font-medium text-gray-900 mb-4">Total by Severity</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-4">Total by Severity</h4>
                     <div className="grid grid-cols-4 gap-3">
                       <div className="flex flex-col items-center bg-red-50 rounded-lg p-3 border border-red-200">
                         <div className="flex items-center gap-1 mb-1">
@@ -716,7 +716,7 @@ export default function ServiceDetail() {
                         <div className="text-xs text-green-700 font-medium">Low</div>
                       </div>
                     </div>
-                    <div className="mt-4 text-center text-sm text-gray-600 font-medium">
+                    <div className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400 font-medium">
                       Total: {comprehensiveFindings.total} findings
                     </div>
                   </div>
@@ -724,19 +724,19 @@ export default function ServiceDetail() {
                   <div>
                     <div className="flex items-center gap-2 mb-4">
                       <Target className="h-5 w-5 text-blue-600" />
-                      <h4 className="text-lg font-semibold text-gray-900">Findings by Scanner</h4>
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Findings by Scanner</h4>
                     </div>
                     
                     <div className="grid grid-cols-1 gap-4">
                       {/* Mend Scanner Card */}
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border border-blue-200 dark:border-blue-700 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-20 h-20 bg-blue-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
                               <Shield className="h-4 w-4 text-blue-600" />
                             </div>
-                            <h5 className="font-semibold text-gray-800">Mend</h5>
+                            <h5 className="font-semibold text-gray-800 dark:text-gray-200">Mend</h5>
                           </div>
                           {application.mendUrl ? (
                             <a 
@@ -786,20 +786,20 @@ export default function ServiceDetail() {
                             <div className="text-green-600 font-bold text-xl">{engineFindings.mend.L}</div>
                           </div>
                         </div>
-                        <div className="text-center mt-2 text-sm text-gray-600">
+                        <div className="text-center mt-2 text-sm text-gray-600 dark:text-gray-400">
                           Total: {engineFindings.mend.total} findings
                         </div>
                       </div>
 
                       {/* Crowdstrike Scanner Card */}
-                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
+                      <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/30 dark:to-slate-700/30 border border-slate-200 dark:border-slate-600 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-20 h-20 bg-slate-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="h-8 w-8 bg-slate-100 rounded-lg flex items-center justify-center">
                               <Shield className="h-4 w-4 text-slate-600" />
                             </div>
-                            <h5 className="font-semibold text-gray-800">Crowdstrike</h5>
+                            <h5 className="font-semibold text-gray-800 dark:text-gray-200">Crowdstrike</h5>
                           </div>
                           {application.crowdstrikeUrl ? (
                             <a 
@@ -849,20 +849,20 @@ export default function ServiceDetail() {
                             <div className="text-green-600 font-bold text-xl">{engineFindings.crowdstrike.L}</div>
                           </div>
                         </div>
-                        <div className="text-center mt-2 text-sm text-gray-600">
+                        <div className="text-center mt-2 text-sm text-gray-600 dark:text-gray-400">
                           Total: {engineFindings.crowdstrike.total} findings
                         </div>
                       </div>
 
                       {/* Escape Scanner Card */}
-                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
+                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border border-purple-200 dark:border-purple-700 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-20 h-20 bg-purple-200/20 rounded-full -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500"></div>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
                               <Shield className="h-4 w-4 text-purple-600" />
                             </div>
-                            <h5 className="font-semibold text-gray-800">Escape</h5>
+                            <h5 className="font-semibold text-gray-800 dark:text-gray-200">Escape</h5>
                           </div>
                           {application.escapeUrl ? (
                             <a 
@@ -912,7 +912,7 @@ export default function ServiceDetail() {
                             <div className="text-green-600 font-bold text-xl">{engineFindings.escape.L}</div>
                           </div>
                         </div>
-                        <div className="text-center mt-2 text-sm text-gray-600">
+                        <div className="text-center mt-2 text-sm text-gray-600 dark:text-gray-400">
                           Total: {engineFindings.escape.total} findings
                         </div>
                       </div>
@@ -922,10 +922,10 @@ export default function ServiceDetail() {
               </CardContent>
             </Card>
 
-            <Card className="transition-all duration-200 hover:shadow-lg">
+            <Card className="transition-all duration-200 hover:shadow-lg bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
+                  <Activity className="h-5 w-5 text-gray-600 dark:text-gray-400" />
                   Service Information
                 </CardTitle>
               </CardHeader>
@@ -934,7 +934,7 @@ export default function ServiceDetail() {
                   {/* 2x2 Grid for Risk Score and Percentile */}
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <p className="text-sm text-gray-600 animate-in fade-in-0 slide-in-from-left-2 duration-500">Risk Score</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 animate-in fade-in-0 slide-in-from-left-2 duration-500">Risk Score</p>
                       <div className="flex items-center gap-3">
                         <p className="text-2xl font-bold text-orange-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
                           {riskAssessmentData?.finalRiskScore || application.riskScore || "0.0"}
@@ -953,24 +953,24 @@ export default function ServiceDetail() {
                     </div>
 
                     <div>
-                      <p className="text-sm text-gray-600 animate-in fade-in-0 slide-in-from-left-2 duration-500">Percentile Rank</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 animate-in fade-in-0 slide-in-from-left-2 duration-500">Percentile Rank</p>
                       <div className="flex items-center gap-3">
                         <p className="text-2xl font-bold text-blue-600 animate-in fade-in-0 slide-in-from-left-2 duration-500 delay-150 hover:scale-105 transition-transform duration-300">
                           {Math.round(percentile)}%
                         </p>
                         <ServiceTierBadge percentile={percentile} />
                       </div>
-                      <div className="text-sm text-gray-600 mt-1">Based on total findings</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">Based on total findings</div>
                     </div>
 
                     <div>
-                      <p className="text-sm text-gray-600 mb-2">Compliance Tags</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Compliance Tags</p>
                       <div className="flex flex-wrap gap-2">
                         {application.tags?.map((tag, index) => (
                           <Badge key={index} variant="outline" className="bg-green-50 border-green-200 text-green-700">
                             {tag}
                           </Badge>
-                        )) || <span className="text-sm text-gray-400">No tags assigned</span>}
+                        )) || <span className="text-sm text-gray-400 dark:text-gray-500">No tags assigned</span>}
                       </div>
                     </div>
 
@@ -982,7 +982,7 @@ export default function ServiceDetail() {
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <Shield className="h-5 w-5 text-green-600" />
-                        <h4 className="text-lg font-semibold text-gray-900">Risk Assessment Details</h4>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">Risk Assessment Details</h4>
                       </div>
                       <RoleProtectedButton 
                         size="sm"
@@ -999,20 +999,20 @@ export default function ServiceDetail() {
                     {riskAssessmentData ? (
                       <div className="grid grid-cols-2 gap-4">
                         {/* Data Classification Card */}
-                        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden">
+                        <div className="bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/30 dark:to-cyan-800/30 border border-cyan-200 dark:border-cyan-700 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden">
                           <div className="absolute top-0 right-0 w-20 h-20 bg-cyan-200/20 rounded-full -mr-10 -mt-10"></div>
                           <div className="flex items-center gap-2 mb-3">
-                            <div className="h-8 w-8 bg-cyan-100 rounded-lg flex items-center justify-center">
-                              <Database className="h-4 w-4 text-cyan-600" />
+                            <div className="h-8 w-8 bg-cyan-100 dark:bg-cyan-800 rounded-lg flex items-center justify-center">
+                              <Database className="h-4 w-4 text-cyan-600 dark:text-cyan-400" />
                             </div>
-                            <h5 className="font-semibold text-gray-800">Data Classification</h5>
+                            <h5 className="font-semibold text-gray-800 dark:text-gray-200">Data Classification</h5>
                           </div>
                           <div className="space-y-2">
                             {riskAssessmentData.dataClassification && (
                               <div className="flex justify-between items-center py-2">
                                 <div className="flex items-center gap-2">
                                   <div className="w-2 h-2 bg-cyan-500 rounded-full animate-pulse"></div>
-                                  <span className="text-sm font-medium text-gray-700">Classification:</span>
+                                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Classification:</span>
                                 </div>
                                 <Badge className="bg-gradient-to-r from-cyan-100 to-cyan-200 text-cyan-800 border-cyan-300 font-semibold">
                                   {formatValue(riskAssessmentData.dataClassification)}
@@ -1053,13 +1053,13 @@ export default function ServiceDetail() {
                         </div>
 
                         {/* CIA Triad Card */}
-                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden">
+                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/30 border border-indigo-200 dark:border-indigo-700 rounded-xl p-5 hover:shadow-xl hover:scale-[1.02] transition-all duration-300 transform relative overflow-hidden">
                           <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-200/20 rounded-full -mr-10 -mt-10"></div>
                           <div className="flex items-center gap-2 mb-3">
-                            <div className="h-8 w-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                              <Lock className="h-4 w-4 text-indigo-600" />
+                            <div className="h-8 w-8 bg-indigo-100 dark:bg-indigo-800 rounded-lg flex items-center justify-center">
+                              <Lock className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                             </div>
-                            <h5 className="font-semibold text-gray-800">CIA Triad</h5>
+                            <h5 className="font-semibold text-gray-800 dark:text-gray-200">CIA Triad</h5>
                           </div>
                           <div className="space-y-2">
                             {riskAssessmentData.confidentialityImpact && (

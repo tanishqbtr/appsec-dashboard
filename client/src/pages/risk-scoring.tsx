@@ -391,14 +391,14 @@ export default function RiskScoring() {
 
   if (isLoading) {
     return (
-      <PageWrapper loadingMessage="Loading Risk Scoring...">
-        <div className="min-h-screen bg-gray-50">
+      <PageWrapper loadingMessage="Loading Risk Scoring..." minLoadingTime={30}>
+        <div className="min-h-screen bg-background">
           <Navigation onLogout={logout} currentPage="risk-scoring" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-              <div className="h-96 bg-gray-200 rounded"></div>
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-muted rounded w-1/4"></div>
+              <div className="h-4 bg-muted rounded w-1/2"></div>
+              <div className="h-96 bg-muted rounded"></div>
             </div>
           </div>
         </div>
@@ -407,16 +407,16 @@ export default function RiskScoring() {
   }
 
   return (
-    <PageWrapper loadingMessage="Loading Risk Scoring...">
-      <div className="min-h-screen bg-gray-50">
+    <PageWrapper loadingMessage="Loading Risk Scoring..." minLoadingTime={30}>
+      <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="risk-scoring" />
         
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 page-enter page-enter-active">
           <div className="mb-8 stagger-item">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Risk Scoring</h1>
-                <p className="mt-2 text-gray-600">
+                <h1 className="text-3xl font-bold text-foreground">Risk Scoring</h1>
+                <p className="mt-2 text-muted-foreground">
                   Security risk assessment and scoring management for all services
                 </p>
               </div>
@@ -438,7 +438,7 @@ export default function RiskScoring() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Critical Risk</p>
+                    <p className="text-sm font-medium text-muted-foreground">Critical Risk</p>
                     <p className="text-3xl font-bold text-red-600">
                       {applications.filter(app => parseFloat(app.riskScore) >= 8).length}
                     </p>
@@ -454,7 +454,7 @@ export default function RiskScoring() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">High Risk</p>
+                    <p className="text-sm font-medium text-muted-foreground">High Risk</p>
                     <p className="text-3xl font-bold text-orange-600">
                       {applications.filter(app => {
                         const score = parseFloat(app.riskScore);
@@ -473,7 +473,7 @@ export default function RiskScoring() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Medium Risk</p>
+                    <p className="text-sm font-medium text-muted-foreground">Medium Risk</p>
                     <p className="text-3xl font-bold text-yellow-600">
                       {applications.filter(app => {
                         const score = parseFloat(app.riskScore);
@@ -492,7 +492,7 @@ export default function RiskScoring() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Low Risk</p>
+                    <p className="text-sm font-medium text-muted-foreground">Low Risk</p>
                     <p className="text-3xl font-bold text-green-600">
                       {applications.filter(app => parseFloat(app.riskScore) < 4).length}
                     </p>
@@ -530,7 +530,7 @@ export default function RiskScoring() {
                 <TableHeader>
                   <TableRow>
                     <TableHead 
-                      className="cursor-pointer hover:bg-gray-50 select-none btn-smooth"
+                      className="cursor-pointer hover:bg-muted/50 select-none btn-smooth"
                       onClick={() => handleSort("name")}
                     >
                       <div className="flex items-center gap-2">
@@ -542,7 +542,7 @@ export default function RiskScoring() {
                       </div>
                     </TableHead>
                     <TableHead 
-                      className="cursor-pointer hover:bg-gray-50 select-none btn-smooth"
+                      className="cursor-pointer hover:bg-muted/50 select-none btn-smooth"
                       onClick={() => handleSort("score")}
                     >
                       <div className="flex items-center gap-2">
@@ -621,7 +621,7 @@ export default function RiskScoring() {
               <div className="space-y-8">
                 {/* Data Classification Factors */}
                 <div className="space-y-4" data-tutorial="data-classification">
-                  <h3 className="text-lg font-semibold text-gray-900">Data Classification Factors</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Data Classification Factors</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="dataClassification">Data Classification</Label>
@@ -677,7 +677,7 @@ export default function RiskScoring() {
 
                 {/* CIA Triad */}
                 <div className="space-y-4" data-tutorial="cia-triad">
-                  <h3 className="text-lg font-semibold text-gray-900">CIA Triad</h3>
+                  <h3 className="text-lg font-semibold text-foreground">CIA Triad</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="confidentialityImpact">Confidentiality Impact</Label>
@@ -734,7 +734,7 @@ export default function RiskScoring() {
 
                 {/* Attack Surface Factors */}
                 <div className="space-y-4" data-tutorial="attack-surface">
-                  <h3 className="text-lg font-semibold text-gray-900">Attack Surface Factors</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Attack Surface Factors</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="publicEndpoint">Public Endpoint</Label>
@@ -790,21 +790,21 @@ export default function RiskScoring() {
 
                 {/* Risk Scores */}
                 <div className="space-y-4" data-tutorial="risk-calculation">
-                  <h3 className="text-lg font-semibold text-gray-900">Risk Scores</h3>
+                  <h3 className="text-lg font-semibold text-foreground">Risk Scores</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <div className="text-sm font-medium text-blue-600">Data Classification Score</div>
-                      <div className="text-2xl font-bold text-blue-800">{calculateDataClassificationScore()}</div>
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-700">
+                      <div className="text-sm font-medium text-blue-600 dark:text-blue-400">Data Classification Score</div>
+                      <div className="text-2xl font-bold text-blue-800 dark:text-blue-300">{calculateDataClassificationScore()}</div>
                     </div>
                     
-                    <div className="bg-purple-50 p-4 rounded-lg">
-                      <div className="text-sm font-medium text-purple-600">CIA Triad Score</div>
-                      <div className="text-2xl font-bold text-purple-800">{calculateCIATriadScore()}</div>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-700">
+                      <div className="text-sm font-medium text-purple-600 dark:text-purple-400">CIA Triad Score</div>
+                      <div className="text-2xl font-bold text-purple-800 dark:text-purple-300">{calculateCIATriadScore()}</div>
                     </div>
                     
-                    <div className="bg-orange-50 p-4 rounded-lg">
-                      <div className="text-sm font-medium text-orange-600">Attack Surface Score</div>
-                      <div className="text-2xl font-bold text-orange-800">{calculateAttackSurfaceScore()}</div>
+                    <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-700">
+                      <div className="text-sm font-medium text-orange-600 dark:text-orange-400">Attack Surface Score</div>
+                      <div className="text-2xl font-bold text-orange-800 dark:text-orange-300">{calculateAttackSurfaceScore()}</div>
                     </div>
                     
                     {(() => {
@@ -814,25 +814,25 @@ export default function RiskScoring() {
                       
                       let bgColor, borderColor, textColor, labelColor;
                       if (finalScore >= 8) {
-                        bgColor = "bg-red-50";
-                        borderColor = "border-red-200";
-                        textColor = "text-red-800";
-                        labelColor = "text-red-600";
+                        bgColor = "bg-red-50 dark:bg-red-900/20";
+                        borderColor = "border-red-200 dark:border-red-700";
+                        textColor = "text-red-800 dark:text-red-300";
+                        labelColor = "text-red-600 dark:text-red-400";
                       } else if (finalScore >= 6) {
-                        bgColor = "bg-orange-50";
-                        borderColor = "border-orange-200";
-                        textColor = "text-orange-800";
-                        labelColor = "text-orange-600";
+                        bgColor = "bg-orange-50 dark:bg-orange-900/20";
+                        borderColor = "border-orange-200 dark:border-orange-700";
+                        textColor = "text-orange-800 dark:text-orange-300";
+                        labelColor = "text-orange-600 dark:text-orange-400";
                       } else if (finalScore >= 4) {
-                        bgColor = "bg-yellow-50";
-                        borderColor = "border-yellow-200";
-                        textColor = "text-yellow-800";
-                        labelColor = "text-yellow-600";
+                        bgColor = "bg-yellow-50 dark:bg-yellow-900/20";
+                        borderColor = "border-yellow-200 dark:border-yellow-700";
+                        textColor = "text-yellow-800 dark:text-yellow-300";
+                        labelColor = "text-yellow-600 dark:text-yellow-400";
                       } else {
-                        bgColor = "bg-green-50";
-                        borderColor = "border-green-200";
-                        textColor = "text-green-800";
-                        labelColor = "text-green-600";
+                        bgColor = "bg-green-50 dark:bg-green-900/20";
+                        borderColor = "border-green-200 dark:border-green-700";
+                        textColor = "text-green-800 dark:text-green-300";
+                        labelColor = "text-green-600 dark:text-green-400";
                       }
                       
                       return (
@@ -858,7 +858,7 @@ export default function RiskScoring() {
                 </Button>
                 <Button 
                   onClick={handleSave} 
-                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed btn-smooth"
+                  className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed btn-smooth dark:bg-green-600 dark:hover:bg-green-500"
                   disabled={!isFormValid() || updateRiskScoreMutation.isPending}
                 >
                   {updateRiskScoreMutation.isPending ? "Saving..." : "Save Assessment"}

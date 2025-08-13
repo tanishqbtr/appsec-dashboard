@@ -70,7 +70,7 @@ export default function Dashboard() {
 
   return (
     <PageWrapper loadingMessage="Loading Dashboard...">
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} />
       
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">

@@ -8,7 +8,9 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(), // This will be the email
   status: text("status").notNull().default("Active"), // Active, Disabled
   type: text("type").notNull().default("User"), // User, Admin
-  password: text("password").notNull(),
+  passwordHash: text("password_hash").notNull(), // Secure hashed password
+  passwordAlgo: text("password_algo").notNull().default("argon2id"), // Hashing algorithm used
+  passwordUpdatedAt: timestamp("password_updated_at").defaultNow(), // When password was last updated
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import rateLimit from "express-rate-limit";
 import { getStorage } from "./storage";
+import { hashPassword, verifyPassword, verifyPlaintextPassword, needsRehash } from "./auth/passwords";
 import { insertUserSchema } from "@shared/schema";
 
 // Authentication middleware
@@ -24,8 +26,31 @@ const requireAdmin = (req: any, res: any, next: any) => {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
-  // Login endpoint
-  app.post("/api/login", async (req, res) => {
+  // Rate limiting for authentication endpoints
+  const authRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // Limit each IP to 5 requests per windowMs for auth endpoints
+    message: { message: "Too many authentication attempts, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => process.env.NODE_ENV === 'development', // Skip in development
+  });
+
+  // Rate limiting for general API endpoints
+  const apiRateLimit = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs for general endpoints
+    message: { message: "Too many requests, please try again later." },
+    standardHeaders: true,
+    legacyHeaders: false,
+    skip: (req) => process.env.NODE_ENV === 'development', // Skip in development
+  });
+
+  // Apply general rate limiting to all API routes
+  app.use('/api', apiRateLimit);
+  
+  // Login endpoint with enhanced security
+  app.post("/api/login", authRateLimit, async (req, res) => {
     try {
       const { username, password } = req.body;
       console.log("Login attempt:", { username, password: password ? "***" : "missing" });
@@ -38,8 +63,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const user = await storage.getUserByUsername(username);
       console.log("User found:", user ? { id: user.id, username: user.username } : "not found");
       
-      if (!user || user.password !== password) {
-        console.log("Invalid credentials - expected:", user?.password, "got:", password);
+      if (!user) {
+        // Use consistent error message to prevent username enumeration
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      // Check password (supports both legacy plaintext and new hashed passwords)
+      let isValidPassword = false;
+      
+      if (user.passwordHash) {
+        // User has migrated to hashed password
+        isValidPassword = await verifyPassword(user.passwordHash, password);
+        
+        // Check if password needs rehashing with stronger parameters
+        if (isValidPassword && needsRehash(user.passwordHash)) {
+          console.log("Password verified but needs rehashing for user:", user.username);
+          try {
+            const newHash = await hashPassword(password);
+            await storage.updateUser(user.id, {
+              passwordHash: newHash,
+              passwordAlgo: 'argon2id',
+              passwordUpdatedAt: new Date(),
+            });
+            console.log("Password rehashed successfully for user:", user.username);
+          } catch (rehashError) {
+            console.error("Failed to rehash password for user:", user.username, rehashError);
+            // Don't fail login if rehashing fails
+          }
+        }
+      } else {
+        console.log("No password hash found for user:", user.username);
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      
+      if (!isValidPassword) {
+        console.log("Invalid credentials for user:", user.username);
         return res.status(401).json({ message: "Invalid credentials" });
       }
 
@@ -88,6 +146,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       res.json({ success: true, message: "Logged out successfully" });
     } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Change password endpoint
+  app.post("/api/auth/change-password", requireAuth, authRateLimit, async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: "Current password and new password are required" });
+      }
+      
+      if (newPassword.length < 8) {
+        return res.status(400).json({ message: "New password must be at least 8 characters long" });
+      }
+      
+      const storage = await getStorage();
+      const user = await storage.getUser(req.session.userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Verify current password
+      let isValidCurrentPassword = false;
+      
+      if (user.passwordHash) {
+        isValidCurrentPassword = await verifyPassword(user.passwordHash, currentPassword);
+      }
+      
+      if (!isValidCurrentPassword) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+      
+      // Hash new password
+      const newPasswordHash = await hashPassword(newPassword);
+      
+      // Update user password
+      await storage.updateUser(user.id, {
+        passwordHash: newPasswordHash,
+        passwordAlgo: 'argon2id',
+        passwordUpdatedAt: new Date(),
+      });
+      
+      console.log(`Password changed successfully for user: ${user.username}`);
+      res.json({ success: true, message: "Password changed successfully" });
+      
+    } catch (error) {
+      console.error("Change password error:", error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -770,6 +878,233 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching activity logs:", error);
       res.status(500).json({ error: "Failed to fetch activity logs" });
+    }
+  });
+
+  // Top high-risk applications endpoints
+  app.get("/api/dashboard/top-applications-total", requireAuth, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      
+      // Get findings from all scan engines for all services
+      const [
+        mendScaFindings,
+        mendSastFindings, 
+        mendContainersFindings,
+        escapeWebAppsFindings,
+        escapeApisFindings,
+        crowdstrikeImagesFindings,
+        crowdstrikeContainersFindings
+      ] = await Promise.all([
+        storage.getMendScaFindings(),
+        storage.getMendSastFindings(),
+        storage.getMendContainersFindings(),
+        storage.getEscapeWebAppsFindings(),
+        storage.getEscapeApisFindings(),
+        storage.getCrowdstrikeImagesFindings(),
+        storage.getCrowdstrikeContainersFindings()
+      ]);
+      
+      // Aggregate all findings by service across all engines
+      const serviceFindings = new Map();
+      [...mendScaFindings, ...mendSastFindings, ...mendContainersFindings, 
+       ...escapeWebAppsFindings, ...escapeApisFindings, 
+       ...crowdstrikeImagesFindings, ...crowdstrikeContainersFindings].forEach(finding => {
+        const serviceName = finding.serviceName;
+        const existing = serviceFindings.get(serviceName) || { critical: 0, high: 0, medium: 0, low: 0 };
+        serviceFindings.set(serviceName, {
+          critical: existing.critical + (finding.critical || 0),
+          high: existing.high + (finding.high || 0),
+          medium: existing.medium + (finding.medium || 0),
+          low: existing.low + (finding.low || 0)
+        });
+      });
+      
+      const topApps = Array.from(serviceFindings.entries())
+        .map(([name, findings]) => ({
+          name,
+          totalFindings: findings.critical + findings.high + findings.medium + findings.low,
+          ...findings
+        }))
+        .sort((a, b) => b.totalFindings - a.totalFindings)
+        .slice(0, 5);
+      
+      res.json(topApps);
+    } catch (error) {
+      console.error("Top applications total error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/dashboard/top-applications-mend", requireAuth, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const [scaFindings, sastFindings, containerFindings] = await Promise.all([
+        storage.getMendScaFindings(),
+        storage.getMendSastFindings(),
+        storage.getMendContainersFindings()
+      ]);
+      
+      // Aggregate Mend findings by service
+      const serviceFindings = new Map();
+      [...scaFindings, ...sastFindings, ...containerFindings].forEach(finding => {
+        const serviceName = finding.serviceName;
+        const existing = serviceFindings.get(serviceName) || { critical: 0, high: 0, medium: 0, low: 0 };
+        serviceFindings.set(serviceName, {
+          critical: existing.critical + (finding.critical || 0),
+          high: existing.high + (finding.high || 0),
+          medium: existing.medium + (finding.medium || 0),
+          low: existing.low + (finding.low || 0)
+        });
+      });
+      
+      const topApps = Array.from(serviceFindings.entries())
+        .map(([name, findings]) => ({
+          name,
+          totalFindings: findings.critical + findings.high + findings.medium + findings.low,
+          ...findings
+        }))
+        .sort((a, b) => b.totalFindings - a.totalFindings)
+        .slice(0, 5);
+      
+      res.json(topApps);
+    } catch (error) {
+      console.error("Top applications Mend error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/dashboard/top-applications-escape", requireAuth, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const [webAppsFindings, apisFindings] = await Promise.all([
+        storage.getEscapeWebAppsFindings(),
+        storage.getEscapeApisFindings()
+      ]);
+      
+      // Aggregate Escape findings by service
+      const serviceFindings = new Map();
+      [...webAppsFindings, ...apisFindings].forEach(finding => {
+        const serviceName = finding.serviceName;
+        const existing = serviceFindings.get(serviceName) || { critical: 0, high: 0, medium: 0, low: 0 };
+        serviceFindings.set(serviceName, {
+          critical: existing.critical + (finding.critical || 0),
+          high: existing.high + (finding.high || 0),
+          medium: existing.medium + (finding.medium || 0),
+          low: existing.low + (finding.low || 0)
+        });
+      });
+      
+      const topApps = Array.from(serviceFindings.entries())
+        .map(([name, findings]) => ({
+          name,
+          totalFindings: findings.critical + findings.high + findings.medium + findings.low,
+          ...findings
+        }))
+        .sort((a, b) => b.totalFindings - a.totalFindings)
+        .slice(0, 5);
+      
+      res.json(topApps);
+    } catch (error) {
+      console.error("Top applications Escape error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/dashboard/top-applications-crowdstrike", requireAuth, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const [imagesFindings, containersFindings] = await Promise.all([
+        storage.getCrowdstrikeImagesFindings(),
+        storage.getCrowdstrikeContainersFindings()
+      ]);
+      
+      // Aggregate Crowdstrike findings by service
+      const serviceFindings = new Map();
+      [...imagesFindings, ...containersFindings].forEach(finding => {
+        const serviceName = finding.serviceName;
+        const existing = serviceFindings.get(serviceName) || { critical: 0, high: 0, medium: 0, low: 0 };
+        serviceFindings.set(serviceName, {
+          critical: existing.critical + (finding.critical || 0),
+          high: existing.high + (finding.high || 0),
+          medium: existing.medium + (finding.medium || 0),
+          low: existing.low + (finding.low || 0)
+        });
+      });
+      
+      const topApps = Array.from(serviceFindings.entries())
+        .map(([name, findings]) => ({
+          name,
+          totalFindings: findings.critical + findings.high + findings.medium + findings.low,
+          ...findings
+        }))
+        .sort((a, b) => b.totalFindings - a.totalFindings)
+        .slice(0, 5);
+      
+      res.json(topApps);
+    } catch (error) {
+      console.error("Top applications Crowdstrike error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Risk score heat map endpoint
+  app.get("/api/dashboard/risk-score-heatmap", requireAuth, async (req, res) => {
+    try {
+      const storage = await getStorage();
+      const riskAssessments = await storage.getAllRiskAssessments();
+      
+      // Get all services with their actual risk scores from risk assessments
+      const services = riskAssessments.map(assessment => ({
+        id: assessment.id,
+        name: assessment.serviceName,
+        riskScore: assessment.finalRiskScore || 0,
+        riskLevel: assessment.finalRiskScore >= 8 ? 'Critical' :
+                  assessment.finalRiskScore >= 6 ? 'High' :
+                  assessment.finalRiskScore >= 4 ? 'Medium' : 'Low'
+      }));
+      
+      // Calculate percentile rankings
+      const sortedByRisk = [...services].sort((a, b) => a.riskScore - b.riskScore);
+      const servicesWithPercentiles = services.map(service => {
+        const rank = sortedByRisk.findIndex(s => s.id === service.id) + 1;
+        const percentile = ((rank - 1) / (sortedByRisk.length - 1)) * 100;
+        
+        let percentileCategory = 'Top 10%';
+        let percentileColor = 'green';
+        
+        if (percentile >= 90) {
+          percentileCategory = 'Bottom 10%';
+          percentileColor = 'red';
+        } else if (percentile >= 75) {
+          percentileCategory = 'Bottom 25%';
+          percentileColor = 'orange';
+        } else if (percentile >= 50) {
+          percentileCategory = 'Bottom 50%';
+          percentileColor = 'yellow';
+        } else if (percentile >= 25) {
+          percentileCategory = 'Top 50%';
+          percentileColor = 'blue';
+        } else {
+          percentileCategory = 'Top 25%';
+          percentileColor = 'green';
+        }
+        
+        return {
+          ...service,
+          percentile: Math.round(percentile),
+          percentileCategory,
+          percentileColor
+        };
+      });
+      
+      // Sort by risk score (highest first) for display
+      servicesWithPercentiles.sort((a, b) => b.riskScore - a.riskScore);
+      
+      res.json(servicesWithPercentiles);
+    } catch (error) {
+      console.error("Risk score heatmap error:", error);
+      res.status(500).json({ message: "Internal server error" });
     }
   });
 

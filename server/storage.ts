@@ -86,8 +86,8 @@ export class MemStorage implements IStorage {
     this.currentUserId = 1;
     this.currentApplicationId = 1;
     
-    // Initialize with dummy admin user
-    this.createUser({ username: "admin", password: "password" });
+    // Initialize with dummy admin user (password will be set via database)
+    // Note: Users are now managed in the database with hashed passwords
     
     // Initialize with dummy applications data
     this.initializeApplications();
@@ -106,7 +106,6 @@ export class MemStorage implements IStorage {
         tags: ['HITRUST', 'SOC 2'],
         lastScan: '07/16/2025, 06:10:01',
         hasAlert: false,
-        scanEngine: 'Mend',
         githubRepo: 'https://github.com/hingehealth/web-portal',
         jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/WEB',
         serviceOwner: 'Sarah Chen (Frontend Team Lead)',
@@ -124,7 +123,6 @@ export class MemStorage implements IStorage {
         tags: ['PCI DSS', 'HIPAA'],
         lastScan: '07/17/2025, 02:40:07',
         hasAlert: false,
-        scanEngine: 'Mend',
         githubRepo: 'https://github.com/hingehealth/payment-api',
         jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/PAY',
         serviceOwner: 'Marcus Rodriguez (Backend Team Lead)',
@@ -142,7 +140,6 @@ export class MemStorage implements IStorage {
         tags: ['ISO 27001', 'HIPAA'],
         lastScan: '07/17/2025, 04:30:34',
         hasAlert: false,
-        scanEngine: 'Escape',
         githubRepo: 'https://github.com/hingehealth/mobile-app',
         jiraProject: 'https://hingehealth.atlassian.net/jira/software/projects/MOB',
         serviceOwner: 'Lisa Park (Mobile Team Lead)',
