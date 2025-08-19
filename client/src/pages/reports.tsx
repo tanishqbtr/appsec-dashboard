@@ -132,26 +132,31 @@ export default function Reports() {
 
   if (isLoading) {
     return (
-      <PageWrapper loadingMessage="Loading Reports...">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-300 rounded w-1/4"></div>
-          <div className="h-64 bg-gray-300 rounded"></div>
+      <PageWrapper loadingMessage="Loading Reports..." minLoadingTime={30}>
+        <div className="min-h-screen bg-background">
+          <Navigation onLogout={logout} currentPage="reports" />
+          <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-muted rounded w-1/4"></div>
+              <div className="h-64 bg-muted rounded"></div>
+            </div>
+          </div>
         </div>
       </PageWrapper>
     );
   }
 
   return (
-    <PageWrapper loadingMessage="Loading Reports...">
-      <div className="min-h-screen bg-gray-50">
+    <PageWrapper loadingMessage="Loading Reports..." minLoadingTime={30}>
+      <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="reports" />
       
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Security Findings</h1>
-              <p className="mt-2 text-gray-600">
+              <h1 className="text-3xl font-bold text-foreground">Security Findings</h1>
+              <p className="mt-2 text-muted-foreground">
                 Manage and monitor your services across different security tools.
               </p>
             </div>
@@ -167,13 +172,13 @@ export default function Reports() {
         </div>
 
         {/* Filters */}
-        <div className="mb-6 bg-white border border-gray-200 rounded-lg p-6" data-tutorial="filter-section">
+        <div className="mb-6 bg-card border border-border rounded-lg p-6" data-tutorial="filter-section">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Side - Scan Engine and Labels */}
             <div>
               {/* Scan Engine Selection */}
               <div data-tutorial="scan-engines">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Scan Engine</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-2">Scan Engine</h3>
                 <div className="flex gap-2">
                   {["Mend", "Escape", "Crowdstrike"].map((engine) => (
                     <Button
@@ -183,8 +188,8 @@ export default function Reports() {
                       onClick={() => handleEngineSelect(engine)}
                       className={`transition-all duration-200 hover:scale-105 ${
                         selectedEngine === engine && filterMode === "labels"
-                          ? "bg-green-600 text-white hover:bg-green-700" 
-                          : "hover:bg-green-50 hover:border-green-300"
+                          ? "bg-green-600 text-white hover:bg-green-700 dark:bg-slate-700 dark:hover:bg-slate-600" 
+                          : "hover:bg-green-50 hover:border-green-300 dark:hover:bg-slate-700/20 dark:hover:border-slate-600"
                       }`}
                     >
                       {engine}
@@ -196,7 +201,7 @@ export default function Reports() {
               {/* Labels Selection - Only show when engine is selected */}
               {selectedEngine && (
                 <div className="mt-4" data-tutorial="engine-labels">
-                  <h3 className="text-sm font-medium text-gray-700 mb-2">
+                  <h3 className="text-sm font-medium text-muted-foreground mb-2">
                     {selectedEngine} Labels
                   </h3>
                   <div className="flex flex-wrap gap-2">
@@ -208,8 +213,8 @@ export default function Reports() {
                         onClick={() => handleLabelSelect(label)}
                         className={`transition-all duration-200 hover:scale-105 ${
                           selectedLabels.includes(label) && filterMode === "labels"
-                            ? "bg-green-400 text-white hover:bg-green-500" 
-                            : "hover:bg-green-50 hover:border-green-300"
+                            ? "bg-green-400 text-white hover:bg-green-500 dark:bg-slate-600 dark:hover:bg-slate-500" 
+                            : "hover:bg-green-50 hover:border-green-300 dark:hover:bg-slate-700/20 dark:hover:border-slate-600"
                         }`}
                       >
                         {label}
@@ -222,7 +227,7 @@ export default function Reports() {
 
             {/* Right Side - Tags Selection */}
             <div data-tutorial="compliance-tags">
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Compliance Tags</h3>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">Compliance Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {["HITRUST", "ISO 27001", "SOC 2", "HIPAA", "PCI DSS"].map((tag) => (
                   <Button
@@ -232,8 +237,8 @@ export default function Reports() {
                     onClick={() => handleTagSelect(tag)}
                     className={`transition-all duration-200 hover:scale-105 ${
                       selectedTags.includes(tag) && filterMode === "tags"
-                        ? "bg-green-600 text-white hover:bg-green-700" 
-                        : "hover:bg-green-50 hover:border-green-300"
+                        ? "bg-green-600 text-white hover:bg-green-700 dark:bg-slate-700 dark:hover:bg-slate-600" 
+                        : "hover:bg-green-50 hover:border-green-300 dark:hover:bg-slate-700/20 dark:hover:border-slate-600"
                     }`}
                   >
                     {tag}
@@ -245,7 +250,7 @@ export default function Reports() {
 
           {/* Active Filters */}
           {(searchTerm || selectedLabels.length > 0 || selectedTags.length > 0) && (
-            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-200" data-tutorial="active-filters">
+            <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border" data-tutorial="active-filters">
               {searchTerm && (
                 <Badge variant="secondary" className="flex items-center gap-1">
                   Search: {searchTerm}
@@ -281,7 +286,12 @@ export default function Reports() {
         {/* Applications Table */}
         <Card data-tutorial="services-table">
           <CardHeader>
-            <CardTitle>Services ({filteredApplications.length})</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Services ({filteredApplications.length})</CardTitle>
+              <div className="text-sm text-muted-foreground italic">
+                Updates take up to 12 hours and may not reflect the latest data
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <ApplicationsTable 

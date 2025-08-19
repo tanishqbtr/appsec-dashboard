@@ -10,7 +10,7 @@ interface PageWrapperProps {
 export default function PageWrapper({ 
   children, 
   loadingMessage = "Loading...",
-  minLoadingTime = 500 
+  minLoadingTime = 30 
 }: PageWrapperProps) {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -27,7 +27,7 @@ export default function PageWrapper({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 page-enter page-enter-active">
+    <div className="min-h-screen bg-background page-enter page-enter-active">
       <div className="animate-in fade-in-0 duration-300">
         {children}
       </div>

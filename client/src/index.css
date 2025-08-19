@@ -32,32 +32,33 @@
 }
 
 .dark {
-  --background: hsl(240, 10%, 3.9%);
-  --foreground: hsl(0, 0%, 98%);
-  --muted: hsl(240, 3.7%, 15.9%);
-  --muted-foreground: hsl(240, 5%, 64.9%);
-  --popover: hsl(240, 10%, 3.9%);
-  --popover-foreground: hsl(0, 0%, 98%);
-  --card: hsl(240, 10%, 3.9%);
-  --card-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 3.7%, 15.9%);
-  --input: hsl(240, 3.7%, 15.9%);
-  --primary: hsl(157, 100%, 20%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(240, 3.7%, 15.9%);
-  --secondary-foreground: hsl(0, 0%, 98%);
-  --accent: hsl(240, 3.7%, 15.9%);
-  --accent-foreground: hsl(0, 0%, 98%);
-  --destructive: hsl(0, 62.8%, 30.6%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(240, 4.9%, 83.9%);
+  /* Professional blue-gray dark mode palette */
+  --background: hsl(220, 15%, 12%); /* Dark blue-gray background */
+  --foreground: hsl(220, 10%, 88%); /* Light gray text */
+  --muted: hsl(220, 12%, 18%); /* Slightly lighter blue-gray */
+  --muted-foreground: hsl(220, 8%, 65%); /* Medium gray */
+  --popover: hsl(220, 14%, 15%); /* Dark blue popover */
+  --popover-foreground: hsl(220, 10%, 90%); /* Light gray */
+  --card: hsl(220, 18%, 20%); /* Medium blue-gray card background */
+  --card-foreground: hsl(220, 8%, 85%); /* Light gray text */
+  --border: hsl(220, 15%, 25%); /* Medium blue-gray border */
+  --input: hsl(220, 16%, 22%); /* Medium input background */
+  --primary: hsl(157, 100%, 20%); /* Keep the green primary */
+  --primary-foreground: hsl(0, 0%, 100%); /* White text on primary */
+  --secondary: hsl(220, 16%, 24%); /* Medium secondary */
+  --secondary-foreground: hsl(220, 8%, 75%); /* Light secondary text */
+  --accent: hsl(220, 18%, 26%); /* Medium blue accent */
+  --accent-foreground: hsl(220, 8%, 85%); /* Light gray on accent */
+  --destructive: hsl(0, 85%, 55%); /* Bright red for destructive */
+  --destructive-foreground: hsl(0, 0%, 98%); /* White on destructive */
+  --ring: hsl(220, 40%, 50%); /* Blue focus ring */
   --radius: 0.5rem;
   
-  /* Custom security dashboard colors for dark mode */
-  --critical: hsl(0, 73%, 41%);
-  --high: hsl(25, 85%, 53%);
-  --medium: hsl(43, 89%, 38%);
-  --low: hsl(142, 76%, 36%);
+  /* Enhanced cybersecurity dashboard colors for dark mode */
+  --critical: hsl(0, 85%, 60%); /* Bright red for critical */
+  --high: hsl(25, 95%, 65%); /* Bright orange for high */
+  --medium: hsl(45, 95%, 70%); /* Bright yellow for medium */
+  --low: hsl(120, 80%, 55%); /* Bright green for low */
 }
 
 @layer base {

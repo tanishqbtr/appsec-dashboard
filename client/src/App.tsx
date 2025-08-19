@@ -5,10 +5,12 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import Login from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import Services from "@/pages/services";
 import ServiceDetail from "@/pages/service-detail";
+import ServiceInventory from "@/pages/service-inventory";
 import ManageApplications from "@/pages/manage-applications";
 import Dashboards from "@/pages/dashboards";
 import Reports from "@/pages/reports";
@@ -23,8 +25,14 @@ function Router() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-primary">
-        <div className="text-white text-lg">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <div className="relative w-12 h-12 mx-auto">
+            <div className="absolute inset-0 border-4 border-muted rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-green-600 rounded-full animate-spin border-t-transparent"></div>
+          </div>
+          <div className="text-foreground text-lg font-medium">Initializing...</div>
+        </div>
       </div>
     );
   }
@@ -39,6 +47,7 @@ function Router() {
       <Route path="/dashboard" component={Dashboards} />
       <Route path="/services" component={Services} />
       <Route path="/service/:slug" component={ServiceDetail} />
+      <Route path="/service-inventory" component={ServiceInventory} />
       <Route path="/manage-applications" component={ManageApplications} />
       <Route path="/dashboards" component={Dashboards} />
       <Route path="/reports" component={Reports} />
@@ -54,10 +63,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

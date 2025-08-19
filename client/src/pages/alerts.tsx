@@ -9,14 +9,14 @@ export default function Alerts() {
   const { logout } = useAuth();
 
   return (
-    <PageWrapper loadingMessage="Loading Alerts...">
-      <div className="min-h-screen bg-gray-50">
+    <PageWrapper loadingMessage="Loading Alerts..." minLoadingTime={30}>
+      <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="alerts" />
       
       <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8 page-enter page-enter-active">
         <div className="mb-8 stagger-item">
-          <h1 className="text-3xl font-bold text-gray-900">Alerts</h1>
-          <p className="mt-2 text-gray-600">
+          <h1 className="text-3xl font-bold text-foreground">Alerts</h1>
+          <p className="mt-2 text-muted-foreground">
             Security alerts and notifications management
           </p>
         </div>
@@ -29,7 +29,7 @@ export default function Alerts() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600">Alerts content will be available soon.</p>
+            <p className="text-muted-foreground">Alerts content will be available soon.</p>
           </CardContent>
         </Card>
       </div>

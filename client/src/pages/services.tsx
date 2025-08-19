@@ -262,7 +262,7 @@ export default function Services() {
 
   return (
     <PageWrapper loadingMessage="Loading Services...">
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="services" />
         
         <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -270,8 +270,8 @@ export default function Services() {
           <div className="mb-8">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Services</h1>
-                <p className="mt-2 text-sm text-gray-600">
+                <h1 className="text-3xl font-bold text-foreground">Services</h1>
+                <p className="mt-2 text-sm text-muted-foreground">
                   Manage and monitor security risk scores for all services
                 </p>
               </div>
@@ -328,7 +328,7 @@ export default function Services() {
                       <DialogTrigger asChild>
                         <RoleProtectedButton 
                           size="sm" 
-                          className="bg-green-600 hover:bg-green-700 text-white flex-shrink-0 btn-smooth"
+                          className="bg-green-600 hover:bg-green-700 dark:bg-slate-700 dark:hover:bg-slate-600 text-white flex-shrink-0 btn-smooth"
                           data-tutorial="add-service"
                           requiredRole="admin"
                         >
@@ -408,7 +408,7 @@ export default function Services() {
                     <Button 
                       onClick={handleAddService}
                       disabled={createServiceMutation.isPending || !newService.name.trim()}
-                      className="bg-green-600 hover:bg-green-700"
+                      className="bg-green-600 hover:bg-green-700 dark:bg-slate-700 dark:hover:bg-slate-600"
                     >
                       {createServiceMutation.isPending ? "Adding..." : "Add Service"}
                     </Button>
@@ -419,7 +419,7 @@ export default function Services() {
                       size="sm"
                       variant="outline"
                       onClick={handleDeleteMode}
-                      className="flex-shrink-0 btn-smooth"
+                      className="flex-shrink-0 btn-smooth border-gray-300 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700/20"
                       data-tutorial="remove-services"
                       requiredRole="admin"
                     >
@@ -439,13 +439,13 @@ export default function Services() {
                 <DialogTitle>Confirm Deletion</DialogTitle>
               </DialogHeader>
               <div className="py-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Are you sure you want to delete {selectedServices.size} service(s)? This action cannot be undone.
                 </p>
                 {selectedServices.size > 0 && (
                   <div className="mt-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Services to be deleted:</h4>
-                    <ul className="text-sm text-gray-600 space-y-1">
+                    <h4 className="font-medium text-foreground mb-2">Services to be deleted:</h4>
+                    <ul className="text-sm text-muted-foreground space-y-1">
                       {sortedApplications
                         .filter(app => selectedServices.has(app.id))
                         .map(app => (
@@ -482,10 +482,10 @@ export default function Services() {
               {sortedApplications.length === 0 ? (
                 <div className="text-center py-8">
                   <Shield className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  <h3 className="mt-2 text-sm font-medium text-foreground">
                     {searchTerm ? "No services found" : "No services available"}
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {searchTerm ? "Try adjusting your search terms." : "Services will appear here once configured."}
                   </p>
                 </div>
@@ -493,7 +493,7 @@ export default function Services() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead data-tutorial="table-headers">
-                      <tr className="border-b border-gray-200">
+                      <tr className="border-b border-border">
                         {isDeleteMode && (
                           <th className="text-left py-3 px-4 w-12">
                             <Checkbox
@@ -507,7 +507,7 @@ export default function Services() {
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("name")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-start btn-smooth"
+                            className="flex items-center gap-1 font-medium text-foreground hover:text-accent-foreground justify-start btn-smooth"
                           >
                             Service Name
                             {sortField === "name" && (
@@ -519,7 +519,7 @@ export default function Services() {
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("riskScore")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full btn-smooth"
+                            className="flex items-center gap-1 font-medium text-foreground hover:text-accent-foreground justify-center w-full btn-smooth"
                           >
                             Risk Score
                             {sortField === "riskScore" && (
@@ -531,7 +531,7 @@ export default function Services() {
                           <Button
                             variant="ghost"
                             onClick={() => handleSort("percentile")}
-                            className="flex items-center gap-1 font-medium text-gray-700 hover:text-gray-900 justify-center w-full btn-smooth"
+                            className="flex items-center gap-1 font-medium text-foreground hover:text-accent-foreground justify-center w-full btn-smooth"
                           >
                             Percentile Ranking
                             {sortField === "percentile" && (
@@ -547,7 +547,7 @@ export default function Services() {
                         return (
                           <tr 
                             key={app.id} 
-                            className="stagger-item border-b border-gray-100 hover:bg-gray-50 card-hover transition-all duration-200"
+                            className="stagger-item border-b border-border hover:bg-muted/50 card-hover transition-all duration-200"
                             data-tutorial={index === 0 ? "service-row" : undefined}
                           >
                             {isDeleteMode && (
@@ -566,7 +566,7 @@ export default function Services() {
                                     <Shield className="h-5 w-5 text-green-600" />
                                   </div>
                                   <div>
-                                    <h3 className="font-medium text-gray-900">
+                                    <h3 className="font-medium text-foreground">
                                       {app.name}
                                     </h3>
                                   </div>
@@ -578,7 +578,7 @@ export default function Services() {
                                       <Shield className="h-5 w-5 text-green-600" />
                                     </div>
                                     <div>
-                                      <h3 className="font-medium text-gray-900 group-hover:text-green-600 transition-colors">
+                                      <h3 className="font-medium text-foreground group-hover:text-green-600 transition-colors">
                                         {app.name}
                                       </h3>
                                     </div>
@@ -587,7 +587,7 @@ export default function Services() {
                               )}
                             </td>
                             <td className="py-4 px-4 text-center">
-                              <span className="text-lg font-semibold text-gray-900">
+                              <span className="text-lg font-semibold text-foreground">
                                 {app.displayRiskScore}
                               </span>
                             </td>

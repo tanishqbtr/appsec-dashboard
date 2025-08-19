@@ -4,16 +4,22 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Trust proxy for rate limiting to work correctly behind reverse proxies
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Session middleware
+// Session middleware with environment-based secret
 app.use(session({
-  secret: 'your-secret-key-here',
+  secret: process.env.SESSION_SECRET || 'your-secret-key-here-change-in-production',
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: false, // Set to true in production with HTTPS
+    secure: process.env.NODE_ENV === 'production', // Enable secure cookies in production
     httpOnly: true,
     maxAge: 30 * 60 * 1000 // 30 minutes
   }

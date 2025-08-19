@@ -33,17 +33,14 @@ import {
   PieChart as RechartsPieChart,
   Pie,
   Cell,
-  LineChart,
-  Line,
-  Area,
-  AreaChart,
   Legend
 } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { format, subDays } from "date-fns";
+import { subDays, format } from "date-fns";
+
 import type { Application } from "@shared/schema";
 
 // Analytics data processing functions
@@ -136,24 +133,27 @@ export default function Dashboards() {
     queryKey: ["/api/dashboard/risk-distribution"],
   });
 
-  const analytics = processAnalyticsData(applications);
-
-  // Weekly trend data - simulate 7 days of findings by severity
-  const weeklyTrend = Array.from({ length: 7 }, (_, i) => {
-    const date = subDays(new Date(), 6 - i);
-    const critical = Math.floor(Math.random() * 8) + 2;
-    const high = Math.floor(Math.random() * 15) + 5;
-    const medium = Math.floor(Math.random() * 25) + 10;
-    const low = Math.floor(Math.random() * 30) + 15;
-    return {
-      date: format(date, 'MMM dd'),
-      Critical: critical,
-      High: high,
-      Medium: medium,
-      Low: low,
-      total: critical + high + medium + low
-    };
+  const { data: topAppsTotal = [], isLoading: isTopAppsTotalLoading } = useQuery({
+    queryKey: ["/api/dashboard/top-applications-total"],
   });
+
+  const { data: topAppsMend = [], isLoading: isTopAppsMendLoading } = useQuery({
+    queryKey: ["/api/dashboard/top-applications-mend"],
+  });
+
+  const { data: topAppsEscape = [], isLoading: isTopAppsEscapeLoading } = useQuery({
+    queryKey: ["/api/dashboard/top-applications-escape"],
+  });
+
+  const { data: topAppsCrowdstrike = [], isLoading: isTopAppsCrowdstrikeLoading } = useQuery({
+    queryKey: ["/api/dashboard/top-applications-crowdstrike"],
+  });
+
+  const { data: riskHeatmapData = [], isLoading: isRiskHeatmapLoading } = useQuery({
+    queryKey: ["/api/dashboard/risk-score-heatmap"],
+  });
+
+
 
   const COLORS = {
     critical: '#dc2626',
@@ -166,18 +166,18 @@ export default function Dashboards() {
 
 
 
-  if (isLoading || isMetricsLoading || isScanEngineLoading || isRiskDistributionLoading) {
+  if (isLoading || isMetricsLoading || isScanEngineLoading || isRiskDistributionLoading || isTopAppsTotalLoading || isTopAppsMendLoading || isTopAppsEscapeLoading || isTopAppsCrowdstrikeLoading || isRiskHeatmapLoading) {
     return (
-      <PageWrapper loadingMessage="Loading Dashboard...">
-        <div className="min-h-screen bg-gray-50">
+      <PageWrapper loadingMessage="Loading Dashboard..." minLoadingTime={30}>
+        <div className="min-h-screen bg-background">
           <Navigation onLogout={logout} currentPage="dashboards" />
           <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="animate-pulse">
-              <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-              <div className="h-4 bg-gray-200 rounded w-1/2 mb-8"></div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-muted rounded w-1/4"></div>
+              <div className="h-4 bg-muted rounded w-1/2"></div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-32 bg-gray-200 rounded"></div>
+                  <div key={i} className="h-32 bg-muted rounded"></div>
                 ))}
               </div>
             </div>
@@ -194,8 +194,8 @@ export default function Dashboards() {
   const averageRiskScore = (dashboardMetrics as any)?.averageRiskScore ?? 0;
 
   return (
-    <PageWrapper loadingMessage="Loading Dashboard...">
-      <div className="min-h-screen bg-gray-50">
+    <PageWrapper loadingMessage="Loading Dashboard..." minLoadingTime={30}>
+      <div className="min-h-screen bg-background">
         <Navigation onLogout={logout} currentPage="dashboards" />
       
         <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -203,8 +203,8 @@ export default function Dashboards() {
           <div className="mb-8" data-tutorial="dashboard-header">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Security Dashboard</h1>
-                <p className="mt-2 text-gray-600">
+                <h1 className="text-3xl font-bold text-foreground">Security Dashboard</h1>
+                <p className="mt-2 text-muted-foreground">
                   Real-time security insights and comprehensive vulnerability management
                 </p>
               </div>
@@ -224,61 +224,81 @@ export default function Dashboards() {
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" data-tutorial="key-metrics">
-            <Card className="stagger-item card-hover">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 hover:-translate-y-1 border-l-4 border-l-blue-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Total Applications</p>
-                    <p className="text-3xl font-bold text-gray-900">{totalApplications}</p>
-                    <p className="text-sm text-green-600">+2 this week</p>
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors duration-200">Total Applications</p>
+                    <p className="text-3xl font-bold text-foreground transition-all duration-300 group-hover:text-blue-700 dark:group-hover:text-blue-300">{totalApplications}</p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-green-600">+2 this week</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Shield className="h-6 w-6 text-blue-600" />
+                  <div className="h-12 w-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors duration-200">
+                    <Shield className="h-6 w-6 text-blue-600 transition-all duration-300 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-blue-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-red-500/20 hover:-translate-y-1 border-l-4 border-l-red-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Critical Findings</p>
-                    <p className="text-3xl font-bold text-red-600">{criticalFindings}</p>
-                    <p className="text-sm text-red-600">Requires immediate attention</p>
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors duration-200">Critical Findings</p>
+                    <p className="text-3xl font-bold text-red-600 transition-all duration-300 group-hover:text-red-700 dark:group-hover:text-red-300">{criticalFindings}</p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-red-600">Requires immediate attention</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                  <div className="h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-red-200 dark:group-hover:bg-red-900/50 transition-colors duration-200">
+                    <AlertTriangle className="h-6 w-6 text-red-600 transition-all duration-300 group-hover:scale-110 group-hover:animate-pulse" />
+                    <div className="absolute inset-0 bg-red-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20 hover:-translate-y-1 border-l-4 border-l-orange-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">High Findings</p>
-                    <p className="text-3xl font-bold text-orange-600">{highFindings}</p>
-                    <p className="text-sm text-orange-600">Needs attention</p>
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-orange-700 dark:group-hover:text-orange-300 transition-colors duration-200">High Findings</p>
+                    <p className="text-3xl font-bold text-orange-600 transition-all duration-300 group-hover:text-orange-700 dark:group-hover:text-orange-300">{highFindings}</p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-orange-600">Needs attention</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <AlertTriangle className="h-6 w-6 text-orange-600" />
+                  <div className="h-12 w-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors duration-200">
+                    <AlertTriangle className="h-6 w-6 text-orange-600 transition-all duration-300 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-orange-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-amber-500/20 hover:-translate-y-1 border-l-4 border-l-amber-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-50/50 to-transparent dark:from-amber-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-gray-600">Avg Risk Score</p>
-                    <p className="text-3xl font-bold text-orange-600">{averageRiskScore}</p>
-                    <p className="text-sm text-orange-600">Medium risk level</p>
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-amber-700 dark:group-hover:text-amber-300 transition-colors duration-200">Avg Risk Score</p>
+                    <p className="text-3xl font-bold text-orange-600 transition-all duration-300 group-hover:text-amber-700 dark:group-hover:text-amber-300">{averageRiskScore}</p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-amber-600">Medium risk level</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-orange-600" />
+                  <div className="h-12 w-12 bg-amber-100 dark:bg-amber-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-amber-200 dark:group-hover:bg-amber-900/50 transition-colors duration-200">
+                    <TrendingUp className="h-6 w-6 text-amber-600 transition-all duration-300 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-amber-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
@@ -287,61 +307,8 @@ export default function Dashboards() {
 
           {/* Charts Row 1 */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            {/* Weekly Findings by Severity */}
-            <Card className="chart-enter card-hover" data-tutorial="weekly-trends">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Weekly Findings by Severity
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={weeklyTrend}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line 
-                      type="monotone" 
-                      dataKey="Critical" 
-                      stroke="#dc2626" 
-                      strokeWidth={3}
-                      name="Critical"
-                      dot={{ fill: '#dc2626', strokeWidth: 2, r: 4 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="High" 
-                      stroke="#ea580c" 
-                      strokeWidth={3}
-                      name="High"
-                      dot={{ fill: '#ea580c', strokeWidth: 2, r: 4 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="Medium" 
-                      stroke="#d97706" 
-                      strokeWidth={3}
-                      name="Medium"
-                      dot={{ fill: '#d97706', strokeWidth: 2, r: 4 }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="Low" 
-                      stroke="#65a30d" 
-                      strokeWidth={3}
-                      name="Low"
-                      dot={{ fill: '#65a30d', strokeWidth: 2, r: 4 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
             {/* Risk Distribution */}
-            <Card className="chart-enter card-hover" data-tutorial="risk-distribution">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-800 dark:to-gray-900 border border-slate-200 dark:border-slate-700" data-tutorial="risk-distribution">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <PieChart className="h-5 w-5" />
@@ -370,12 +337,9 @@ export default function Dashboards() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Charts Row 2 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Findings by Engine */}
-            <Card className="chart-enter card-hover" data-tutorial="engine-findings">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-900/20 dark:to-indigo-900/30 border border-blue-200 dark:border-blue-800" data-tutorial="engine-findings">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <BarChart3 className="h-5 w-5" />
@@ -384,9 +348,19 @@ export default function Dashboards() {
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={(scanEngineFindings as any) || []}>
+                  <BarChart 
+                    data={(scanEngineFindings as any) || []}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+                  >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="engine" />
+                    <XAxis 
+                      dataKey="engine" 
+                      tick={{ fontSize: 12 }}
+                      interval={0}
+                      angle={0}
+                      textAnchor="middle"
+                      height={60}
+                    />
                     <YAxis />
                     <Tooltip />
                     <Legend />
@@ -398,116 +372,369 @@ export default function Dashboards() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
+          </div>
 
-            {/* Compliance Overview */}
-            <Card className="chart-enter card-hover" data-tutorial="compliance-coverage">
+          {/* Top High-Risk Applications Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Top 5 Applications by Total Findings */}
+            <Card className="chart-enter card-hover bg-gradient-to-br from-red-50 to-rose-100 dark:from-red-900/20 dark:to-rose-900/30 border border-red-200 dark:border-red-800 hover:from-red-100 hover:to-rose-200 dark:hover:from-red-900/30 dark:hover:to-rose-900/40 hover:border-red-300 dark:hover:border-red-700 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Compliance Standards Coverage
+                  <AlertTriangle className="h-5 w-5 text-red-600" />
+                  Top 5 High-Risk Applications by Total Findings
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {Object.entries(analytics.complianceMetrics).map(([tag, count]) => {
-                    const percentage = (count / applications.length) * 100;
-                    return (
-                      <div key={tag} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700">
-                              {tag}
-                            </Badge>
-                            <span className="text-sm text-gray-600">
-                              {count} of {applications.length} apps
+                <div className="space-y-4">
+                  {(topAppsTotal as any[]).slice(0, 5).map((app, index) => (
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 hover:border-red-300 dark:hover:border-red-700 transition-all duration-200 hover:scale-[1.02] hover:shadow-md cursor-pointer">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-700 rounded-full flex items-center justify-center text-sm font-semibold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-foreground">{app.name}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">
+                              Critical: {app.critical}
+                            </span>
+                            <span className="text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-2 py-1 rounded">
+                              High: {app.high}
+                            </span>
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                              Medium: {app.medium}
+                            </span>
+                            <span className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                              Low: {app.low}
                             </span>
                           </div>
-                          <span className="text-sm font-medium text-gray-900">
-                            {percentage.toFixed(0)}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-3">
-                          <div 
-                            className="bg-green-600 h-3 rounded-full transition-all duration-500 ease-out"
-                            style={{ width: `${percentage}%` }}
-                          ></div>
                         </div>
                       </div>
-                    );
-                  })}
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-red-600">{app.totalFindings}</span>
+                        <p className="text-xs text-muted-foreground">Total Findings</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Top 5 Applications in Mend */}
+            <Card className="chart-enter card-hover bg-gradient-to-br from-blue-50 to-cyan-100 dark:from-blue-900/20 dark:to-cyan-900/30 border border-blue-200 dark:border-blue-800 hover:from-blue-100 hover:to-cyan-200 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/40 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5 text-blue-600" />
+                  Top 5 High-Risk Applications in Mend
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {(topAppsMend as any[]).slice(0, 5).map((app, index) => (
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 hover:border-blue-300 dark:hover:border-blue-700 transition-all duration-200 hover:scale-[1.02] hover:shadow-md cursor-pointer">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 rounded-full flex items-center justify-center text-sm font-semibold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-foreground">{app.name}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">
+                              Critical: {app.critical}
+                            </span>
+                            <span className="text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-2 py-1 rounded">
+                              High: {app.high}
+                            </span>
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                              Medium: {app.medium}
+                            </span>
+                            <span className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                              Low: {app.low}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-blue-600">{app.totalFindings}</span>
+                        <p className="text-xs text-muted-foreground">Total Findings</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Recent Activity & Quick Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Findings Trend */}
-            <Card className="transition-all duration-200 hover:shadow-lg" data-tutorial="findings-trend-area">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            {/* Top 5 Applications in Escape */}
+            <Card className="chart-enter card-hover bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/30 border border-green-200 dark:border-green-800 hover:from-green-100 hover:to-emerald-200 dark:hover:from-green-900/30 dark:hover:to-emerald-900/40 hover:border-green-300 dark:hover:border-green-700 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Findings Trend (7 Days)
+                  <Target className="h-5 w-5 text-green-600" />
+                  Top 5 High-Risk Applications in Escape
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={weeklyTrend}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Area type="monotone" dataKey="Critical" stackId="1" stroke={COLORS.critical} fill={COLORS.critical} name="Critical" />
-                    <Area type="monotone" dataKey="High" stackId="1" stroke={COLORS.high} fill={COLORS.high} name="High" />
-                    <Area type="monotone" dataKey="Medium" stackId="1" stroke={COLORS.medium} fill={COLORS.medium} name="Medium" />
-                    <Area type="monotone" dataKey="Low" stackId="1" stroke={COLORS.low} fill={COLORS.low} name="Low" />
-                  </AreaChart>
-                </ResponsiveContainer>
+                <div className="space-y-4">
+                  {(topAppsEscape as any[]).slice(0, 5).map((app, index) => (
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800 hover:bg-green-100 dark:hover:bg-green-900/30 hover:border-green-300 dark:hover:border-green-700 transition-all duration-200 hover:scale-[1.02] hover:shadow-md cursor-pointer">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border border-green-300 dark:border-green-700 rounded-full flex items-center justify-center text-sm font-semibold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-foreground">{app.name}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">
+                              Critical: {app.critical}
+                            </span>
+                            <span className="text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-2 py-1 rounded">
+                              High: {app.high}
+                            </span>
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                              Medium: {app.medium}
+                            </span>
+                            <span className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                              Low: {app.low}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-green-600">{app.totalFindings}</span>
+                        <p className="text-xs text-muted-foreground">Total Findings</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
 
-            {/* Quick Stats */}
-            <Card className="transition-all duration-200 hover:shadow-lg" data-tutorial="security-summary">
+            {/* Top 5 Applications in Crowdstrike */}
+            <Card className="chart-enter card-hover bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/20 dark:to-amber-900/30 border border-orange-200 dark:border-orange-800 hover:from-orange-100 hover:to-amber-200 dark:hover:from-orange-900/30 dark:hover:to-amber-900/40 hover:border-orange-300 dark:hover:border-orange-700 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Security Summary
+                  <Zap className="h-5 w-5 text-orange-600" />
+                  Top 5 High-Risk Applications in Crowdstrike
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Users className="h-8 w-8 text-blue-600" />
-                      <div>
-                        <p className="font-medium text-gray-900">Total Findings</p>
-                        <p className="text-sm text-gray-600">Across all applications</p>
+                <div className="space-y-4">
+                  {(topAppsCrowdstrike as any[]).slice(0, 5).map((app, index) => (
+                    <div key={app.name} className="flex items-center justify-between p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800 hover:bg-orange-100 dark:hover:bg-orange-900/30 hover:border-orange-300 dark:hover:border-orange-700 transition-all duration-200 hover:scale-[1.02] hover:shadow-md cursor-pointer">
+                      <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 border border-orange-300 dark:border-orange-700 rounded-full flex items-center justify-center text-sm font-semibold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-foreground">{app.name}</p>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-xs bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 px-2 py-1 rounded">
+                              Critical: {app.critical}
+                            </span>
+                            <span className="text-xs bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 px-2 py-1 rounded">
+                              High: {app.high}
+                            </span>
+                            <span className="text-xs bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 px-2 py-1 rounded">
+                              Medium: {app.medium}
+                            </span>
+                            <span className="text-xs bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 px-2 py-1 rounded">
+                              Low: {app.low}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-2xl font-bold text-orange-600">{app.totalFindings}</span>
+                        <p className="text-xs text-muted-foreground">Total Findings</p>
                       </div>
                     </div>
-                    <span className="text-2xl font-bold text-blue-600">{criticalFindings + highFindings}</span>
-                  </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-                  <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Target className="h-8 w-8 text-green-600" />
-                      <div>
-                        <p className="font-medium text-gray-900">Compliance Rate</p>
-                        <p className="text-sm text-gray-600">Overall security compliance</p>
+          {/* Risk Score Heat Map Section */}
+          <div className="mb-8">
+            <Card className="chart-enter card-hover bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-900/20 dark:to-indigo-900/30 border border-purple-200 dark:border-purple-800 hover:from-purple-100 hover:to-indigo-200 dark:hover:from-purple-900/30 dark:hover:to-indigo-900/40 hover:border-purple-300 dark:hover:border-purple-700 transition-all duration-300 hover:scale-[1.01] hover:shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-purple-600" />
+                  Services by Risk Score Heat Map
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* CSS Grid Honeycomb Layout */}
+                <div className="p-6">
+                  <style dangerouslySetInnerHTML={{
+                    __html: `
+                      .honeycomb-grid {
+                        --hex-size: 120px;
+                        --hex-gap: 8px;
+                        display: grid;
+                        grid-template-columns: repeat(auto-fit, minmax(100px, var(--hex-size)));
+                        gap: var(--hex-gap);
+                        max-width: 900px;
+                        margin: 0 auto;
+                      }
+                      
+                      .hex-item {
+                        position: relative;
+                        width: 100%;
+                        aspect-ratio: 1.1547;
+                        clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+                        border-radius: 8px;
+                        overflow: hidden;
+                        transition: transform 0.3s ease, box-shadow 0.3s ease;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                      }
+                      
+                      .hex-item:hover {
+                        transform: translateY(-2px) scale(1.05);
+                        box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+                      }
+                      
+                      .hex-content {
+                        position: absolute;
+                        inset: 0;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 16px;
+                        text-align: center;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .hex-item:nth-child(odd) {
+                          margin-top: calc(var(--hex-size) * 0.15);
+                        }
+                        .hex-item:nth-child(even) {
+                          margin-bottom: calc(var(--hex-size) * 0.15);
+                        }
+                      }
+                    `
+                  }} />
+                  
+                  <div className="honeycomb-grid">
+                    {(riskHeatmapData as any[]).map((service) => (
+                      <div
+                        key={service.id}
+                        className={`
+                          hex-item cursor-pointer
+                          ${service.percentileColor === 'green' 
+                            ? 'bg-green-100 dark:bg-green-900/30' 
+                            : service.percentileColor === 'blue'
+                            ? 'bg-blue-100 dark:bg-blue-900/30'
+                            : service.percentileColor === 'yellow'
+                            ? 'bg-yellow-100 dark:bg-yellow-900/30'
+                            : service.percentileColor === 'orange'
+                            ? 'bg-orange-100 dark:bg-orange-900/30'
+                            : 'bg-red-100 dark:bg-red-900/30'
+                          }
+                        `}
+                        style={{
+                          border: `${service.riskLevel === 'Critical' ? '3px' : 
+                                   service.riskLevel === 'High' ? '2.5px' : '2px'} solid ${
+                                   service.riskLevel === 'Critical' ? '#dc2626' : 
+                                   service.riskLevel === 'High' ? '#ea580c' :
+                                   service.riskLevel === 'Medium' ? '#ca8a04' : '#16a34a'
+                                 }`
+                        }}
+                        title={`${service.name} - Risk Score: ${service.riskScore}/10 - ${service.percentileCategory}`}
+                      >
+                        <div className="hex-content">
+                          {/* Service Name */}
+                          <div className="text-xs font-semibold text-foreground mb-1 leading-tight">
+                            {service.name.length > 15 ? 
+                              service.name.split(' ').length > 1 ?
+                                service.name.split(' ').slice(0, 2).join(' ') :
+                                service.name.substring(0, 12) + '...'
+                              : service.name
+                            }
+                          </div>
+                          
+                          {/* Risk Score */}
+                          <div 
+                            className={`
+                              text-lg font-bold mb-1
+                              ${service.riskLevel === 'Critical' 
+                                ? 'text-red-600 dark:text-red-400' 
+                                : service.riskLevel === 'High'
+                                ? 'text-orange-600 dark:text-orange-400'
+                                : service.riskLevel === 'Medium'
+                                ? 'text-yellow-600 dark:text-yellow-400'
+                                : 'text-green-600 dark:text-green-400'
+                              }
+                            `}
+                          >
+                            {service.riskScore.toFixed(1)}
+                          </div>
+                          
+                          {/* Percentile Category */}
+                          <div className="text-xs text-muted-foreground">
+                            {service.percentileCategory}
+                          </div>
+                        </div>
+                        
+                        {/* Critical service indicator */}
+                        {service.riskLevel === 'Critical' && (
+                          <div className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                        )}
                       </div>
-                    </div>
-                    <span className="text-2xl font-bold text-green-600">92%</span>
+                    ))}
                   </div>
-
-                  <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <Clock className="h-8 w-8 text-orange-600" />
-                      <div>
-                        <p className="font-medium text-gray-900">Avg Response Time</p>
-                        <p className="text-sm text-gray-600">Time to resolve critical issues</p>
+                </div>
+                
+                {/* Updated Legend */}
+                <div className="mt-6 space-y-4">
+                  <div className="text-center">
+                    <h4 className="font-semibold text-sm mb-2">Risk Score Outline</h4>
+                    <div className="flex items-center justify-center gap-6 text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-1 bg-red-600" style={{borderWidth: '2px'}}></div>
+                        <span className="text-muted-foreground">Critical (8.0+)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-1 bg-orange-600" style={{borderWidth: '2px'}}></div>
+                        <span className="text-muted-foreground">High (6.0-7.9)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-1 bg-yellow-600" style={{borderWidth: '2px'}}></div>
+                        <span className="text-muted-foreground">Medium (4.0-5.9)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-1 bg-green-600" style={{borderWidth: '2px'}}></div>
+                        <span className="text-muted-foreground">Low (0-3.9)</span>
                       </div>
                     </div>
-                    <span className="text-2xl font-bold text-orange-600">2.4d</span>
+                  </div>
+                  
+                  <div className="text-center">
+                    <h4 className="font-semibold text-sm mb-2">Percentile Ranking (Fill Color)</h4>
+                    <div className="flex items-center justify-center gap-6 text-sm">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-green-200 rounded-full border border-green-300"></div>
+                        <span className="text-muted-foreground">Top 25%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-blue-200 rounded-full border border-blue-300"></div>
+                        <span className="text-muted-foreground">Top 50%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-yellow-200 rounded-full border border-yellow-300"></div>
+                        <span className="text-muted-foreground">Bottom 50%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-orange-200 rounded-full border border-orange-300"></div>
+                        <span className="text-muted-foreground">Bottom 25%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 bg-red-200 rounded-full border border-red-300"></div>
+                        <span className="text-muted-foreground">Bottom 10%</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
