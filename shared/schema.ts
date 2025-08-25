@@ -4,7 +4,7 @@ import { z } from "zod";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+  name: text("name").notNull().default("User"), // Default value for smooth migration
   username: text("username").notNull().unique(), // This will be the email
   status: text("status").notNull().default("Active"), // Active, Disabled
   type: text("type").notNull().default("User"), // User, Admin
