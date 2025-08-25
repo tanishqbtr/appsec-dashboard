@@ -35,6 +35,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
+import { hashPassword } from "./auth/passwords";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -326,7 +327,9 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
     const user: User = { 
-      ...insertUser, 
+      ...insertUser,
+      name: insertUser.name || "Unknown User",
+      passwordUpdatedAt: insertUser.passwordUpdatedAt || null,
       id,
       status: insertUser.status || "Active",
       type: insertUser.type || "User",
@@ -817,10 +820,11 @@ async function initializeStorage(): Promise<IStorage> {
     
     if (!existingAdminUser) {
       console.log("👤 Creating admin user...");
+      const adminPasswordHash = await hashPassword("password@hh");
       await dbStorage.createUser({ 
         name: "Admin User", 
         username: "admin@hingehealth.com", 
-        passwordHash: "password@hh",
+        passwordHash: adminPasswordHash,
         status: "Active",
         type: "Admin"
       });
@@ -831,10 +835,11 @@ async function initializeStorage(): Promise<IStorage> {
     
     if (!existingDemoUser) {
       console.log("👤 Creating demo user...");
+      const demoPasswordHash = await hashPassword("password");
       await dbStorage.createUser({ 
         name: "Demo User", 
         username: "demo@hingehealth.com", 
-        passwordHash: "password",
+        passwordHash: demoPasswordHash,
         status: "Active",
         type: "User"
       });
