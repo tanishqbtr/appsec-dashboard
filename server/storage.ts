@@ -325,7 +325,15 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      status: insertUser.status || "Active",
+      type: insertUser.type || "User",
+      passwordAlgo: insertUser.passwordAlgo || "argon2id",
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
     this.users.set(id, user);
     return user;
   }
@@ -369,6 +377,9 @@ export class MemStorage implements IStorage {
       serviceOwner: insertApplication.serviceOwner ?? null,
       slackChannel: insertApplication.slackChannel ?? null,
       description: insertApplication.description ?? null,
+      mendUrl: insertApplication.mendUrl ?? null,
+      crowdstrikeUrl: insertApplication.crowdstrikeUrl ?? null,
+      escapeUrl: insertApplication.escapeUrl ?? null,
     };
     this.applications.set(id, application);
     return application;
@@ -809,7 +820,7 @@ async function initializeStorage(): Promise<IStorage> {
       await dbStorage.createUser({ 
         name: "Admin User", 
         username: "admin@hingehealth.com", 
-        password: "password@hh",
+        passwordHash: "password@hh",
         status: "Active",
         type: "Admin"
       });
@@ -823,7 +834,7 @@ async function initializeStorage(): Promise<IStorage> {
       await dbStorage.createUser({ 
         name: "Demo User", 
         username: "demo@hingehealth.com", 
-        password: "password",
+        passwordHash: "password",
         status: "Active",
         type: "User"
       });
