@@ -164,7 +164,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const storage = await getStorage();
-      const user = await storage.getUser(req.session.userId);
+      const user = await storage.getUser(req.session?.userId!);
       
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -239,7 +239,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (!currentPassword) {
           return res.status(400).json({ message: "Current password is required to change password" });
         }
-        if (user.password !== currentPassword) {
+        // Verify current password using hash verification
+        const isValidCurrentPassword = user.passwordHash ? await verifyPassword(user.passwordHash, currentPassword) : false;
+        if (!isValidCurrentPassword) {
           return res.status(401).json({ message: "Current password is incorrect" });
         }
         if (newPassword.length < 6) {
@@ -256,10 +258,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update user
       const updateData: any = { name, username };
       if (newPassword) {
-        updateData.password = newPassword;
+        updateData.passwordHash = await hashPassword(newPassword);
+        updateData.passwordAlgo = 'argon2id';
+        updateData.passwordUpdatedAt = new Date();
       }
 
       const updatedUser = await storage.updateUser(user.id, updateData);
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update user" });
+      }
       
       // Update session if username changed
       if (username !== user.username) {
@@ -502,7 +510,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: app.name,
           finalRiskScore: riskData?.finalRiskScore || 0,
           riskLevel: riskData?.riskLevel || "Low",
-          scanEngine: app.scanEngine || "Risk Assessment",
+          // scanEngine: "Risk Assessment", // Removed - not available in schema
           labels: app.labels || [],
           tags: app.tags || []
         };
@@ -1059,9 +1067,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: assessment.id,
         name: assessment.serviceName,
         riskScore: assessment.finalRiskScore || 0,
-        riskLevel: assessment.finalRiskScore >= 8 ? 'Critical' :
-                  assessment.finalRiskScore >= 6 ? 'High' :
-                  assessment.finalRiskScore >= 4 ? 'Medium' : 'Low'
+        riskLevel: (assessment.finalRiskScore ?? 0) >= 8 ? 'Critical' :
+                  (assessment.finalRiskScore ?? 0) >= 6 ? 'High' :
+                  (assessment.finalRiskScore ?? 0) >= 4 ? 'Medium' : 'Low'
       }));
       
       // Calculate percentile rankings
