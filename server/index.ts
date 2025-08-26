@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import helmet from "helmet";
+import { config } from "./config";
 import session from "express-session";
 import crypto from "node:crypto";
 import connectPgSimple from "connect-pg-simple";
@@ -15,11 +16,11 @@ app.use(helmet({
   crossOriginOpenerPolicy: { policy: "same-origin" },
   referrerPolicy: { policy: "no-referrer" },
   frameguard: { action: "deny" },
-  hsts: process.env.NODE_ENV === 'production' ? undefined : false,
+  hsts: config.NODE_ENV === 'production' ? undefined : false,
 }));
 
 // Trust proxy for secure cookies and correct client IPs when behind load balancers
-if (process.env.NODE_ENV === 'production') {
+if (config.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
 }
 
@@ -27,13 +28,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Session middleware with environment-based secret and production store
-if (app.get("env") === "production" && !process.env.SESSION_SECRET) {
+if (app.get("env") === "production" && !config.SESSION_SECRET) {
   throw new Error("SESSION_SECRET must be set in production");
 }
 
 const PgSession = connectPgSimple(session);
 const sessionOptions: session.SessionOptions = {
-  secret: process.env.SESSION_SECRET || "dev-insecure-secret",
+  secret: config.SESSION_SECRET || "dev-insecure-secret",
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -133,7 +134,7 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
+  const port = config.PORT;
   server.listen(port, () => {
     log(`serving on port ${port}`);
   });
