@@ -47,11 +47,11 @@ app.use(session(sessionOptions));
 // CSRF token initializer (double-submit via header matched to session token)
 app.use((req, res, next) => {
   if (!req.session) return next();
-  if (!req.session.csrfToken) {
-    req.session.csrfToken = crypto.randomBytes(32).toString("hex");
+  if (!(req.session as any).csrfToken) {
+    (req.session as any).csrfToken = crypto.randomBytes(32).toString("hex");
   }
   // Expose token via non-HTTPOnly cookie for clients to read and send back in header
-  res.cookie("XSRF-TOKEN", req.session.csrfToken, {
+  res.cookie("XSRF-TOKEN", (req.session as any).csrfToken, {
     httpOnly: false,
     sameSite: "lax",
     secure: app.get("env") === "production",
