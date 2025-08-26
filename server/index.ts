@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import crypto from "node:crypto";
 import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { registerRoutes } from "./routes";
@@ -43,6 +44,21 @@ if (app.get("env") === "production") {
 
 app.use(session(sessionOptions));
 
+// CSRF token initializer (double-submit via header matched to session token)
+app.use((req, res, next) => {
+  if (!req.session) return next();
+  if (!req.session.csrfToken) {
+    req.session.csrfToken = crypto.randomBytes(32).toString("hex");
+  }
+  // Expose token via non-HTTPOnly cookie for clients to read and send back in header
+  res.cookie("XSRF-TOKEN", req.session.csrfToken, {
+    httpOnly: false,
+    sameSite: "lax",
+    secure: app.get("env") === "production",
+  });
+  next();
+});
+
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -57,10 +73,8 @@ app.use((req, res, next) => {
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
+      const requestId = (req.headers["x-request-id"] as string) || "-";
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms [reqId=${requestId}]`;
 
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";

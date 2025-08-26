@@ -25,6 +25,15 @@ const requireAdmin = (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // CSRF guard (validate header against session token) - enforced in production only
+  const requireCsrf = (req: any, res: any, next: any) => {
+    if (process.env.NODE_ENV !== 'production') return next();
+    const token = req.get('x-csrf-token');
+    if (!token || !req.session || token !== req.session.csrfToken) {
+      return res.status(403).json({ message: 'Invalid CSRF token' });
+    }
+    next();
+  };
   
   // Rate limiting for authentication endpoints
   const authRateLimit = rateLimit({
@@ -61,7 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const storage = await getStorage();
       const user = await storage.getUserByUsername(username);
-      console.log("User found:", user ? { id: user.id, username: user.username } : "not found");
+      console.log("Auth attempt processed", { actor: "login", username: username ? "provided" : "missing" });
       
       if (!user) {
         // Use consistent error message to prevent username enumeration
@@ -138,20 +147,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Logout endpoint
-  app.post("/api/logout", async (req, res) => {
+  app.post("/api/logout", requireAuth, requireCsrf, async (req, res) => {
     try {
-      // Clear session
-      req.session.destroy((err) => {
+      if (!req.session) {
+        return res.json({ success: true });
+      }
+      req.session.destroy((err: any) => {
         if (err) console.error("Session destroy error:", err);
       });
-      res.json({ success: true, message: "Logged out successfully" });
+      res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
   });
 
   // Change password endpoint
-  app.post("/api/auth/change-password", requireAuth, authRateLimit, async (req, res) => {
+  app.post("/api/auth/change-password", requireAuth, requireCsrf, authRateLimit, async (req, res) => {
     try {
       const { currentPassword, newPassword } = req.body;
       
@@ -220,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/profile", requireAuth, async (req: any, res) => {
+  app.patch("/api/profile", requireAuth, requireCsrf, async (req: any, res) => {
     try {
       const { name, username, currentPassword, newPassword } = req.body;
       
@@ -298,7 +309,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update application endpoint - Admin only
-  app.patch("/api/applications/:id", requireAdmin, async (req, res) => {
+  app.patch("/api/applications/:id", requireAdmin, requireCsrf, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -318,7 +329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Add application endpoint - Admin only
-  app.post("/api/applications", requireAdmin, async (req: any, res) => {
+  app.post("/api/applications", requireAdmin, requireCsrf, async (req: any, res) => {
     try {
       const newApplication = req.body;
       
@@ -342,7 +353,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Delete application endpoint - Admin only
-  app.delete("/api/applications/:id", requireAdmin, async (req: any, res) => {
+  app.delete("/api/applications/:id", requireAdmin, requireCsrf, async (req: any, res) => {
     try {
       const { id } = req.params;
       
@@ -467,7 +478,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/risk-assessments", requireAdmin, async (req: any, res) => {
+  app.post("/api/risk-assessments", requireAdmin, requireCsrf, async (req: any, res) => {
     try {
       const assessmentData = req.body;
       const storage = await getStorage();
@@ -797,7 +808,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/users", requireAdmin, async (req, res) => {
+  app.post("/api/admin/users", requireAdmin, requireCsrf, async (req, res) => {
     try {
       const userData = req.body;
       const storage = await getStorage();
@@ -816,7 +827,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/admin/users/:id", requireAdmin, async (req, res) => {
+  app.patch("/api/admin/users/:id", requireAdmin, requireCsrf, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
       const updates = req.body;
@@ -830,7 +841,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/users/:id", requireAdmin, async (req, res) => {
+  app.delete("/api/admin/users/:id", requireAdmin, requireCsrf, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
       const storage = await getStorage();
@@ -844,7 +855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Bulk delete users endpoint
-  app.delete("/api/admin/users/bulk", requireAdmin, async (req, res) => {
+  app.delete("/api/admin/users/bulk", requireAdmin, requireCsrf, async (req, res) => {
     try {
       const { userIds } = req.body;
       
