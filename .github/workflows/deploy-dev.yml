@@ -1,0 +1,94 @@
+name: Deploy to Dev
+
+env:
+  # Please keep these in alphabetical order
+  APP_ENV: dev
+  DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
+  NODE_ENV: production
+  PASSWORD_PEPPER: ${{ secrets.PASSWORD_PEPPER }}
+  PORT: 5000
+  SESSION_SECRET: ${{ secrets.SESSION_SECRET_DEV }}
+  # Argon2 configuration
+  ARGON2_TIME_COST: 3
+  ARGON2_MEMORY_COST: 65536
+  ARGON2_PARALLELISM: 1
+  # Please keep these in alphabetical order
+
+on:
+  schedule:
+    - cron: '0 3 * * *'
+
+  workflow_run:
+    workflows: ['AppSec Dashboard CI']
+    types:
+      - completed
+    branches:
+      - main
+
+  workflow_dispatch:
+    inputs:
+      git_sha:
+        description: Git commit SHA
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.git_sha || github.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: TypeScript Check
+        run: npm run check
+
+      - name: Set Version as git sha
+        run: echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Build Application
+        run: npm run build
+
+      - name: Run Database Migrations
+        run: npm run db:push
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
+
+      # Configure your deployment target (AWS, Google Cloud, etc.)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-1
+          role-to-assume: # Add your AWS role ARN here
+
+      # Example deployment steps - customize based on your infrastructure
+      - name: Deploy to Development Environment
+        run: |
+          # Add your deployment commands here
+          # Examples:
+          # - Deploy to AWS ECS, EC2, or Lambda
+          # - Deploy to Google Cloud Run
+          # - Deploy to your own infrastructure
+          # - Push Docker image to registry
+          echo "Deployment configuration needed"
+
+      # Optional: Health check after deployment
+      - name: Health Check
+        run: |
+          # Add health check commands here
+          # curl -f ${{ env.DEV_HEALTH_CHECK_URL }}/api/healthcheck
+          echo "Health check configuration needed"

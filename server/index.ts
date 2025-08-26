@@ -1,5 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import connectPgSimple from "connect-pg-simple";
+import { pool } from "./db";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -13,17 +15,33 @@ if (process.env.NODE_ENV === 'production') {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Session middleware with environment-based secret
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key-here-change-in-production',
+// Session middleware with environment-based secret and production store
+if (app.get("env") === "production" && !process.env.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET must be set in production");
+}
+
+const PgSession = connectPgSimple(session);
+const sessionOptions: session.SessionOptions = {
+  secret: process.env.SESSION_SECRET || "dev-insecure-secret",
   resave: false,
   saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production', // Enable secure cookies in production
+  cookie: {
+    secure: app.get("env") === "production",
     httpOnly: true,
-    maxAge: 30 * 60 * 1000 // 30 minutes
-  }
-}));
+    sameSite: "lax",
+    maxAge: 30 * 60 * 1000,
+  },
+};
+
+// Use persistent Postgres-backed session store only in production
+if (app.get("env") === "production") {
+  sessionOptions.store = new PgSession({
+    pool,
+    createTableIfMissing: true,
+  });
+}
+
+app.use(session(sessionOptions));
 
 app.use((req, res, next) => {
   const start = Date.now();
