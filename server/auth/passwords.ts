@@ -1,5 +1,5 @@
 import argon2 from 'argon2';
-import { config } from './config';
+import { config } from '../config';
 
 // Environment configuration with secure defaults
 const PEPPER = config.PASSWORD_PEPPER || '';
