@@ -66,7 +66,7 @@ A comprehensive full-stack application security dashboard built with React/TypeS
 - Git for version control
 
 ### Environment Variables
-Create a `.env` file with the following variables:
+Create a `.env` file with the following variables. In production, the following are required and the server will fail fast if missing: `DATABASE_URL`, `SESSION_SECRET`, `PASSWORD_PEPPER`.
 
 ```bash
 DATABASE_URL=postgresql://username:password@host:port/database
@@ -80,6 +80,13 @@ ARGON2_TIME_COST=3
 ARGON2_MEMORY_COST=65536
 ARGON2_PARALLELISM=1
 ```
+
+### Security Behaviour (Production)
+
+- Required env vars: `DATABASE_URL`, `SESSION_SECRET`, `PASSWORD_PEPPER`.
+- Session cookie: `__Host-session` with `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`.
+- CSRF: Double-submit token. Server issues `XSRF-TOKEN` cookie; clients must echo it in `x-csrf-token` header for state-changing requests when `NODE_ENV=production`.
+- Health: `/healthz` returns 200 when server is up; `/readyz` returns 200 when DB is reachable (503 otherwise).
 
 ### Quick Start
 
@@ -149,8 +156,28 @@ npm start
 - **Input Validation**: Zod schemas for all API endpoints
 - **SQL Injection Prevention**: Parameterized queries via Drizzle ORM
 - **XSS Protection**: React's built-in protection + proper data sanitization
-- **CSRF Protection**: Session-based CSRF token validation
+- **CSRF Protection**: Double-submit token — `XSRF-TOKEN` cookie ↔ `x-csrf-token` header (enforced in production)
 - **Secure Headers**: Security headers for production deployments
+
+### Session & Cookie Details
+
+- In production, sessions are stored in Postgres via `connect-pg-simple`.
+- Cookie settings (prod):
+  - Name: `__Host-session`
+  - Flags: `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`
+  - Domain: not set (required by `__Host-` prefix)
+- Session fixation mitigation: session ID regenerates on successful login and after password change; CSRF token is rotated in both cases.
+
+### CSRF Contract
+
+- Server sets a non-HTTPOnly `XSRF-TOKEN` cookie containing a random token tied to the session.
+- For POST/PATCH/DELETE endpoints, clients must send header `x-csrf-token: <token>`.
+- Enforcement: enabled in production; relaxed in development for DX.
+
+### Health & Readiness
+
+- `GET /healthz` → `200 ok` when server is running.
+- `GET /readyz` → `200 ready` if DB is reachable, otherwise `503 not-ready`.
 
 ### Password Security Implementation
 - **Argon2id Algorithm**: Industry-standard password hashing
