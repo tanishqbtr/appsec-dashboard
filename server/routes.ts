@@ -5,6 +5,15 @@ import rateLimit from "express-rate-limit";
 import { getStorage } from "./storage";
 import { hashPassword, verifyPassword, verifyPlaintextPassword, needsRehash } from "./auth/passwords";
 import { insertUserSchema } from "@shared/schema";
+import {
+  ChangePasswordInput,
+  CreateApplicationInput,
+  UpdateApplicationInput,
+  CreateUserInput,
+  UpdateUserInput,
+  BulkDeleteUsersInput,
+  CreateRiskAssessmentInput,
+} from "./validation";
 
 // Authentication middleware
 const requireAuth = (req: any, res: any, next: any) => {
@@ -173,7 +182,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Change password endpoint
   app.post("/api/auth/change-password", requireAuth, requireCsrf, authRateLimit, async (req, res) => {
     try {
-      const { currentPassword, newPassword } = req.body;
+      const parsed = ChangePasswordInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const { currentPassword, newPassword } = parsed.data;
       
       if (!currentPassword || !newPassword) {
         return res.status(400).json({ message: "Current password and new password are required" });
@@ -337,7 +348,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/applications/:id", requireAdmin, requireCsrf, async (req, res) => {
     try {
       const { id } = req.params;
-      const updates = req.body;
+      const parsed = UpdateApplicationInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const updates = parsed.data;
       
       const storage = await getStorage();
       const updatedApplication = await storage.updateApplication(parseInt(id), updates);
@@ -356,7 +369,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add application endpoint - Admin only
   app.post("/api/applications", requireAdmin, requireCsrf, async (req: any, res) => {
     try {
-      const newApplication = req.body;
+      const parsed = CreateApplicationInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const newApplication = parsed.data;
       
       const storage = await getStorage();
       const createdApplication = await storage.createApplication(newApplication);
@@ -505,7 +520,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/risk-assessments", requireAdmin, requireCsrf, async (req: any, res) => {
     try {
-      const assessmentData = req.body;
+      const parsed = CreateRiskAssessmentInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const assessmentData = parsed.data;
       const storage = await getStorage();
       const assessment = await storage.createOrUpdateRiskAssessment(assessmentData);
       
@@ -835,7 +852,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/users", requireAdmin, requireCsrf, async (req, res) => {
     try {
-      const userData = req.body;
+      const parsed = CreateUserInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const userData = parsed.data;
       const storage = await getStorage();
       
       // Check if username already exists
@@ -855,7 +874,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/admin/users/:id", requireAdmin, requireCsrf, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      const updates = req.body;
+      const parsed = UpdateUserInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const updates = parsed.data;
       const storage = await getStorage();
       
       const user = await storage.updateUser(userId, updates);
@@ -882,7 +903,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bulk delete users endpoint
   app.delete("/api/admin/users/bulk", requireAdmin, requireCsrf, async (req, res) => {
     try {
-      const { userIds } = req.body;
+      const parsed = BulkDeleteUsersInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const { userIds } = parsed.data;
       
       if (!Array.isArray(userIds) || userIds.length === 0) {
         return res.status(400).json({ error: "Invalid user IDs provided" });
