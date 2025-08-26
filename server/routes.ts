@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import crypto from "node:crypto";
 import rateLimit from "express-rate-limit";
 import { getStorage } from "./storage";
 import { hashPassword, verifyPassword, verifyPlaintextPassword, needsRehash } from "./auth/passwords";
@@ -210,8 +211,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         passwordUpdatedAt: new Date(),
       });
       
+      // Rotate session id and CSRF token after credential change
+      await new Promise<void>((resolve, reject) =>
+        req.session.regenerate((err: any) => (err ? reject(err) : resolve()))
+      );
+      req.session.userId = user.id;
+      req.session.username = user.username;
+      req.session.type = user.type;
+      const token = crypto.randomBytes(32).toString("hex");
+      (req.session as any).csrfToken = token;
+      res.cookie("XSRF-TOKEN", token, {
+        httpOnly: false,
+        sameSite: "lax",
+        secure: req.app.get("env") === "production",
+        path: "/",
+      });
+      
       console.log(`Password changed successfully for user: ${user.username}`);
-      res.json({ success: true, message: "Password changed successfully" });
+      return res.json({ success: true });
       
     } catch (error) {
       console.error("Change password error:", error);
