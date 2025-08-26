@@ -350,7 +350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       const parsed = UpdateApplicationInput.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
-      const updates = parsed.data;
+      const updates = parsed.data as any;
       
       const storage = await getStorage();
       const updatedApplication = await storage.updateApplication(parseInt(id), updates);
@@ -371,7 +371,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const parsed = CreateApplicationInput.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
-      const newApplication = parsed.data;
+      const newApplication = parsed.data as any;
       
       const storage = await getStorage();
       const createdApplication = await storage.createApplication(newApplication);
@@ -855,6 +855,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parsed = CreateUserInput.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
       const userData = parsed.data;
+      // map to storage expected shape: generate passwordHash from provided password
+      const passwordHash = await hashPassword(userData.password);
+      const insertUser = {
+        name: userData.name,
+        username: userData.username,
+        passwordHash,
+        type: userData.type || 'User',
+        status: userData.status || 'Active',
+      } as any;
       const storage = await getStorage();
       
       // Check if username already exists
@@ -863,7 +872,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username already exists" });
       }
       
-      const user = await storage.createUser(userData);
+      const user = await storage.createUser(insertUser);
       res.json(user);
     } catch (error) {
       console.error("Error creating user:", error);

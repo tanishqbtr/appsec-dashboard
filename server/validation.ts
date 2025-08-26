@@ -8,7 +8,8 @@ export type ChangePasswordDTO = z.infer<typeof ChangePasswordInput>;
 
 export const CreateApplicationInput = z.object({
   name: z.string().min(1),
-  riskScore: z.number().min(0).max(100).optional(),
+  // accept number or string, will be coerced to string at the route
+  riskScore: z.union([z.number().min(0).max(100), z.string()]).optional(),
   labels: z.array(z.string()).optional(),
   tags: z.array(z.string()).optional(),
   githubRepo: z.string().url().optional(),
@@ -25,7 +26,9 @@ export type UpdateApplicationDTO = z.infer<typeof UpdateApplicationInput>;
 export const CreateUserInput = z.object({
   name: z.string().min(1),
   username: z.string().email(),
+  password: z.string().min(12),
   type: z.enum(["User", "Admin"]).optional(),
+  status: z.enum(["Active", "Disabled"]).optional(),
 }).strict();
 export type CreateUserDTO = z.infer<typeof CreateUserInput>;
 
