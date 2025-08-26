@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import helmet from "helmet";
 import session from "express-session";
 import crypto from "node:crypto";
 import connectPgSimple from "connect-pg-simple";
@@ -7,6 +8,15 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+// Baseline security headers (CSP deferred for later)
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: { policy: "same-origin" },
+  referrerPolicy: { policy: "no-referrer" },
+  frameguard: { action: "deny" },
+  hsts: process.env.NODE_ENV === 'production' ? undefined : false,
+}));
 
 // Trust proxy for secure cookies and correct client IPs when behind load balancers
 if (process.env.NODE_ENV === 'production') {
