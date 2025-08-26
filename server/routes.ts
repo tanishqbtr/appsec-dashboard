@@ -139,7 +139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.username = user.username;
         req.session.type = user.type;
         // Rotate CSRF token on login
-        (req.session as any).csrfToken = require('node:crypto').randomBytes(32).toString('hex');
+        (req.session as any).csrfToken = crypto.randomBytes(32).toString('hex');
         console.log("Session set:", { userId: req.session.userId, username: req.session.username, type: req.session.type });
         res.json({ success: true, user: { id: user.id, username: user.username, type: user.type } });
       });
