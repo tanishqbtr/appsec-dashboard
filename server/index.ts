@@ -8,7 +8,7 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
-// Trust proxy for rate limiting to work correctly behind reverse proxies
+// Trust proxy for secure cookies and correct client IPs when behind load balancers
 if (process.env.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
 }
