@@ -2,7 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import { config } from "./config";
 import session from "express-session";
-import crypto from "node:crypto";
+import crypto, { randomUUID } from "node:crypto";
 import connectPgSimple from "connect-pg-simple";
 import { pool } from "./db";
 import { registerRoutes } from "./routes";
@@ -26,6 +26,14 @@ if (config.NODE_ENV === 'production') {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Request ID middleware
+app.use((req, res, next) => {
+  const rid = (req.headers["x-request-id"] as string) || randomUUID();
+  (req as any).requestId = rid;
+  res.setHeader("X-Request-Id", rid);
+  next();
+});
 
 // Session middleware with environment-based secret and production store
 if (app.get("env") === "production" && !config.SESSION_SECRET) {
@@ -85,33 +93,31 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      const requestId = (req.headers["x-request-id"] as string) || "-";
+      const requestId = ((req as any).requestId as string) || "-";
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms [reqId=${requestId}]`;
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
+      if (logLine.length > 80) logLine = logLine.slice(0, 79) + "…";
       log(logLine);
     }
   });
-
   next();
 });
 
 (async () => {
   const server = await registerRoutes(app);
+
+  // Health and readiness endpoints
+  app.get("/healthz", (_req, res) => res.status(200).send("ok"));
+  app.get("/readyz", async (_req, res) => {
+    try {
+      await pool.query("SELECT 1");
+      return res.status(200).send("ready");
+    } catch {
+      return res.status(503).send("not-ready");
+    }
+  });
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
