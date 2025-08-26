@@ -1,9 +1,21 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+async function parseError(res: Response) {
+  try {
+    const data = await res.clone().json();
+    return { status: res.status, message: data?.message || res.statusText };
+  } catch {
+    const text = await res.text();
+    return { status: res.status, message: text || res.statusText };
+  }
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    const err = await parseError(res);
+    const e = new Error(err.message) as any;
+    e.status = err.status;
+    throw e;
   }
 }
 
@@ -17,6 +29,13 @@ export async function apiRequest(
     headers: data ? { "Content-Type": "application/json" } : {},
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
+    // send CSRF token from cookie if present
+    headers: {
+      ...(data ? { "Content-Type": "application/json" } : {}),
+      ...(document?.cookie?.includes("XSRF-TOKEN=")
+        ? { "x-csrf-token": decodeURIComponent((document.cookie.split(";").find(c=>c.trim().startsWith("XSRF-TOKEN="))||'').split("=")[1]||"") }
+        : {}),
+    },
   });
 
   await throwIfResNotOk(res);
