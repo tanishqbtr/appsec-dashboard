@@ -523,8 +523,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parsed = CreateRiskAssessmentInput.safeParse(req.body);
       if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
       const assessmentData = parsed.data;
+      // sanitize and coerce numeric scores if present
+      const sanitized: any = { ...assessmentData };
+      if (typeof sanitized.finalRiskScore === 'string') sanitized.finalRiskScore = parseFloat(sanitized.finalRiskScore);
+      if (typeof sanitized.dataClassificationScore === 'string') sanitized.dataClassificationScore = parseInt(sanitized.dataClassificationScore, 10);
+      if (typeof sanitized.ciaTriadScore === 'string') sanitized.ciaTriadScore = parseInt(sanitized.ciaTriadScore, 10);
+      if (typeof sanitized.attackSurfaceScore === 'string') sanitized.attackSurfaceScore = parseInt(sanitized.attackSurfaceScore, 10);
       const storage = await getStorage();
-      const assessment = await storage.createOrUpdateRiskAssessment(assessmentData);
+      const assessment = await storage.createOrUpdateRiskAssessment(sanitized);
       
       // Log the activity
       await logActivity(

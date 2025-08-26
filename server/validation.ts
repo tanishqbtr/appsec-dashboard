@@ -20,7 +20,8 @@ export const CreateApplicationInput = z.object({
 }).strict();
 export type CreateApplicationDTO = z.infer<typeof CreateApplicationInput>;
 
-export const UpdateApplicationInput = CreateApplicationInput.partial().strict();
+// Allow extra client-only metadata (e.g., riskScoreReason) but we'll whitelist on the route
+export const UpdateApplicationInput = CreateApplicationInput.partial().passthrough();
 export type UpdateApplicationDTO = z.infer<typeof UpdateApplicationInput>;
 
 export const CreateUserInput = z.object({
@@ -56,6 +57,13 @@ export const CreateRiskAssessmentInput = z.object({
   publicEndpoint: z.string().optional(),
   discoverability: z.string().optional(),
   awareness: z.string().optional(),
+  // Optional calculated fields coming from client
+  dataClassificationScore: z.coerce.number().optional(),
+  ciaTriadScore: z.coerce.number().optional(),
+  attackSurfaceScore: z.coerce.number().optional(),
+  finalRiskScore: z.coerce.number().optional(),
+  riskLevel: z.string().optional(),
+  updatedBy: z.string().optional(),
 }).strict();
 export type CreateRiskAssessmentDTO = z.infer<typeof CreateRiskAssessmentInput>;
 
