@@ -119,12 +119,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Set session
-      req.session.userId = user.id;
-      req.session.username = user.username;
-      req.session.type = user.type;
-      console.log("Session set:", { userId: req.session.userId, username: req.session.username, type: req.session.type });
-      res.json({ success: true, user: { id: user.id, username: user.username, type: user.type } });
+      // Regenerate session to prevent fixation, then set session data
+      req.session.regenerate(async (err: any) => {
+        if (err) {
+          console.error("Session regenerate error:", err);
+          return res.status(500).json({ message: "Internal server error" });
+        }
+        req.session.userId = user.id;
+        req.session.username = user.username;
+        req.session.type = user.type;
+        // Rotate CSRF token on login
+        (req.session as any).csrfToken = require('node:crypto').randomBytes(32).toString('hex');
+        console.log("Session set:", { userId: req.session.userId, username: req.session.username, type: req.session.type });
+        res.json({ success: true, user: { id: user.id, username: user.username, type: user.type } });
+      });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Internal server error" });

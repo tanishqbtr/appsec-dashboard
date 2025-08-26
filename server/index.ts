@@ -30,19 +30,31 @@ const sessionOptions: session.SessionOptions = {
     secure: app.get("env") === "production",
     httpOnly: true,
     sameSite: "lax",
+    path: "/",
     maxAge: 30 * 60 * 1000,
   },
 };
 
 // Use persistent Postgres-backed session store only in production
 if (app.get("env") === "production") {
+  // Use __Host- prefix (requires Secure, Path=/, no Domain) for strongest cookie scoping
+  sessionOptions.name = "__Host-session";
   sessionOptions.store = new PgSession({
     pool,
     createTableIfMissing: true,
+    pruneSessionInterval: 10 * 60 * 1000,
   });
 }
 
 app.use(session(sessionOptions));
+
+// Graceful shutdown for session store
+process.on('SIGTERM', () => {
+  const store: any = (sessionOptions as any).store;
+  if (store && typeof store.close === 'function') {
+    store.close();
+  }
+});
 
 // CSRF token initializer (double-submit via header matched to session token)
 app.use((req, res, next) => {
