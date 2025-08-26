@@ -24,18 +24,17 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
+  const csrf = typeof document !== 'undefined' && document.cookie.includes('XSRF-TOKEN=')
+    ? decodeURIComponent((document.cookie.split(';').find(c => c.trim().startsWith('XSRF-TOKEN=')) || '').split('=')[1] || '')
+    : '';
+  const headers: Record<string, string> = {};
+  if (data) headers["Content-Type"] = "application/json";
+  if (csrf) headers["x-csrf-token"] = csrf;
   const res = await fetch(url, {
     method,
-    headers: data ? { "Content-Type": "application/json" } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
     credentials: "include",
-    // send CSRF token from cookie if present
-    headers: {
-      ...(data ? { "Content-Type": "application/json" } : {}),
-      ...(document?.cookie?.includes("XSRF-TOKEN=")
-        ? { "x-csrf-token": decodeURIComponent((document.cookie.split(";").find(c=>c.trim().startsWith("XSRF-TOKEN="))||'').split("=")[1]||"") }
-        : {}),
-    },
   });
 
   await throwIfResNotOk(res);
