@@ -72,7 +72,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/login", authRateLimit, async (req, res) => {
     try {
       const { username, password } = req.body;
-      console.log("Login attempt:", { username, password: password ? "***" : "missing" });
+      // Avoid username enumeration in logs
+      console.log("Auth attempt processed", { actor: "login", username: username ? "provided" : "missing" });
       
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
@@ -80,7 +81,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const storage = await getStorage();
       const user = await storage.getUserByUsername(username);
-      console.log("Auth attempt processed", { actor: "login", username: username ? "provided" : "missing" });
       
       if (!user) {
         // Use consistent error message to prevent username enumeration
