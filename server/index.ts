@@ -133,7 +133,18 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    const allowMissingClient = process.env.ALLOW_MISSING_CLIENT === '1' || process.env.VITEST === 'true';
+    try {
+      if (!allowMissingClient) {
+        serveStatic(app);
+      }
+    } catch (e: any) {
+      if (allowMissingClient) {
+        log(`Skipping static assets: ${e?.message || e}`);
+      } else {
+        throw e;
+      }
+    }
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT

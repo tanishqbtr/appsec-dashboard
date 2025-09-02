@@ -7,6 +7,8 @@ process.env.NODE_ENV = 'production';
 process.env.SESSION_SECRET = process.env.SESSION_SECRET || 'test-session-secret';
 process.env.PASSWORD_PEPPER = process.env.PASSWORD_PEPPER || 'pepper';
 process.env.DATABASE_URL = process.env.DATABASE_URL || 'postgresql://appsec_user:appsec_password@localhost:5432/appsec_dashboard';
+process.env.ALLOW_MISSING_CLIENT = '1';
+process.env.VITEST = 'true';
 
 let server: http.Server;
 
@@ -24,12 +26,12 @@ afterAll(async () => {
 
 describe('security (prod-like)', () => {
   it('health endpoints respond', async () => {
-    const r1 = await request('http://localhost:3000').get('/healthz');
+    const r1 = await request('http://127.0.0.1:5000').get('/healthz');
     expect([200,404]).toContain(r1.status); // tolerant if server is not started here
   });
 
   it('CSRF blocks and allows with token on change-password', async () => {
-    const agent = request.agent('http://localhost:3000');
+    const agent = request.agent('http://127.0.0.1:5000');
     // first, login to obtain a session and XSRF token
     const loginRes = await agent
       .post('/api/login')
@@ -61,7 +63,7 @@ describe('security (prod-like)', () => {
   });
 
   it('session regenerates on login', async () => {
-    const agent = request.agent('http://localhost:3000');
+    const agent = request.agent('http://127.0.0.1:5000');
     const r0 = await agent.get('/healthz');
     const before = (r0.headers['set-cookie'] || []).find((c: string) => c.includes('session')) || '';
     const loginRes = await agent
@@ -74,7 +76,7 @@ describe('security (prod-like)', () => {
   });
 
   it('logout requires auth and CSRF in prod', async () => {
-    const agent = request.agent('http://localhost:3000');
+    const agent = request.agent('http://127.0.0.1:5000');
     const anon = await agent.post('/api/logout');
     // in dev/non-prod, route may be open; tolerate 200
     expect([200,401,403]).toContain(anon.status);
