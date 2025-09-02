@@ -79,6 +79,13 @@ PORT=5000
 ARGON2_TIME_COST=3
 ARGON2_MEMORY_COST=65536
 ARGON2_PARALLELISM=1
+# Optional: Development seeding (dev only)
+# Set SEED=1 to create seed users and sample data at startup.
+# Provide the admin password via ADMIN_SEED_PASSWORD; the admin email is fixed
+# to admin@hingehealth.com. A demo user is also created with a random password
+# that is printed to the dev logs.
+SEED=1
+ADMIN_SEED_PASSWORD=ChangeMe!
 ```
 
 ### Security Behaviour (Production)
@@ -108,15 +115,21 @@ ARGON2_PARALLELISM=1
    ```
 
 4. **Start development server**:
-   ```bash
-   npm run dev
-   ```
+   - With seeding (recommended for local dev):
+     ```bash
+     SEED=1 ADMIN_SEED_PASSWORD=ChangeMe! npm run dev
+     ```
+   - Change the port if 5000 is taken (for example, on macOS Control Center may bind 5000):
+     ```bash
+     PORT=5200 SEED=1 ADMIN_SEED_PASSWORD=ChangeMe! npm run dev
+     ```
 
 5. **Access the application**:
-   - Open http://localhost:5000
-   - Login with default admin credentials:
-     - Username: `admin`
-     - Password: `password@hh`
+   - Open http://localhost:${PORT} (defaults to 5000). If 5000 is in use, set a different `PORT`.
+   - If you started with seeding enabled, sign in with:
+     - Username: `admin@hingehealth.com`
+     - Password: the value you set in `ADMIN_SEED_PASSWORD`
+   - A demo account `demo@hingehealth.com` is also created with a random password that is printed to the dev logs only.
 
 ### Production Build
 
@@ -287,17 +300,12 @@ npm run db:push     # Apply database schema changes
 - Check browser console for client-side errors and network tab for API issues
 - Monitor server logs for authentication and database connectivity issues
 
-## 📝 Default Credentials
+## 📝 Seeding Accounts (Development Only)
 
-### Admin Account
-- **Username**: `admin`
-- **Password**: `password@hh`
-- **Role**: Admin (full permissions)
-
-### Demo Account  
-- **Username**: `demo`
-- **Password**: `password`
-- **Role**: User (read-only access with limited export permissions)
+When `SEED=1` is set at startup in a non-production environment:
+- An admin user is created with email `admin@hingehealth.com` and password from `ADMIN_SEED_PASSWORD`.
+- A demo user `demo@hingehealth.com` is created with a strong random password printed to the server logs.
+- Seeded users are not created in production.
 
 ## 🔒 Production Security Checklist
 
