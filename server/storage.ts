@@ -756,27 +756,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrUpdateRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment> {
-    const existing = await this.getRiskAssessment(assessment.serviceName);
-    
-    if (existing) {
-      // Update existing assessment
-      const [updated] = await db
-        .update(riskAssessments)
-        .set({
+    const [upserted] = await db
+      .insert(riskAssessments)
+      .values(assessment)
+      .onConflictDoUpdate({
+        target: riskAssessments.serviceName,
+        set: {
           ...assessment,
           lastUpdated: new Date(),
-        })
-        .where(eq(riskAssessments.serviceName, assessment.serviceName))
-        .returning();
-      return updated;
-    } else {
-      // Create new assessment
-      const [created] = await db
-        .insert(riskAssessments)
-        .values(assessment)
-        .returning();
-      return created;
-    }
+        },
+      })
+      .returning();
+    return upserted;
   }
 
   async getAllRiskAssessments(): Promise<RiskAssessment[]> {
@@ -818,9 +809,13 @@ async function initializeStorage(): Promise<IStorage> {
     const existingAdminUser = await dbStorage.getUserByUsername("admin@hingehealth.com");
     const existingDemoUser = await dbStorage.getUserByUsername("demo@hingehealth.com");
     
-    if (!existingAdminUser) {
-      console.log("👤 Creating admin user...");
-      const adminPasswordHash = await hashPassword("password@hh");
+    if (process.env.NODE_ENV !== 'production' && process.env.SEED === '1' && !existingAdminUser) {
+      console.log("👤 Creating admin user (seed mode)...");
+      const adminSeedPassword = process.env.ADMIN_SEED_PASSWORD;
+      if (!adminSeedPassword) {
+        throw new Error("ADMIN_SEED_PASSWORD must be set when SEED=1");
+      }
+      const adminPasswordHash = await hashPassword(adminSeedPassword);
       await dbStorage.createUser({ 
         name: "Admin User", 
         username: "admin@hingehealth.com", 
@@ -828,14 +823,15 @@ async function initializeStorage(): Promise<IStorage> {
         status: "Active",
         type: "Admin"
       });
-      console.log("✅ Admin user created");
-    } else {
+      console.log("✅ Admin user created (seed)");
+    } else if (existingAdminUser) {
       console.log("👤 Admin user already exists");
     }
     
-    if (!existingDemoUser) {
-      console.log("👤 Creating demo user...");
-      const demoPasswordHash = await hashPassword("password");
+    if (process.env.NODE_ENV !== 'production' && process.env.SEED === '1' && !existingDemoUser) {
+      console.log("👤 Creating demo user (seed mode)...");
+      const random = Math.random().toString(36).slice(-12) + "!Aa1";
+      const demoPasswordHash = await hashPassword(random);
       await dbStorage.createUser({ 
         name: "Demo User", 
         username: "demo@hingehealth.com", 
@@ -843,8 +839,8 @@ async function initializeStorage(): Promise<IStorage> {
         status: "Active",
         type: "User"
       });
-      console.log("✅ Demo user created");
-    } else {
+      console.log("✅ Demo user created (seed) with random password (printed only in dev):", random);
+    } else if (existingDemoUser) {
       console.log("👤 Demo user already exists");
     }
     

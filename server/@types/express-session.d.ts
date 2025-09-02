@@ -5,5 +5,6 @@ declare module "express-session" {
     userId: number;
     username: string;
     type: string;
+    csrfToken?: string;
   }
 }
