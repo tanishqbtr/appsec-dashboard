@@ -83,7 +83,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-region: us-east-1
-          role-to-assume: <AWS_IAM_ROLE_TO_ASSUME>
+          role-to-assume: arn:aws:iam::905652836327:role/github-deploy/github-actions-appsec-dashboard
 
       - name: Build and push assets to S3
         run: |
