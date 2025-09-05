@@ -1,9 +1,19 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import crypto from "node:crypto";
 import rateLimit from "express-rate-limit";
 import { getStorage } from "./storage";
 import { hashPassword, verifyPassword, verifyPlaintextPassword, needsRehash } from "./auth/passwords";
 import { insertUserSchema } from "@shared/schema";
+import {
+  ChangePasswordInput,
+  CreateApplicationInput,
+  UpdateApplicationInput,
+  CreateUserInput,
+  UpdateUserInput,
+  BulkDeleteUsersInput,
+  CreateRiskAssessmentInput,
+} from "./validation";
 
 // Authentication middleware
 const requireAuth = (req: any, res: any, next: any) => {
@@ -62,7 +72,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/login", authRateLimit, async (req, res) => {
     try {
       const { username, password } = req.body;
-      console.log("Login attempt:", { username, password: password ? "***" : "missing" });
+      // Avoid username enumeration in logs
+      console.log("Auth attempt processed", { actor: "login", username: username ? "provided" : "missing" });
       
       if (!username || !password) {
         return res.status(400).json({ message: "Username and password are required" });
@@ -70,7 +81,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const storage = await getStorage();
       const user = await storage.getUserByUsername(username);
-      console.log("Auth attempt processed", { actor: "login", username: username ? "provided" : "missing" });
       
       if (!user) {
         // Use consistent error message to prevent username enumeration
@@ -119,12 +129,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Set session
-      req.session.userId = user.id;
-      req.session.username = user.username;
-      req.session.type = user.type;
-      console.log("Session set:", { userId: req.session.userId, username: req.session.username, type: req.session.type });
-      res.json({ success: true, user: { id: user.id, username: user.username, type: user.type } });
+      // Regenerate session to prevent fixation, then set session data
+      req.session.regenerate(async (err: any) => {
+        if (err) {
+          console.error("Session regenerate error:", err);
+          return res.status(500).json({ message: "Internal server error" });
+        }
+        req.session.userId = user.id;
+        req.session.username = user.username;
+        req.session.type = user.type;
+        // Rotate CSRF token on login
+        (req.session as any).csrfToken = crypto.randomBytes(32).toString('hex');
+        console.log("Session set:", { userId: req.session.userId, username: req.session.username, type: req.session.type });
+        res.json({ success: true, user: { id: user.id, username: user.username, type: user.type } });
+      });
     } catch (error) {
       console.error("Login error:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -164,7 +182,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Change password endpoint
   app.post("/api/auth/change-password", requireAuth, requireCsrf, authRateLimit, async (req, res) => {
     try {
-      const { currentPassword, newPassword } = req.body;
+      const parsed = ChangePasswordInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const { currentPassword, newPassword } = parsed.data;
       
       if (!currentPassword || !newPassword) {
         return res.status(400).json({ message: "Current password and new password are required" });
@@ -202,8 +222,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         passwordUpdatedAt: new Date(),
       });
       
+      // Rotate session id and CSRF token after credential change
+      await new Promise<void>((resolve, reject) =>
+        req.session.regenerate((err: any) => (err ? reject(err) : resolve()))
+      );
+      req.session.userId = user.id;
+      req.session.username = user.username;
+      req.session.type = user.type;
+      const token = crypto.randomBytes(32).toString("hex");
+      (req.session as any).csrfToken = token;
+      res.cookie("XSRF-TOKEN", token, {
+        httpOnly: false,
+        sameSite: "lax",
+        secure: req.app.get("env") === "production",
+        path: "/",
+      });
+      
       console.log(`Password changed successfully for user: ${user.username}`);
-      res.json({ success: true, message: "Password changed successfully" });
+      return res.json({ success: true });
       
     } catch (error) {
       console.error("Change password error:", error);
@@ -312,7 +348,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/applications/:id", requireAdmin, requireCsrf, async (req, res) => {
     try {
       const { id } = req.params;
-      const updates = req.body;
+      const parsed = UpdateApplicationInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const updates = parsed.data as any;
       
       const storage = await getStorage();
       const updatedApplication = await storage.updateApplication(parseInt(id), updates);
@@ -331,7 +369,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Add application endpoint - Admin only
   app.post("/api/applications", requireAdmin, requireCsrf, async (req: any, res) => {
     try {
-      const newApplication = req.body;
+      const parsed = CreateApplicationInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const newApplication = parsed.data as any;
       
       const storage = await getStorage();
       const createdApplication = await storage.createApplication(newApplication);
@@ -480,9 +520,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/risk-assessments", requireAdmin, requireCsrf, async (req: any, res) => {
     try {
-      const assessmentData = req.body;
+      const parsed = CreateRiskAssessmentInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const assessmentData = parsed.data;
+      // sanitize and coerce numeric scores if present
+      const sanitized: any = { ...assessmentData };
+      if (typeof sanitized.finalRiskScore === 'string') sanitized.finalRiskScore = parseFloat(sanitized.finalRiskScore);
+      if (typeof sanitized.dataClassificationScore === 'string') sanitized.dataClassificationScore = parseInt(sanitized.dataClassificationScore, 10);
+      if (typeof sanitized.ciaTriadScore === 'string') sanitized.ciaTriadScore = parseInt(sanitized.ciaTriadScore, 10);
+      if (typeof sanitized.attackSurfaceScore === 'string') sanitized.attackSurfaceScore = parseInt(sanitized.attackSurfaceScore, 10);
       const storage = await getStorage();
-      const assessment = await storage.createOrUpdateRiskAssessment(assessmentData);
+      const assessment = await storage.createOrUpdateRiskAssessment(sanitized);
       
       // Log the activity
       await logActivity(
@@ -810,7 +858,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/admin/users", requireAdmin, requireCsrf, async (req, res) => {
     try {
-      const userData = req.body;
+      const parsed = CreateUserInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const userData = parsed.data;
+      // map to storage expected shape: generate passwordHash from provided password
+      const passwordHash = await hashPassword(userData.password);
+      const insertUser = {
+        name: userData.name,
+        username: userData.username,
+        passwordHash,
+        type: userData.type || 'User',
+        status: userData.status || 'Active',
+      } as any;
       const storage = await getStorage();
       
       // Check if username already exists
@@ -819,7 +878,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Username already exists" });
       }
       
-      const user = await storage.createUser(userData);
+      const user = await storage.createUser(insertUser);
       res.json(user);
     } catch (error) {
       console.error("Error creating user:", error);
@@ -830,7 +889,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch("/api/admin/users/:id", requireAdmin, requireCsrf, async (req, res) => {
     try {
       const userId = parseInt(req.params.id);
-      const updates = req.body;
+      const parsed = UpdateUserInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const updates = parsed.data;
       const storage = await getStorage();
       
       const user = await storage.updateUser(userId, updates);
@@ -857,7 +918,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bulk delete users endpoint
   app.delete("/api/admin/users/bulk", requireAdmin, requireCsrf, async (req, res) => {
     try {
-      const { userIds } = req.body;
+      const parsed = BulkDeleteUsersInput.safeParse(req.body);
+      if (!parsed.success) return res.status(400).json({ message: "Invalid request" });
+      const { userIds } = parsed.data;
       
       if (!Array.isArray(userIds) || userIds.length === 0) {
         return res.status(400).json({ error: "Invalid user IDs provided" });

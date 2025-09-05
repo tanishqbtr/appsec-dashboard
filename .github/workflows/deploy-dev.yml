@@ -1,0 +1,139 @@
+name: Deploy to Dev
+
+env:
+  # Please keep these in alphabetical order
+  APP_ENV: dev
+  #AUTOMATION_BFF_URL: <AUTOMATION_BFF_URL>
+  DISABLE_SSE_COOKIES: true
+  #FRESHDESK_API_KEY: ${{ secrets.FRESHDESK_API_KEY_DEV_STAGE }}
+  #FRESHDESK_URL: <FRESHDESK_URL>
+  GITHUB_ACCESS_TOKEN: ${{ secrets.SHARED_PACKAGES_READ }}
+  #KENDO_UI_LICENSE: ${{ secrets.KENDO_UI_LICENSE }}
+  #MIXPANEL_TOKEN_DEV: ${{ secrets.MIXPANEL_TOKEN_DEV }}
+  #MUI_X_PRO_LICENSE_KEY: ${{ secrets.MUI_X_PRO_LICENSE_KEY }}
+  #OKTA_CLIENT_ID: ${{ secrets.CTP_APP_PRE_PROD_OKTA_CLIENT_ID }}
+  #OKTA_ISSUER: ${{ secrets.CTP_APP_PRE_PROD_OKTA_ISSUER }}
+  #REACT_APP_ADMIN_PANEL_URL: <REACT_APP_ADMIN_PANEL_URL>
+  #REACT_APP_BFF_URL: <REACT_APP_BFF_URL>
+  #REACT_APP_COACH_TOOLS_URL: <REACT_APP_COACH_TOOLS_URL>
+  #REACT_APP_CONFIGURATOR_URL: <REACT_APP_CONFIGURATOR_URL>
+  #REACT_APP_DATADOG_APPLICATION_ID: ${{ secrets.REACT_APP_DATADOG_APPLICATION_ID }}
+  #REACT_APP_DATADOG_CLIENT_TOKEN: ${{ secrets.REACT_APP_DATADOG_CLIENT_TOKEN }}
+  #REACT_APP_GOOGLE_OAUTH_CLIENT_ID: ${{ secrets.CTP_GOOGLE_CLIENT_ID__DEV }}
+  #REACT_APP_GOOGLE_PT_PHI_NOTES_ID: <REACT_APP_GOOGLE_PT_PHI_NOTES_ID>
+  #REACT_APP_GOOGLE_TASK_FOLDER_ID: <REACT_APP_GOOGLE_TASK_FOLDER_ID>
+  #REACT_APP_GOOGLE_TASK_TEMPLATE_ID: <REACT_APP_GOOGLE_TASK_TEMPLATE_ID>
+  #REACT_APP_SENTRY_DSN: ${{ secrets.REACT_APP_SENTRY_DSN }}
+  S3_BUCKET: hingehealth-appsec-dashboard-00a7864c7131
+  #SPLIT_AUTH_KEY: ${{ secrets.SPLIT_AUTH_KEY_DEVELOPMENT }}
+  #SPLIT_AUTH_KEY_BASILISK: ${{ secrets.SPLIT_AUTH_KEY_BASILISK_DEV }}
+  #STREAM_API_KEY: ${{ secrets.STREAM_API_KEY_DEV }}
+  #STREAM_VIDEO_API_KEY: ${{ secrets.STREAM_VIDEO_API_KEY_DEV }}
+  # Please keep these in alphabetical order
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+  schedule:
+    - cron: '0 3 * * *'
+
+  workflow_run:
+    workflows: ['AppSec Dashboard Continuous Integration']
+    types:
+      - completed
+    branches:
+      - '**'
+
+  workflow_dispatch:
+    inputs:
+      git_sha:
+        description: Git commit SHA
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    # Run for: push, pull_request (same-repo only), schedule, workflow_dispatch,
+    # and workflow_run when CI concluded success. Prevent fork PR deployments.
+    if: ${{ (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+            && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.git_sha || github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Compute S3 prefix per branch
+        env:
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          BRANCH_NAME="${HEAD_BRANCH:-${REF_NAME:-unknown}}"
+          if [ "$BRANCH_NAME" = "main" ] || [ -z "$BRANCH_NAME" ]; then
+            echo "S3_PREFIX=" >> $GITHUB_ENV
+          else
+            SLUG=$(echo "$BRANCH_NAME" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9._-/' '-')
+            echo "S3_PREFIX=branches/${SLUG}" >> $GITHUB_ENV
+          fi
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          echo "Computed S3 prefix: '${S3_PREFIX:-}' for branch '$BRANCH_NAME'"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Set Version as git sha
+        run: echo "VERSION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Build
+        run: |
+          unset CI
+          npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          aws-region: us-east-1
+          role-to-assume: arn:aws:iam::905652836327:role/github-deploy/github-actions-appsec-dashboard
+
+      - name: Build and push assets to S3
+        if: ${{ github.event_name != 'pull_request' }}
+        run: |
+          set -euo pipefail
+          ls -la ./dist/public
+          aws --version
+          aws sts get-caller-identity
+          aws s3 ls s3://${{ env.S3_BUCKET }} || true
+
+          # Upload static assets (except index.html) with long-lived cache
+          DEST="s3://${{ env.S3_BUCKET }}${S3_PREFIX:+/}${S3_PREFIX:-}"
+          echo "Uploading to $DEST"
+          aws s3 sync ./dist/public "$DEST" \
+            --exclude 'index.html' \
+            --delete \
+            --cache-control 'max-age=31536000, public, immutable'
+
+          # Upload index.html with no-cache so clients always fetch latest
+          aws s3 cp ./dist/public/index.html "$DEST"/index.html \
+            --cache-control 'no-cache, no-store, must-revalidate' \
+            --content-type 'text/html'
+
+          echo "Deployed branch '$BRANCH_NAME' to $DEST"
+
+
