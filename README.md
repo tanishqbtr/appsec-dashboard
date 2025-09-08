@@ -95,41 +95,50 @@ ADMIN_SEED_PASSWORD=ChangeMe!
 - CSRF: Double-submit token. Server issues `XSRF-TOKEN` cookie; clients must echo it in `x-csrf-token` header for state-changing requests when `NODE_ENV=production`.
 - Health: `/healthz` returns 200 when server is up; `/readyz` returns 200 when DB is reachable (503 otherwise).
 
-### Quick Start
+### Quick Start (Local)
 
-1. **Clone the repository**:
+1. **Clone the repository**
    ```bash
    git clone https://github.com/tanishqbtr/appsec-dashboard.git
    cd appsec-dashboard
    ```
 
-2. **Install dependencies**:
+2. **Start Postgres (Docker) and install deps**
    ```bash
+   docker compose -f docker-compose.dev.yml up -d postgres
    npm install
    ```
 
-3. **Setup database**:
+3. **Apply the database schema**
    ```bash
-   # Push schema to database
    npm run db:push
    ```
 
-4. **Start development server**:
-   - With seeding (recommended for local dev):
-     ```bash
-     SEED=1 ADMIN_SEED_PASSWORD=ChangeMe! npm run dev
-     ```
-   - Change the port if 5000 is taken (for example, on macOS Control Center may bind 5000):
-     ```bash
-     PORT=5200 SEED=1 ADMIN_SEED_PASSWORD=ChangeMe! npm run dev
-     ```
+4. **Run the app (choose ONE)**
 
-5. **Access the application**:
-   - Open http://localhost:${PORT} (defaults to 5000). If 5000 is in use, set a different `PORT`.
-   - If you started with seeding enabled, sign in with:
-     - Username: `admin@hingehealth.com`
-     - Password: the value you set in `ADMIN_SEED_PASSWORD`
-   - A demo account `demo@hingehealth.com` is also created with a random password that is printed to the dev logs only.
+   - A) Seeded admin (fresh setup)
+     ```bash
+     PORT=5200 \
+     DATABASE_URL=postgresql://appsec_user:appsec_password@localhost:5432/appsec_dashboard \
+     SEED=1 ADMIN_SEED_PASSWORD=ChangeMe! \
+     npm run dev
+     ```
+     Login: `admin@hingehealth.com` / `ChangeMe!`
+
+   - B) Use/reset a known admin password (no reseed)
+     ```bash
+     DATABASE_URL=postgresql://appsec_user:appsec_password@localhost:5432/appsec_dashboard \
+     npm run set-admin-password -- admin@hingehealth.com 'password@hh'
+
+     PORT=5200 \
+     DATABASE_URL=postgresql://appsec_user:appsec_password@localhost:5432/appsec_dashboard \
+     npm run dev
+     ```
+     Login: `admin@hingehealth.com` / `password@hh`
+
+5. **Open the app**
+   - http://localhost:5200 (or the port you chose)
+   - If you used seeding, a demo user is also created and its random password is printed in the server logs.
 
 ### Production Build
 
