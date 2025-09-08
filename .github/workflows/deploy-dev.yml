@@ -85,10 +85,10 @@ jobs:
           if [ "$BRANCH_NAME" = "main" ] || [ -z "$BRANCH_NAME" ]; then
             echo "S3_PREFIX=" >> $GITHUB_ENV
           else
-            # Generate a safe slug (lowercase, keep a-z 0-9 . _ - and /). Put '-' first to avoid range parsing, force C locale
+            # Generate a safe slug (lowercase; keep a-z 0-9 . _ - and /). Use sed to avoid tr set edge-cases
             LC_ALL=C SLUG=$(printf '%s' "$BRANCH_NAME" \
               | tr '[:upper:]' '[:lower:]' \
-              | tr -c '-a-z0-9._/' '-')
+              | sed -E 's/[^a-z0-9._\/-]+/-/g; s/-+/-/g; s/^-+|-+$//g')
             echo "S3_PREFIX=branches/${SLUG}" >> $GITHUB_ENV
           fi
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
