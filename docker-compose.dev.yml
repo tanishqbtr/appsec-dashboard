@@ -15,6 +15,11 @@ services:
       - postgres_dev_data:/var/lib/postgresql/data
     networks:
       - appsec-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U appsec_user -d appsec_dashboard"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Development Application (with hot reload)
   app:
@@ -27,16 +32,19 @@ services:
       - PORT=5000
       - DATABASE_URL=postgresql://appsec_user:appsec_password@postgres:5432/appsec_dashboard
       - SESSION_SECRET=dev-secret-key
+      - SEED=1
+      - ADMIN_SEED_PASSWORD=ChangeMe!
     ports:
       - "3000:5000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     networks:
       - appsec-network
     volumes:
       - .:/app
       - /app/node_modules
-    command: npm run dev
+    command: sh -lc "npm run db:push && npm run dev"
 
 volumes:
   postgres_dev_data:
