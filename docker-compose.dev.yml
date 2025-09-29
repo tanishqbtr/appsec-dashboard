@@ -34,6 +34,7 @@ services:
       - SESSION_SECRET=dev-secret-key
       - SEED=1
       - ADMIN_SEED_PASSWORD=ChangeMe!
+      - DEMO_SEED_PASSWORD=ChangeMeDemo!123
     ports:
       - "3000:5000"
     depends_on:

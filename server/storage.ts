@@ -830,8 +830,11 @@ async function initializeStorage(): Promise<IStorage> {
     
     if (process.env.NODE_ENV !== 'production' && process.env.SEED === '1' && !existingDemoUser) {
       console.log("👤 Creating demo user (seed mode)...");
-      const random = Math.random().toString(36).slice(-12) + "!Aa1";
-      const demoPasswordHash = await hashPassword(random);
+      const configuredDemoPassword = process.env.DEMO_SEED_PASSWORD;
+      const plain = configuredDemoPassword && configuredDemoPassword.length >= 8
+        ? configuredDemoPassword
+        : Math.random().toString(36).slice(-12) + "!Aa1";
+      const demoPasswordHash = await hashPassword(plain);
       await dbStorage.createUser({ 
         name: "Demo User", 
         username: "demo@hingehealth.com", 
@@ -839,7 +842,11 @@ async function initializeStorage(): Promise<IStorage> {
         status: "Active",
         type: "User"
       });
-      console.log("✅ Demo user created (seed) with random password (printed only in dev):", random);
+      if (configuredDemoPassword && configuredDemoPassword.length >= 8) {
+        console.log("✅ Demo user created (seed) with configured password via DEMO_SEED_PASSWORD");
+      } else {
+        console.log("✅ Demo user created (seed) with random password (printed only in dev):", plain);
+      }
     } else if (existingDemoUser) {
       console.log("👤 Demo user already exists");
     }
