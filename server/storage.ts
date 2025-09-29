@@ -849,6 +849,25 @@ async function initializeStorage(): Promise<IStorage> {
       }
     } else if (existingDemoUser) {
       console.log("👤 Demo user already exists");
+      // In development seeding mode, reset demo password to configured value for determinism
+      if (process.env.NODE_ENV !== 'production' && process.env.SEED === '1') {
+        const configuredDemoPassword = process.env.DEMO_SEED_PASSWORD;
+        if (configuredDemoPassword && configuredDemoPassword.length >= 8) {
+          try {
+            const demoPasswordHash = await hashPassword(configuredDemoPassword);
+            await dbStorage.updateUser(existingDemoUser.id!, {
+              passwordHash: demoPasswordHash as any,
+              passwordAlgo: 'argon2id' as any,
+              passwordUpdatedAt: new Date() as any,
+              status: 'Active' as any,
+              type: (existingDemoUser.type as any) || 'User',
+            } as any);
+            console.log("🔄 Demo user password reset via DEMO_SEED_PASSWORD");
+          } catch (e) {
+            console.warn("⚠️  Failed to reset demo user password:", e);
+          }
+        }
+      }
     }
     
     if (existingApps.length === 0) {
