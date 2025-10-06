@@ -1,0 +1,22 @@
+# Speed up Okteto file sync by excluding heavy/ephemeral paths
+node_modules
+client/node_modules
+
+# Build outputs
+build
+dist
+dist/public
+coverage
+
+# Temp files
+.tmp
+tmp
+*.log
+.DS_Store
+
+# VCS/IDE
+.git
+.vscode
+
+# Tool caches
+.migrations-cache

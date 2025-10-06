@@ -1,0 +1,9 @@
+build:
+  app:
+    context: .
+    dockerfile: Dockerfile.dev
+  
+deploy:
+  commands:
+    - okteto deploy -f docker-compose.dev.yml
+    

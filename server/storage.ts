@@ -830,8 +830,11 @@ async function initializeStorage(): Promise<IStorage> {
     
     if (process.env.NODE_ENV !== 'production' && process.env.SEED === '1' && !existingDemoUser) {
       console.log("👤 Creating demo user (seed mode)...");
-      const random = Math.random().toString(36).slice(-12) + "!Aa1";
-      const demoPasswordHash = await hashPassword(random);
+      const configuredDemoPassword = process.env.DEMO_SEED_PASSWORD;
+      const plain = configuredDemoPassword && configuredDemoPassword.length >= 8
+        ? configuredDemoPassword
+        : Math.random().toString(36).slice(-12) + "!Aa1";
+      const demoPasswordHash = await hashPassword(plain);
       await dbStorage.createUser({ 
         name: "Demo User", 
         username: "demo@hingehealth.com", 
@@ -839,9 +842,32 @@ async function initializeStorage(): Promise<IStorage> {
         status: "Active",
         type: "User"
       });
-      console.log("✅ Demo user created (seed) with random password (printed only in dev):", random);
+      if (configuredDemoPassword && configuredDemoPassword.length >= 8) {
+        console.log("✅ Demo user created (seed) with configured password via DEMO_SEED_PASSWORD");
+      } else {
+        console.log("✅ Demo user created (seed) with random password (printed only in dev):", plain);
+      }
     } else if (existingDemoUser) {
       console.log("👤 Demo user already exists");
+      // In development seeding mode, reset demo password to configured value for determinism
+      if (process.env.NODE_ENV !== 'production' && process.env.SEED === '1') {
+        const configuredDemoPassword = process.env.DEMO_SEED_PASSWORD;
+        if (configuredDemoPassword && configuredDemoPassword.length >= 8) {
+          try {
+            const demoPasswordHash = await hashPassword(configuredDemoPassword);
+            await dbStorage.updateUser(existingDemoUser.id!, {
+              passwordHash: demoPasswordHash as any,
+              passwordAlgo: 'argon2id' as any,
+              passwordUpdatedAt: new Date() as any,
+              status: 'Active' as any,
+              type: (existingDemoUser.type as any) || 'User',
+            } as any);
+            console.log("🔄 Demo user password reset via DEMO_SEED_PASSWORD");
+          } catch (e) {
+            console.warn("⚠️  Failed to reset demo user password:", e);
+          }
+        }
+      }
     }
     
     if (existingApps.length === 0) {
