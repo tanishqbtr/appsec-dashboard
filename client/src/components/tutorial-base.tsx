@@ -32,11 +32,14 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
     if (step.target) {
       const element = document.querySelector(step.target) as HTMLElement;
       if (element) {
-        setHighlightedElement(element);
+        // Scroll element into view first
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        // Add highlight class
-        element.classList.add('tutorial-highlight');
+        // Wait for scroll to complete before setting highlight
+        setTimeout(() => {
+          setHighlightedElement(element);
+          element.classList.add('tutorial-highlight');
+        }, 300);
         
         return () => {
           element.classList.remove('tutorial-highlight');
@@ -44,6 +47,10 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
       }
     } else {
       setHighlightedElement(null);
+      // For center-positioned steps without targets, scroll to top for visibility
+      if (step.position === 'center') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   }, [currentStep, isOpen, steps]);
 
