@@ -32,6 +32,11 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
     
     // For center-positioned steps without targets, scroll to top immediately
     if (!step.target && step.position === 'center') {
+      // Remove any existing highlights from previous steps
+      document.querySelectorAll('.tutorial-highlight').forEach(el => {
+        el.classList.remove('tutorial-highlight');
+      });
+      
       // Find the scrollable container (main content area)
       const scrollContainer = document.querySelector('main') || document.querySelector('[role="main"]');
       if (scrollContainer) {
@@ -63,6 +68,9 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
           element.classList.remove('tutorial-highlight');
         };
       }
+    } else {
+      // Clear any existing highlight when there's no target
+      setHighlightedElement(null);
     }
   }, [currentStep, isOpen, steps]);
 
