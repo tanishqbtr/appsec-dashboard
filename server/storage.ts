@@ -328,13 +328,11 @@ export class MemStorage implements IStorage {
     const id = this.currentUserId++;
     const user: User = { 
       ...insertUser,
-      name: insertUser.name || "Unknown User",
-      passwordUpdatedAt: insertUser.passwordUpdatedAt || null,
       id,
       name: insertUser.name ?? "User",
-      status: insertUser.status || "Active",
-      type: insertUser.type || "User",
-      passwordAlgo: insertUser.passwordAlgo || "argon2id",
+      status: insertUser.status ?? "Active",
+      type: insertUser.type ?? "User",
+      passwordAlgo: insertUser.passwordAlgo ?? "argon2id",
       passwordUpdatedAt: insertUser.passwordUpdatedAt ?? null,
       createdAt: new Date(),
       updatedAt: new Date()
