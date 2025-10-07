@@ -434,7 +434,7 @@ export default function RiskScoring() {
 
           {/* Risk Level Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" data-tutorial="risk-metrics">
-            <Card className="stagger-item card-hover">
+            <Card className="stagger-item card-hover bg-gradient-to-br from-red-50 to-rose-100 dark:from-slate-800 dark:to-slate-900 border-2 border-red-200 dark:border-slate-700">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -443,14 +443,14 @@ export default function RiskScoring() {
                       {applications.filter(app => parseFloat(app.riskScore) >= 8).length}
                     </p>
                   </div>
-                  <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <AlertTriangle className="h-6 w-6 text-red-600" />
+                  <div className="h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                    <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover">
+            <Card className="stagger-item card-hover bg-gradient-to-br from-orange-50 to-amber-100 dark:from-slate-800 dark:to-slate-900 border-2 border-orange-200 dark:border-slate-700">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -462,14 +462,14 @@ export default function RiskScoring() {
                       }).length}
                     </p>
                   </div>
-                  <div className="h-12 w-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-orange-600" />
+                  <div className="h-12 w-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                    <TrendingUp className="h-6 w-6 text-orange-600 dark:text-orange-400" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover">
+            <Card className="stagger-item card-hover bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-slate-800 dark:to-slate-900 border-2 border-yellow-200 dark:border-slate-700">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -481,14 +481,14 @@ export default function RiskScoring() {
                       }).length}
                     </p>
                   </div>
-                  <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <Activity className="h-6 w-6 text-yellow-600" />
+                  <div className="h-12 w-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                    <Activity className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover">
+            <Card className="stagger-item card-hover bg-gradient-to-br from-green-50 to-emerald-100 dark:from-slate-800 dark:to-slate-900 border-2 border-green-200 dark:border-slate-700">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -497,8 +497,8 @@ export default function RiskScoring() {
                       {applications.filter(app => parseFloat(app.riskScore) < 4).length}
                     </p>
                   </div>
-                  <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <Shield className="h-6 w-6 text-green-600" />
+                  <div className="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                    <Shield className="h-6 w-6 text-green-600 dark:text-green-400" />
                   </div>
                 </div>
               </CardContent>
