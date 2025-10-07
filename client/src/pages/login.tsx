@@ -69,12 +69,12 @@ export default function Login() {
             </div>
 
             {/* Subtitle */}
-            <p className="text-lg text-gray-600 text-center mb-2">
+            <p className="text-lg font-bold text-gray-600 text-center mb-2">
               Application Security Dashboard
             </p>
 
             {/* Title */}
-            <h1 className="text-xl font-semibold text-gray-900 text-center mb-8">
+            <h1 className="text-xl text-gray-900 text-center mb-8">
               Sign in
             </h1>
 
@@ -159,12 +159,12 @@ export default function Login() {
             </div>
 
             {/* Subtitle */}
-            <p className="text-lg text-gray-600 text-center mb-2">
+            <p className="text-lg font-bold text-gray-600 text-center mb-2">
               Application Security Dashboard
             </p>
 
             {/* Title */}
-            <h1 className="text-xl font-semibold text-gray-900 text-center mb-8">
+            <h1 className="text-xl text-gray-900 text-center mb-8">
               Enter Your Password
             </h1>
 
