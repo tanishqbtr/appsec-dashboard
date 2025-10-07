@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, AlertCircle } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import hingeHealthLogo from "@assets/Hinge_Health_Logo_1752759155411.png";
+import oktaLogo from "@assets/okta_1759800113776.png";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -14,6 +15,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
 
   const handleEmailContinue = (e: FormEvent) => {
     e.preventDefault();
@@ -52,19 +54,24 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-['Inter']">
       <div className="w-full max-w-md">
         {/* Email Step */}
         {step === "email" && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
             {/* Logo */}
-            <div className="flex justify-center mb-8">
+            <div className="flex justify-center mb-6">
               <img 
                 src={hingeHealthLogo} 
                 alt="Hinge Health" 
-                className="h-12"
+                className="h-24"
               />
             </div>
+
+            {/* Subtitle */}
+            <p className="text-sm text-gray-600 text-center mb-2">
+              Application Security Dashboard
+            </p>
 
             {/* Title */}
             <h1 className="text-2xl font-semibold text-gray-900 text-center mb-8">
@@ -73,20 +80,30 @@ export default function Login() {
 
             {/* Email Form */}
             <form onSubmit={handleEmailContinue} className="space-y-6">
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email address*
-                </label>
+              {/* Floating Label Email Field */}
+              <div className="relative">
                 <Input
                   id="email"
                   type="email"
-                  placeholder="test@test.com"
+                  placeholder=""
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-green-600 focus:ring-green-600"
+                  onFocus={() => setEmailFocused(true)}
+                  onBlur={() => setEmailFocused(false)}
+                  className="h-12 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400 focus:border-green-600 focus:ring-green-600 pt-6 pb-2"
                   required
                   data-testid="input-email"
                 />
+                <label
+                  htmlFor="email"
+                  className={`absolute left-3 transition-all duration-200 pointer-events-none ${
+                    emailFocused || email
+                      ? "top-1.5 text-xs text-gray-500"
+                      : "top-3.5 text-sm text-gray-500"
+                  }`}
+                >
+                  Email address*
+                </label>
               </div>
 
               <Button
@@ -120,10 +137,11 @@ export default function Login() {
             <Button
               type="button"
               variant="outline"
-              className="w-full h-12 mt-6 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-full transition-colors duration-200"
+              className="w-full h-12 mt-6 bg-white border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-full transition-colors duration-200 flex items-center justify-center gap-2"
               data-testid="button-okta"
             >
-              Sign in with Okta
+              <span>Sign in with</span>
+              <img src={oktaLogo} alt="Okta" className="h-4" />
             </Button>
           </div>
         )}
@@ -132,13 +150,18 @@ export default function Login() {
         {step === "password" && (
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
             {/* Logo */}
-            <div className="flex justify-center mb-8">
+            <div className="flex justify-center mb-6">
               <img 
                 src={hingeHealthLogo} 
                 alt="Hinge Health" 
-                className="h-12"
+                className="h-24"
               />
             </div>
+
+            {/* Subtitle */}
+            <p className="text-sm text-gray-600 text-center mb-2">
+              Application Security Dashboard
+            </p>
 
             {/* Title */}
             <h1 className="text-2xl font-semibold text-gray-900 text-center mb-8">
