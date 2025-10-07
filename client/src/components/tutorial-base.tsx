@@ -168,11 +168,11 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
     const step = steps[currentStep];
     
     if (!step.target || !highlightedElement || !popupRef.current) {
-      // Center position for steps without targets
+      // Position at top of viewport for center-positioned steps (welcome, completion)
       return {
-        top: '50%',
+        top: '100px',
         left: '50%',
-        transform: 'translate(-50%, -50%)'
+        transform: 'translateX(-50%)'
       };
     }
 
