@@ -434,71 +434,95 @@ export default function RiskScoring() {
 
           {/* Risk Level Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8" data-tutorial="risk-metrics">
-            <Card className="stagger-item card-hover bg-gradient-to-br from-red-50 to-rose-100 dark:from-slate-800 dark:to-slate-900 border-2 border-red-200 dark:border-slate-700">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-red-500/20 hover:-translate-y-1 border-l-4 border-l-red-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-50/50 to-transparent dark:from-red-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Critical Risk</p>
-                    <p className="text-3xl font-bold text-red-600">
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-red-700 dark:group-hover:text-red-300 transition-colors duration-200">Critical Risk</p>
+                    <p className="text-3xl font-bold text-red-600 transition-all duration-300 group-hover:text-red-700 dark:group-hover:text-red-300">
                       {applications.filter(app => parseFloat(app.riskScore) >= 8).length}
                     </p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-red-600">Requires immediate attention</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
-                    <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                  <div className="h-12 w-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-red-200 dark:group-hover:bg-red-900/50 transition-colors duration-200">
+                    <AlertTriangle className="h-6 w-6 text-red-600 transition-all duration-300 group-hover:scale-110 group-hover:animate-pulse" />
+                    <div className="absolute inset-0 bg-red-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover bg-gradient-to-br from-orange-50 to-amber-100 dark:from-slate-800 dark:to-slate-900 border-2 border-orange-200 dark:border-slate-700">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20 hover:-translate-y-1 border-l-4 border-l-orange-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-orange-50/50 to-transparent dark:from-orange-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">High Risk</p>
-                    <p className="text-3xl font-bold text-orange-600">
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-orange-700 dark:group-hover:text-orange-300 transition-colors duration-200">High Risk</p>
+                    <p className="text-3xl font-bold text-orange-600 transition-all duration-300 group-hover:text-orange-700 dark:group-hover:text-orange-300">
                       {applications.filter(app => {
                         const score = parseFloat(app.riskScore);
                         return score >= 6 && score < 8;
                       }).length}
                     </p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-orange-600">Needs attention</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-                    <TrendingUp className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                  <div className="h-12 w-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors duration-200">
+                    <TrendingUp className="h-6 w-6 text-orange-600 transition-all duration-300 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-orange-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-slate-800 dark:to-slate-900 border-2 border-yellow-200 dark:border-slate-700">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/20 hover:-translate-y-1 border-l-4 border-l-yellow-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-50/50 to-transparent dark:from-yellow-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Medium Risk</p>
-                    <p className="text-3xl font-bold text-yellow-600">
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-yellow-700 dark:group-hover:text-yellow-300 transition-colors duration-200">Medium Risk</p>
+                    <p className="text-3xl font-bold text-yellow-600 transition-all duration-300 group-hover:text-yellow-700 dark:group-hover:text-yellow-300">
                       {applications.filter(app => {
                         const score = parseFloat(app.riskScore);
                         return score >= 4 && score < 6;
                       }).length}
                     </p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-yellow-600">Monitor closely</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
-                    <Activity className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
+                  <div className="h-12 w-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-yellow-200 dark:group-hover:bg-yellow-900/50 transition-colors duration-200">
+                    <Activity className="h-6 w-6 text-yellow-600 transition-all duration-300 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-yellow-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="stagger-item card-hover bg-gradient-to-br from-green-50 to-emerald-100 dark:from-slate-800 dark:to-slate-900 border-2 border-green-200 dark:border-slate-700">
-              <CardContent className="p-6">
+            <Card className="stagger-item card-hover group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20 hover:-translate-y-1 border-l-4 border-l-green-500">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-50/50 to-transparent dark:from-green-900/10 pointer-events-none"></div>
+              <CardContent className="p-6 relative z-10">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Low Risk</p>
-                    <p className="text-3xl font-bold text-green-600">
+                    <p className="text-sm font-medium text-muted-foreground group-hover:text-green-700 dark:group-hover:text-green-300 transition-colors duration-200">Low Risk</p>
+                    <p className="text-3xl font-bold text-green-600 transition-all duration-300 group-hover:text-green-700 dark:group-hover:text-green-300">
                       {applications.filter(app => parseFloat(app.riskScore) < 4).length}
                     </p>
+                    <div className="flex items-center mt-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
+                      <p className="text-sm text-green-600">Healthy status</p>
+                    </div>
                   </div>
-                  <div className="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                    <Shield className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  <div className="h-12 w-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center relative group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors duration-200">
+                    <Shield className="h-6 w-6 text-green-600 transition-all duration-300 group-hover:scale-110" />
+                    <div className="absolute inset-0 bg-green-500 rounded-lg opacity-0 group-hover:opacity-20 group-hover:animate-ping"></div>
                   </div>
                 </div>
               </CardContent>
