@@ -66,7 +66,7 @@ A comprehensive full-stack application security dashboard built with React/TypeS
 - Git for version control
 
 ### Environment Variables
-Create a `.env` file with the following variables:
+Create a `.env` file with the following variables. In production, the following are required and the server will fail fast if missing: `DATABASE_URL`, `SESSION_SECRET`, `PASSWORD_PEPPER`.
 
 ```bash
 DATABASE_URL=postgresql://username:password@host:port/database
@@ -79,37 +79,66 @@ PORT=5000
 ARGON2_TIME_COST=3
 ARGON2_MEMORY_COST=65536
 ARGON2_PARALLELISM=1
+# Optional: Development seeding (dev only)
+# Set SEED=1 to create seed users and sample data at startup.
+# Provide the admin password via ADMIN_SEED_PASSWORD; the admin email is fixed
+# to admin@hingehealth.com. A demo user is also created with a random password
+# that is printed to the dev logs.
+SEED=1
+ADMIN_SEED_PASSWORD=ChangeMe!
 ```
 
-### Quick Start
+### Security Behaviour (Production)
 
-1. **Clone the repository**:
+- Required env vars: `DATABASE_URL`, `SESSION_SECRET`, `PASSWORD_PEPPER`.
+- Session cookie: `__Host-session` with `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`.
+- CSRF: Double-submit token. Server issues `XSRF-TOKEN` cookie; clients must echo it in `x-csrf-token` header for state-changing requests when `NODE_ENV=production`.
+- Health: `/healthz` returns 200 when server is up; `/readyz` returns 200 when DB is reachable (503 otherwise).
+
+### Quick Start (Local)
+
+1. **Clone the repository**
    ```bash
    git clone https://github.com/tanishqbtr/appsec-dashboard.git
    cd appsec-dashboard
    ```
 
-2. **Install dependencies**:
+2. **Start Postgres (Docker) and install deps**
    ```bash
+   docker compose -f docker-compose.dev.yml up -d postgres
    npm install
    ```
 
-3. **Setup database**:
+3. **Apply the database schema**
    ```bash
-   # Push schema to database
    npm run db:push
    ```
 
-4. **Start development server**:
-   ```bash
-   npm run dev
-   ```
+4. **Run the app (choose ONE)**
 
-5. **Access the application**:
-   - Open http://localhost:5000
-   - Login with default admin credentials:
-     - Username: `admin`
-     - Password: `password@hh`
+   - A) Seeded admin (fresh setup)
+     ```bash
+     PORT=5200 \
+     DATABASE_URL=postgresql://appsec_user:appsec_password@localhost:5432/appsec_dashboard \
+     SEED=1 ADMIN_SEED_PASSWORD=ChangeMe! \
+     npm run dev
+     ```
+     Login: `admin@hingehealth.com` / `ChangeMe!`
+
+   - B) Use/reset a known admin password (no reseed)
+     ```bash
+     DATABASE_URL=postgresql://appsec_user:appsec_password@localhost:5432/appsec_dashboard \
+     npm run set-admin-password -- admin@hingehealth.com 'password@hh'
+
+     PORT=5200 \
+     DATABASE_URL=postgresql://appsec_user:appsec_password@localhost:5432/appsec_dashboard \
+     npm run dev
+     ```
+     Login: `admin@hingehealth.com` / `password@hh`
+
+5. **Open the app**
+   - http://localhost:5200 (or the port you chose)
+   - If you used seeding, a demo user is also created and its random password is printed in the server logs.
 
 ### Production Build
 
@@ -149,8 +178,28 @@ npm start
 - **Input Validation**: Zod schemas for all API endpoints
 - **SQL Injection Prevention**: Parameterized queries via Drizzle ORM
 - **XSS Protection**: React's built-in protection + proper data sanitization
-- **CSRF Protection**: Session-based CSRF token validation
+- **CSRF Protection**: Double-submit token — `XSRF-TOKEN` cookie ↔ `x-csrf-token` header (enforced in production)
 - **Secure Headers**: Security headers for production deployments
+
+### Session & Cookie Details
+
+- In production, sessions are stored in Postgres via `connect-pg-simple`.
+- Cookie settings (prod):
+  - Name: `__Host-session`
+  - Flags: `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`
+  - Domain: not set (required by `__Host-` prefix)
+- Session fixation mitigation: session ID regenerates on successful login and after password change; CSRF token is rotated in both cases.
+
+### CSRF Contract
+
+- Server sets a non-HTTPOnly `XSRF-TOKEN` cookie containing a random token tied to the session.
+- For POST/PATCH/DELETE endpoints, clients must send header `x-csrf-token: <token>`.
+- Enforcement: enabled in production; relaxed in development for DX.
+
+### Health & Readiness
+
+- `GET /healthz` → `200 ok` when server is running.
+- `GET /readyz` → `200 ready` if DB is reachable, otherwise `503 not-ready`.
 
 ### Password Security Implementation
 - **Argon2id Algorithm**: Industry-standard password hashing
@@ -260,17 +309,12 @@ npm run db:push     # Apply database schema changes
 - Check browser console for client-side errors and network tab for API issues
 - Monitor server logs for authentication and database connectivity issues
 
-## 📝 Default Credentials
+## 📝 Seeding Accounts (Development Only)
 
-### Admin Account
-- **Username**: `admin`
-- **Password**: `password@hh`
-- **Role**: Admin (full permissions)
-
-### Demo Account  
-- **Username**: `demo`
-- **Password**: `password`
-- **Role**: User (read-only access with limited export permissions)
+When `SEED=1` is set at startup in a non-production environment:
+- An admin user is created with email `admin@hingehealth.com` and password from `ADMIN_SEED_PASSWORD`.
+- A demo user `demo@hingehealth.com` is created with a strong random password printed to the server logs.
+- Seeded users are not created in production.
 
 ## 🔒 Production Security Checklist
 

@@ -35,6 +35,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql } from "drizzle-orm";
+import { hashPassword } from "./auth/passwords";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -326,7 +327,9 @@ export class MemStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
     const user: User = { 
-      ...insertUser, 
+      ...insertUser,
+      name: insertUser.name || "Unknown User",
+      passwordUpdatedAt: insertUser.passwordUpdatedAt || null,
       id,
       name: insertUser.name ?? "User",
       status: insertUser.status || "Active",
@@ -755,27 +758,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createOrUpdateRiskAssessment(assessment: InsertRiskAssessment): Promise<RiskAssessment> {
-    const existing = await this.getRiskAssessment(assessment.serviceName);
-    
-    if (existing) {
-      // Update existing assessment
-      const [updated] = await db
-        .update(riskAssessments)
-        .set({
+    const [upserted] = await db
+      .insert(riskAssessments)
+      .values(assessment)
+      .onConflictDoUpdate({
+        target: riskAssessments.serviceName,
+        set: {
           ...assessment,
           lastUpdated: new Date(),
-        })
-        .where(eq(riskAssessments.serviceName, assessment.serviceName))
-        .returning();
-      return updated;
-    } else {
-      // Create new assessment
-      const [created] = await db
-        .insert(riskAssessments)
-        .values(assessment)
-        .returning();
-      return created;
-    }
+        },
+      })
+      .returning();
+    return upserted;
   }
 
   async getAllRiskAssessments(): Promise<RiskAssessment[]> {
@@ -817,32 +811,65 @@ async function initializeStorage(): Promise<IStorage> {
     const existingAdminUser = await dbStorage.getUserByUsername("admin@hingehealth.com");
     const existingDemoUser = await dbStorage.getUserByUsername("demo@hingehealth.com");
     
-    if (!existingAdminUser) {
-      console.log("👤 Creating admin user...");
+    if (process.env.NODE_ENV !== 'production' && process.env.SEED === '1' && !existingAdminUser) {
+      console.log("👤 Creating admin user (seed mode)...");
+      const adminSeedPassword = process.env.ADMIN_SEED_PASSWORD;
+      if (!adminSeedPassword) {
+        throw new Error("ADMIN_SEED_PASSWORD must be set when SEED=1");
+      }
+      const adminPasswordHash = await hashPassword(adminSeedPassword);
       await dbStorage.createUser({ 
         name: "Admin User", 
         username: "admin@hingehealth.com", 
-        passwordHash: "password@hh",
+        passwordHash: adminPasswordHash,
         status: "Active",
         type: "Admin"
       });
-      console.log("✅ Admin user created");
-    } else {
+      console.log("✅ Admin user created (seed)");
+    } else if (existingAdminUser) {
       console.log("👤 Admin user already exists");
     }
     
-    if (!existingDemoUser) {
-      console.log("👤 Creating demo user...");
+    if (process.env.NODE_ENV !== 'production' && process.env.SEED === '1' && !existingDemoUser) {
+      console.log("👤 Creating demo user (seed mode)...");
+      const configuredDemoPassword = process.env.DEMO_SEED_PASSWORD;
+      const plain = configuredDemoPassword && configuredDemoPassword.length >= 8
+        ? configuredDemoPassword
+        : Math.random().toString(36).slice(-12) + "!Aa1";
+      const demoPasswordHash = await hashPassword(plain);
       await dbStorage.createUser({ 
         name: "Demo User", 
         username: "demo@hingehealth.com", 
-        passwordHash: "password",
+        passwordHash: demoPasswordHash,
         status: "Active",
         type: "User"
       });
-      console.log("✅ Demo user created");
-    } else {
+      if (configuredDemoPassword && configuredDemoPassword.length >= 8) {
+        console.log("✅ Demo user created (seed) with configured password via DEMO_SEED_PASSWORD");
+      } else {
+        console.log("✅ Demo user created (seed) with random password (printed only in dev):", plain);
+      }
+    } else if (existingDemoUser) {
       console.log("👤 Demo user already exists");
+      // In development seeding mode, reset demo password to configured value for determinism
+      if (process.env.NODE_ENV !== 'production' && process.env.SEED === '1') {
+        const configuredDemoPassword = process.env.DEMO_SEED_PASSWORD;
+        if (configuredDemoPassword && configuredDemoPassword.length >= 8) {
+          try {
+            const demoPasswordHash = await hashPassword(configuredDemoPassword);
+            await dbStorage.updateUser(existingDemoUser.id!, {
+              passwordHash: demoPasswordHash as any,
+              passwordAlgo: 'argon2id' as any,
+              passwordUpdatedAt: new Date() as any,
+              status: 'Active' as any,
+              type: (existingDemoUser.type as any) || 'User',
+            } as any);
+            console.log("🔄 Demo user password reset via DEMO_SEED_PASSWORD");
+          } catch (e) {
+            console.warn("⚠️  Failed to reset demo user password:", e);
+          }
+        }
+      }
     }
     
     if (existingApps.length === 0) {

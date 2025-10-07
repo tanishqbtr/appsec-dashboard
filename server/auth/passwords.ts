@@ -1,13 +1,18 @@
 import argon2 from 'argon2';
+import { config } from '../config';
 
 // Environment configuration with secure defaults
-const PEPPER = process.env.PASSWORD_PEPPER || '';
+const PEPPER = config.PASSWORD_PEPPER || '';
 const TIME_COST = Number(process.env.ARGON2_TIME_COST || 3);
 const MEMORY_COST = Number(process.env.ARGON2_MEMORY_COST || 65536);
 const PARALLELISM = Number(process.env.ARGON2_PARALLELISM || 1);
 
 if (!PEPPER) {
-  console.warn('WARNING: PASSWORD_PEPPER not set in environment variables. Using empty pepper.');
+  if (config.NODE_ENV === 'production') {
+    throw new Error('PASSWORD_PEPPER must be set in production');
+  } else {
+    console.warn('WARNING: PASSWORD_PEPPER not set. Using empty pepper in non-production.');
+  }
 }
 
 const argon2Options = {

@@ -1,68 +1,131 @@
 import express, { type Request, Response, NextFunction } from "express";
+import helmet from "helmet";
+import { config } from "./config";
 import session from "express-session";
+import crypto, { randomUUID } from "node:crypto";
+import connectPgSimple from "connect-pg-simple";
+import { pool } from "./db";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+// Baseline security headers (CSP deferred for later)
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: { policy: "same-origin" },
+  referrerPolicy: { policy: "no-referrer" },
+  frameguard: { action: "deny" },
+  hsts: config.NODE_ENV === 'production' ? undefined : false,
+}));
 
-// Trust proxy for rate limiting to work correctly behind reverse proxies
-if (process.env.NODE_ENV === 'production') {
+// Trust proxy for secure cookies and correct client IPs when behind load balancers
+if (config.NODE_ENV === 'production') {
   app.set('trust proxy', 1);
 }
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Session middleware with environment-based secret
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key-here-change-in-production',
+// Request ID middleware
+app.use((req, res, next) => {
+  const rid = (req.headers["x-request-id"] as string) || randomUUID();
+  (req as any).requestId = rid;
+  res.setHeader("X-Request-Id", rid);
+  next();
+});
+
+// Session middleware with environment-based secret and production store
+if (app.get("env") === "production" && !config.SESSION_SECRET) {
+  throw new Error("SESSION_SECRET must be set in production");
+}
+
+const PgSession = connectPgSimple(session);
+const sessionOptions: session.SessionOptions = {
+  secret: config.SESSION_SECRET || "dev-insecure-secret",
   resave: false,
   saveUninitialized: false,
-  cookie: { 
-    secure: process.env.NODE_ENV === 'production', // Enable secure cookies in production
+  cookie: {
+    secure: app.get("env") === "production",
     httpOnly: true,
-    maxAge: 30 * 60 * 1000 // 30 minutes
+    sameSite: "lax",
+    path: "/",
+    maxAge: 30 * 60 * 1000,
+  },
+};
+
+// Use persistent Postgres-backed session store only in production
+if (app.get("env") === "production") {
+  // Use __Host- prefix (requires Secure, Path=/, no Domain) for strongest cookie scoping
+  sessionOptions.name = "__Host-session";
+  sessionOptions.store = new PgSession({
+    pool,
+    createTableIfMissing: true,
+    pruneSessionInterval: 10 * 60 * 1000,
+  });
+}
+
+app.use(session(sessionOptions));
+
+// Graceful shutdown for session store
+process.on('SIGTERM', () => {
+  const store: any = (sessionOptions as any).store;
+  if (store && typeof store.close === 'function') {
+    store.close();
   }
-}));
+});
+
+// CSRF token initializer (double-submit via header matched to session token)
+app.use((req, res, next) => {
+  if (!req.session) return next();
+  if (!(req.session as any).csrfToken) {
+    (req.session as any).csrfToken = crypto.randomBytes(32).toString("hex");
+  }
+  // Expose token via non-HTTPOnly cookie for clients to read and send back in header
+  res.cookie("XSRF-TOKEN", (req.session as any).csrfToken, {
+    httpOnly: false,
+    sameSite: "lax",
+    secure: app.get("env") === "production",
+  });
+  next();
+});
 
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
   res.on("finish", () => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
+      const requestId = ((req as any).requestId as string) || "-";
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms [reqId=${requestId}]`;
+      if (logLine.length > 80) logLine = logLine.slice(0, 79) + "…";
       log(logLine);
     }
   });
-
   next();
 });
 
 (async () => {
   const server = await registerRoutes(app);
 
+  // Health and readiness endpoints
+  app.get("/healthz", (_req, res) => res.status(200).send("ok"));
+  app.get("/readyz", async (_req, res) => {
+    try {
+      await pool.query("SELECT 1");
+      return res.status(200).send("ready");
+    } catch {
+      return res.status(503).send("not-ready");
+    }
+  });
+
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
-
-    res.status(status).json({ message });
+    if (!res.headersSent) {
+      res.status(status).json({ message });
+    }
+    // Re-throw for visibility in logs
     throw err;
   });
 
@@ -72,19 +135,26 @@ app.use((req, res, next) => {
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
-    serveStatic(app);
+    const allowMissingClient = process.env.ALLOW_MISSING_CLIENT === '1' || process.env.VITEST === 'true';
+    try {
+      if (!allowMissingClient) {
+        serveStatic(app);
+      }
+    } catch (e: any) {
+      if (allowMissingClient) {
+        log(`Skipping static assets: ${e?.message || e}`);
+      } else {
+        throw e;
+      }
+    }
   }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || '5000', 10);
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
+  const port = config.PORT;
+  server.listen(port, () => {
     log(`serving on port ${port}`);
   });
 })();

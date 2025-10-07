@@ -21,6 +21,12 @@ export async function setupVite(app: Express, server: Server) {
   const viteLogger = createLogger();
   const projectRoot = path.resolve(import.meta.dirname, "..");
   const viteConfig = {
+    // Ensure optimized deps are rebuilt when environment changes
+    optimizeDeps: {
+      force: true,
+    },
+    // Use a cache dir keyed by Node major version to avoid stale chunks
+    cacheDir: path.resolve(projectRoot, "node_modules", `.vite-node${process.versions.node.split('.')[0]}`),
     resolve: {
       alias: {
         "@": path.resolve(projectRoot, "client", "src"),
