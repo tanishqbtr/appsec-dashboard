@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +25,42 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
   const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
 
+  // Reset to step 1 when tutorial opens
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentStep(0);
+      setHighlightedElement(null);
+      // Clean up any lingering highlights
+      document.querySelectorAll('.tutorial-highlight').forEach(el => {
+        el.classList.remove('tutorial-highlight');
+      });
+    }
+  }, [isOpen]);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+
+    const step = steps[currentStep];
+    
+    // For center-positioned steps without targets, scroll to top immediately
+    if (!step.target && step.position === 'center') {
+      // Remove any existing highlights from previous steps
+      document.querySelectorAll('.tutorial-highlight').forEach(el => {
+        el.classList.remove('tutorial-highlight');
+      });
+      
+      // Find the scrollable container (main content area) and scroll to top
+      const scrollContainer = document.querySelector('main');
+      if (scrollContainer) {
+        scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
+      }
+      // Also scroll the window to ensure visibility
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      
+      setHighlightedElement(null);
+    }
+  }, [currentStep, isOpen, steps]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -32,17 +68,21 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
     if (step.target) {
       const element = document.querySelector(step.target) as HTMLElement;
       if (element) {
-        setHighlightedElement(element);
+        // Scroll element into view first
         element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         
-        // Add highlight class
-        element.classList.add('tutorial-highlight');
+        // Wait for scroll to complete before setting highlight
+        setTimeout(() => {
+          setHighlightedElement(element);
+          element.classList.add('tutorial-highlight');
+        }, 300);
         
         return () => {
           element.classList.remove('tutorial-highlight');
         };
       }
     } else {
+      // Clear any existing highlight when there's no target
       setHighlightedElement(null);
     }
   }, [currentStep, isOpen, steps]);
@@ -128,11 +168,11 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
     const step = steps[currentStep];
     
     if (!step.target || !highlightedElement || !popupRef.current) {
-      // Center position for steps without targets
+      // Position at top of viewport for center-positioned steps (welcome, completion)
       return {
-        top: '50%',
+        top: '100px',
         left: '50%',
-        transform: 'translate(-50%, -50%)'
+        transform: 'translateX(-50%)'
       };
     }
 

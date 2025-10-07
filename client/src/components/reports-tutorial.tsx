@@ -7,7 +7,13 @@ interface ReportsTutorialProps {
   onComplete: () => void;
 }
 
-const tutorialSteps = [
+const tutorialSteps: Array<{
+  id: string;
+  title: string;
+  content: string;
+  target: string | null;
+  position: 'top' | 'bottom' | 'left' | 'right' | 'center';
+}> = [
   {
     id: 'welcome',
     title: 'Welcome to Security Findings',
