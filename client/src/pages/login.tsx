@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +15,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleEmailContinue = (e: React.FormEvent) => {
+  const handleEmailContinue = (e: FormEvent) => {
     e.preventDefault();
     if (email) {
       setStep("password");
@@ -23,7 +23,7 @@ export default function Login() {
     }
   };
 
-  const handlePasswordContinue = async (e: React.FormEvent) => {
+  const handlePasswordContinue = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
