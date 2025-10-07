@@ -69,14 +69,14 @@ export default function Login() {
             </div>
 
             {/* Subtitle */}
-            <p className="text-lg font-bold text-gray-600 text-center mb-2">
+            <p className="text-lg font-bold text-gray-900 text-center mb-2">
               Application Security Dashboard
             </p>
 
             {/* Title */}
-            <h1 className="text-xl text-gray-900 text-center mb-8">
+            <p className="text-base text-gray-900 text-center mb-8">
               Sign in
-            </h1>
+            </p>
 
             {/* Email Form */}
             <form onSubmit={handleEmailContinue} className="space-y-6">
@@ -159,14 +159,14 @@ export default function Login() {
             </div>
 
             {/* Subtitle */}
-            <p className="text-lg font-bold text-gray-600 text-center mb-2">
+            <p className="text-lg font-bold text-gray-900 text-center mb-2">
               Application Security Dashboard
             </p>
 
             {/* Title */}
-            <h1 className="text-xl text-gray-900 text-center mb-8">
+            <p className="text-base text-gray-900 text-center mb-8">
               Enter Your Password
-            </h1>
+            </p>
 
             {/* Password Form */}
             <form onSubmit={handlePasswordContinue} className="space-y-6">
