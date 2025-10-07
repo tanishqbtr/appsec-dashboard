@@ -54,7 +54,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-['Inter']">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Email Step */}
         {step === "email" && (
@@ -69,12 +69,12 @@ export default function Login() {
             </div>
 
             {/* Subtitle */}
-            <p className="text-sm text-gray-600 text-center mb-2">
+            <p className="text-lg text-gray-600 text-center mb-2">
               Application Security Dashboard
             </p>
 
             {/* Title */}
-            <h1 className="text-2xl font-semibold text-gray-900 text-center mb-8">
+            <h1 className="text-xl font-semibold text-gray-900 text-center mb-8">
               Sign in
             </h1>
 
@@ -159,12 +159,12 @@ export default function Login() {
             </div>
 
             {/* Subtitle */}
-            <p className="text-sm text-gray-600 text-center mb-2">
+            <p className="text-lg text-gray-600 text-center mb-2">
               Application Security Dashboard
             </p>
 
             {/* Title */}
-            <h1 className="text-2xl font-semibold text-gray-900 text-center mb-8">
+            <h1 className="text-xl font-semibold text-gray-900 text-center mb-8">
               Enter Your Password
             </h1>
 
