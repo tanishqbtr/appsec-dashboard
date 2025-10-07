@@ -25,6 +25,18 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
   const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
 
+  // Reset to step 1 when tutorial opens
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentStep(0);
+      setHighlightedElement(null);
+      // Clean up any lingering highlights
+      document.querySelectorAll('.tutorial-highlight').forEach(el => {
+        el.classList.remove('tutorial-highlight');
+      });
+    }
+  }, [isOpen]);
+
   useLayoutEffect(() => {
     if (!isOpen) return;
 
@@ -37,13 +49,14 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
         el.classList.remove('tutorial-highlight');
       });
       
-      // Find the scrollable container (main content area)
-      const scrollContainer = document.querySelector('main') || document.querySelector('[role="main"]');
+      // Find the scrollable container (main content area) and scroll to top
+      const scrollContainer = document.querySelector('main');
       if (scrollContainer) {
-        scrollContainer.scrollTop = 0;
-      } else {
-        window.scrollTo({ top: 0, behavior: 'auto' });
+        scrollContainer.scrollTo({ top: 0, behavior: 'auto' });
       }
+      // Also scroll the window to ensure visibility
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      
       setHighlightedElement(null);
     }
   }, [currentStep, isOpen, steps]);
