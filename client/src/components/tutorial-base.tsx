@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,6 +25,24 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
   const [highlightedElement, setHighlightedElement] = useState<HTMLElement | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
 
+  useLayoutEffect(() => {
+    if (!isOpen) return;
+
+    const step = steps[currentStep];
+    
+    // For center-positioned steps without targets, scroll to top immediately
+    if (!step.target && step.position === 'center') {
+      // Find the scrollable container (main content area)
+      const scrollContainer = document.querySelector('main') || document.querySelector('[role="main"]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = 0;
+      } else {
+        window.scrollTo({ top: 0, behavior: 'auto' });
+      }
+      setHighlightedElement(null);
+    }
+  }, [currentStep, isOpen, steps]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -44,12 +62,6 @@ export default function TutorialBase({ isOpen, onClose, onComplete, steps, tutor
         return () => {
           element.classList.remove('tutorial-highlight');
         };
-      }
-    } else {
-      setHighlightedElement(null);
-      // For center-positioned steps without targets, scroll to top for visibility
-      if (step.position === 'center') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   }, [currentStep, isOpen, steps]);
