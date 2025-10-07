@@ -68,7 +68,7 @@ const tutorialSteps: Array<{
     title: 'Top Escape Findings',
     content: 'Identify the top 5 applications with the most findings in Escape (Web Apps, APIs). Prioritize applications with API security vulnerabilities and web application issues.',
     target: '[data-tutorial="top-risks-escape"]',
-    position: 'right'
+    position: 'top'
   },
   {
     id: 'completion',
