@@ -876,6 +876,16 @@ async function initializeStorage(): Promise<IStorage> {
       console.log("✅ Initial data seeded");
     } else {
       console.log("📊 Application data already exists");
+      // If CSV envs are present, seed/refresh Mend findings on startup too
+      if (process.env.MEND_SCA_CSV || process.env.MEND_SAST_CSV || process.env.MEND_CONTAINERS_CSV) {
+        try {
+          console.log("📥 Seeding Mend findings from CSV (startup)…");
+          await seedMendFindingsFromCsv(dbStorage);
+          console.log("✅ Mend findings seeded/updated from CSV");
+        } catch (e) {
+          console.warn("⚠️  Failed to seed Mend findings from CSV:", e);
+        }
+      }
     }
     
     console.log("🎉 Database storage initialized successfully");
@@ -1024,8 +1034,12 @@ async function seedApplications(storage: DatabaseStorage) {
     await storage.createApplication(app);
   }
 
-  // Seed Mend findings data
-  await seedMendFindings(storage);
+  // Seed Mend findings data (prefer repo CSVs if present)
+  try {
+    await seedMendFindingsFromRepoCsv(storage);
+  } catch {
+    await seedMendFindings(storage);
+  }
 }
 
 async function seedMendFindings(storage: DatabaseStorage) {
@@ -1067,6 +1081,127 @@ async function seedMendFindings(storage: DatabaseStorage) {
   for (const finding of containersFindings) {
     await storage.createMendContainersFinding(finding);
   }
+}
+
+async function seedMendFindingsFromCsv(storage: DatabaseStorage) {
+  const scaCsv = process.env.MEND_SCA_CSV;
+  const sastCsv = process.env.MEND_SAST_CSV;
+  const containersCsv = process.env.MEND_CONTAINERS_CSV;
+  const { parse } = await import('csv-parse');
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+
+  const loadCsv = async (filePath: string): Promise<any[]> => {
+    const abs = path.isAbsolute(filePath) ? filePath : path.resolve(process.cwd(), filePath);
+    const content = await fs.promises.readFile(abs, 'utf8');
+    return new Promise((resolve, reject) => {
+      parse(content, { columns: true, trim: true }, (err: any, records: any[]) => {
+        if (err) return reject(err);
+        resolve(records);
+      });
+    });
+  };
+
+  if (scaCsv) {
+    const rows = await loadCsv(scaCsv);
+    for (const r of rows) {
+      const serviceName = r.serviceName || r.service || r.Service || r["service_name"]; 
+      if (!serviceName) continue;
+      const scanDate = r.scanDate || r.date || r["scan_date"] || new Date().toISOString().slice(0,10);
+      await storage.createMendScaFinding({
+        serviceName,
+        scanDate,
+        critical: Number(r.critical ?? r.C ?? r.crit ?? 0),
+        high: Number(r.high ?? r.H ?? 0),
+        medium: Number(r.medium ?? r.M ?? 0),
+        low: Number(r.low ?? r.L ?? 0),
+      });
+    }
+  }
+
+  if (sastCsv) {
+    const rows = await loadCsv(sastCsv);
+    for (const r of rows) {
+      const serviceName = r.serviceName || r.service || r.Service || r["service_name"]; 
+      if (!serviceName) continue;
+      const scanDate = r.scanDate || r.date || r["scan_date"] || new Date().toISOString().slice(0,10);
+      await storage.createMendSastFinding({
+        serviceName,
+        scanDate,
+        critical: Number(r.critical ?? r.C ?? r.crit ?? 0),
+        high: Number(r.high ?? r.H ?? 0),
+        medium: Number(r.medium ?? r.M ?? 0),
+        low: Number(r.low ?? r.L ?? 0),
+      });
+    }
+  }
+
+  if (containersCsv) {
+    const rows = await loadCsv(containersCsv);
+    for (const r of rows) {
+      const serviceName = r.serviceName || r.service || r.Service || r["service_name"]; 
+      if (!serviceName) continue;
+      const scanDate = r.scanDate || r.date || r["scan_date"] || new Date().toISOString().slice(0,10);
+      await storage.createMendContainersFinding({
+        serviceName,
+        scanDate,
+        critical: Number(r.critical ?? r.C ?? r.crit ?? 0),
+        high: Number(r.high ?? r.H ?? 0),
+        medium: Number(r.medium ?? r.M ?? 0),
+        low: Number(r.low ?? r.L ?? 0),
+      });
+    }
+  }
+}
+
+async function seedMendFindingsFromRepoCsv(storage: DatabaseStorage) {
+  const { parse } = await import('csv-parse');
+  const fs = await import('node:fs');
+  const path = await import('node:path');
+  const root = process.cwd();
+
+  const resolveCsv = (rel: string) => path.resolve(root, rel);
+  const files = [
+    { type: 'sca', path: resolveCsv('data/mend-sca.csv') },
+    { type: 'sast', path: resolveCsv('data/mend-sast.csv') },
+    { type: 'containers', path: resolveCsv('data/mend-containers.csv') },
+  ];
+
+  const exists = async (p: string) => fs.promises.access(p).then(() => true).catch(() => false);
+  const loadCsv = async (filePath: string): Promise<any[]> => {
+    const content = await fs.promises.readFile(filePath, 'utf8');
+    return new Promise((resolve, reject) => {
+      parse(content, { columns: true, trim: true }, (err: any, records: any[]) => {
+        if (err) return reject(err);
+        resolve(records);
+      });
+    });
+  };
+
+  let anyLoaded = false;
+  for (const f of files) {
+    if (!(await exists(f.path))) continue;
+    anyLoaded = true;
+    const rows = await loadCsv(f.path);
+    for (const r of rows) {
+      const serviceName = r.serviceName || r.service || r.Service || r["service_name"]; 
+      if (!serviceName) continue;
+      const scanDate = r.scanDate || r.date || r["scan_date"] || new Date().toISOString().slice(0,10);
+      const payload = {
+        serviceName,
+        scanDate,
+        critical: Number(r.critical ?? r.C ?? r.crit ?? 0),
+        high: Number(r.high ?? r.H ?? 0),
+        medium: Number(r.medium ?? r.M ?? 0),
+        low: Number(r.low ?? r.L ?? 0),
+      };
+      if (f.type === 'sca') await storage.createMendScaFinding(payload as any);
+      else if (f.type === 'sast') await storage.createMendSastFinding(payload as any);
+      else if (f.type === 'containers') await storage.createMendContainersFinding(payload as any);
+    }
+  }
+
+  if (!anyLoaded) throw new Error('No repo CSV files found');
 }
 
 // Initialize and export storage

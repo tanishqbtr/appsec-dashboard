@@ -345,3 +345,15 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ---
 
 **Built with ❤️ by the Hinge Health AppSec Team**
+
+### Importing Mend CSV data (local + Okteto)
+
+You can seed Mend findings from CSVs into Postgres.
+
+- Default behavior: if CSVs exist in `data/` (repo-bundled) the server auto-imports them at startup — no envs or mounts required.
+- Supported filenames (in `data/`):
+  - `mend-sca.csv`
+  - `mend-sast.csv`
+  - `mend-containers.csv`
+
+If you prefer custom paths, you can still use envs `MEND_SCA_CSV`, `MEND_SAST_CSV`, `MEND_CONTAINERS_CSV` to override.

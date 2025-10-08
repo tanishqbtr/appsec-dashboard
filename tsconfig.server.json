@@ -5,6 +5,7 @@
   },
   "include": [
     "server/**/*.ts",
+    "server/**/*.d.ts",
     "shared/**/*.ts"
   ],
   "exclude": [
