@@ -1185,14 +1185,26 @@ async function seedMendFindingsFromRepoCsv(storage: DatabaseStorage) {
   };
 
   let anyLoaded = false;
+  const existingApps = await storage.getApplications();
+  const appNameSet = new Set(existingApps.map(a => a.name));
   for (const f of files) {
     if (!(await exists(f.path))) continue;
     anyLoaded = true;
     const rows = await loadCsv(f.path);
+    let imported = 0;
     for (const r of rows) {
       const serviceName = r.serviceName || r.service || r.Service || r["service_name"]; 
       if (!serviceName) continue;
       const scanDate = r.scanDate || r.date || r["scan_date"] || new Date().toISOString().slice(0,10);
+      if (!appNameSet.has(serviceName)) {
+        try {
+          await storage.createApplication({ name: serviceName, riskScore: '0.0' } as any);
+          appNameSet.add(serviceName);
+          console.log(`➕ Created application for CSV service: ${serviceName}`);
+        } catch (e) {
+          console.warn(`⚠️  Failed to create application for ${serviceName}:`, e);
+        }
+      }
       const payload = {
         serviceName,
         scanDate,
@@ -1204,7 +1216,9 @@ async function seedMendFindingsFromRepoCsv(storage: DatabaseStorage) {
       if (f.type === 'sca') await storage.createMendScaFinding(payload as any);
       else if (f.type === 'sast') await storage.createMendSastFinding(payload as any);
       else if (f.type === 'containers') await storage.createMendContainersFinding(payload as any);
+      imported++;
     }
+    console.log(`📥 Imported ${imported} ${f.type.toUpperCase()} rows from ${path.basename(f.path)}`);
   }
 
   if (!anyLoaded) throw new Error('No repo CSV files found');
