@@ -876,14 +876,20 @@ async function initializeStorage(): Promise<IStorage> {
       console.log("✅ Initial data seeded");
     } else {
       console.log("📊 Application data already exists");
-      // If CSV envs are present, seed/refresh Mend findings on startup too
-      if (process.env.MEND_SCA_CSV || process.env.MEND_SAST_CSV || process.env.MEND_CONTAINERS_CSV) {
-        try {
-          console.log("📥 Seeding Mend findings from CSV (startup)…");
-          await seedMendFindingsFromCsv(dbStorage);
-          console.log("✅ Mend findings seeded/updated from CSV");
-        } catch (e) {
-          console.warn("⚠️  Failed to seed Mend findings from CSV:", e);
+      // Attempt to seed/refresh Mend findings from repo CSVs; fallback to env-driven CSVs
+      try {
+        console.log("📥 Seeding Mend findings from repo CSV (startup)…");
+        await seedMendFindingsFromRepoCsv(dbStorage);
+        console.log("✅ Mend findings seeded/updated from repo CSV");
+      } catch (err) {
+        if (process.env.MEND_SCA_CSV || process.env.MEND_SAST_CSV || process.env.MEND_CONTAINERS_CSV) {
+          try {
+            console.log("📥 Seeding Mend findings from env CSV (startup)…");
+            await seedMendFindingsFromCsv(dbStorage);
+            console.log("✅ Mend findings seeded/updated from env CSV");
+          } catch (e) {
+            console.warn("⚠️  Failed to seed Mend findings from CSV:", e);
+          }
         }
       }
     }
